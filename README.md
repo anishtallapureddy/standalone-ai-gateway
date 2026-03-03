@@ -131,7 +131,7 @@ docs/               # Product & architecture documentation
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - npm 9+
 
 ### Setup
@@ -141,6 +141,16 @@ git clone https://github.com/anishta_microsoft/standalone-ai-gateway.git
 cd standalone-ai-gateway
 npm install
 npm run build
+```
+
+### Portal (Web UI)
+
+The AI Gateway portal is a React SPA built with Vite and Fluent UI, providing a unified experience similar to `sre.azure.com`.
+
+```bash
+cd portal
+npm install
+npm run dev          # Start at http://localhost:5173
 ```
 
 ### Development
