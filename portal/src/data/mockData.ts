@@ -479,3 +479,36 @@ export const dashboardStats: DashboardStats = {
   totalTokens24h: 12_450_000,
   activeAlerts: 2,
 };
+
+export interface LogEntry {
+  id: string;
+  timestamp: string;
+  method: 'POST' | 'GET' | 'PUT' | 'DELETE';
+  path: string;
+  assetType: 'model' | 'tool' | 'mcp-server' | 'agent';
+  assetName: string;
+  statusCode: number;
+  latencyMs: number;
+  tokensIn?: number;
+  tokensOut?: number;
+  userId: string;
+  ipAddress: string;
+}
+
+export const recentLogs: LogEntry[] = [
+  { id: 'log-1', timestamp: '2026-03-03T23:01:12Z', method: 'POST', path: '/v1/chat/completions', assetType: 'model', assetName: 'GPT-4o', statusCode: 200, latencyMs: 1243, tokensIn: 512, tokensOut: 284, userId: 'dev-sarah@contoso.com', ipAddress: '10.0.1.42' },
+  { id: 'log-2', timestamp: '2026-03-03T23:01:10Z', method: 'POST', path: '/v1/chat/completions', assetType: 'model', assetName: 'Claude 3.5 Sonnet', statusCode: 200, latencyMs: 987, tokensIn: 256, tokensOut: 198, userId: 'agent-customer-support', ipAddress: '10.0.2.15' },
+  { id: 'log-3', timestamp: '2026-03-03T23:01:08Z', method: 'POST', path: '/mcp/crm-server/tools/lookup', assetType: 'mcp-server', assetName: 'CRM MCP Server', statusCode: 200, latencyMs: 342, userId: 'agent-customer-support', ipAddress: '10.0.2.15' },
+  { id: 'log-4', timestamp: '2026-03-03T23:01:05Z', method: 'POST', path: '/v1/chat/completions', assetType: 'model', assetName: 'GPT-4o', statusCode: 429, latencyMs: 12, tokensIn: 0, tokensOut: 0, userId: 'dev-mike@contoso.com', ipAddress: '10.0.1.87' },
+  { id: 'log-5', timestamp: '2026-03-03T23:01:03Z', method: 'POST', path: '/tools/billing-service/invoke', assetType: 'tool', assetName: 'Billing Service', statusCode: 200, latencyMs: 156, userId: 'agent-sales-intel', ipAddress: '10.0.3.22' },
+  { id: 'log-6', timestamp: '2026-03-03T23:01:01Z', method: 'POST', path: '/v1/chat/completions', assetType: 'model', assetName: 'Gemini 1.5 Pro', statusCode: 200, latencyMs: 1567, tokensIn: 1024, tokensOut: 512, userId: 'agent-hr-onboarding', ipAddress: '10.0.4.11' },
+  { id: 'log-7', timestamp: '2026-03-03T23:00:58Z', method: 'POST', path: '/mcp/devops-tools/tools/create-issue', assetType: 'mcp-server', assetName: 'DevOps Tools MCP', statusCode: 200, latencyMs: 445, userId: 'agent-devops-assist', ipAddress: '10.0.2.33' },
+  { id: 'log-8', timestamp: '2026-03-03T23:00:55Z', method: 'POST', path: '/v1/chat/completions', assetType: 'model', assetName: 'GPT-4o-mini', statusCode: 200, latencyMs: 678, tokensIn: 384, tokensOut: 156, userId: 'dev-sarah@contoso.com', ipAddress: '10.0.1.42' },
+  { id: 'log-9', timestamp: '2026-03-03T23:00:52Z', method: 'POST', path: '/agents/customer-support/invoke', assetType: 'agent', assetName: 'Customer Support Agent', statusCode: 200, latencyMs: 3421, userId: 'app-helpdesk', ipAddress: '10.0.5.100' },
+  { id: 'log-10', timestamp: '2026-03-03T23:00:50Z', method: 'POST', path: '/v1/chat/completions', assetType: 'model', assetName: 'Claude 3.5 Sonnet', statusCode: 200, latencyMs: 1102, tokensIn: 768, tokensOut: 345, userId: 'dev-alex@contoso.com', ipAddress: '10.0.1.55' },
+  { id: 'log-11', timestamp: '2026-03-03T23:00:47Z', method: 'POST', path: '/tools/slack-connector/send', assetType: 'tool', assetName: 'Slack Connector', statusCode: 200, latencyMs: 234, userId: 'agent-devops-assist', ipAddress: '10.0.2.33' },
+  { id: 'log-12', timestamp: '2026-03-03T23:00:44Z', method: 'POST', path: '/v1/chat/completions', assetType: 'model', assetName: 'GPT-4o', statusCode: 200, latencyMs: 1389, tokensIn: 640, tokensOut: 312, userId: 'dev-mike@contoso.com', ipAddress: '10.0.1.87' },
+  { id: 'log-13', timestamp: '2026-03-03T23:00:41Z', method: 'POST', path: '/mcp/enterprise-search/tools/query', assetType: 'mcp-server', assetName: 'Enterprise Search MCP', statusCode: 500, latencyMs: 5002, userId: 'agent-sales-intel', ipAddress: '10.0.3.22' },
+  { id: 'log-14', timestamp: '2026-03-03T23:00:38Z', method: 'POST', path: '/v1/embeddings', assetType: 'model', assetName: 'GPT-4o-mini', statusCode: 200, latencyMs: 89, tokensIn: 128, tokensOut: 0, userId: 'app-knowledge-index', ipAddress: '10.0.6.10' },
+  { id: 'log-15', timestamp: '2026-03-03T23:00:35Z', method: 'POST', path: '/tools/weather-api/forecast', assetType: 'tool', assetName: 'Weather API', statusCode: 200, latencyMs: 312, userId: 'agent-customer-support', ipAddress: '10.0.2.15' },
+];
