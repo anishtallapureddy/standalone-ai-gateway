@@ -22,6 +22,12 @@ import {
   Play24Filled,
   DocumentBulletList24Regular,
   DocumentBulletList24Filled,
+  Search24Regular,
+  Search24Filled,
+  Folder24Regular,
+  Folder24Filled,
+  ShieldCheckmark24Regular,
+  ShieldCheckmark24Filled,
 } from '@fluentui/react-icons';
 
 const useStyles = makeStyles({
@@ -148,6 +154,13 @@ const navItems: NavItem[] = [
     activeIcon: <Play24Filled />,
   },
   {
+    path: '/catalog',
+    label: 'Catalog',
+    icon: <Search24Regular />,
+    activeIcon: <Search24Filled />,
+    section: 'Discovery',
+  },
+  {
     path: '/models',
     label: 'Models',
     icon: <BrainCircuit24Regular />,
@@ -173,11 +186,24 @@ const navItems: NavItem[] = [
     activeIcon: <Bot24Filled />,
   },
   {
+    path: '/namespaces',
+    label: 'Namespaces',
+    icon: <Folder24Regular />,
+    activeIcon: <Folder24Filled />,
+    section: 'Organization',
+  },
+  {
     path: '/policies',
     label: 'Policies',
     icon: <Shield24Regular />,
     activeIcon: <Shield24Filled />,
     section: 'Governance',
+  },
+  {
+    path: '/governance',
+    label: 'Design-Time Rules',
+    icon: <ShieldCheckmark24Regular />,
+    activeIcon: <ShieldCheckmark24Filled />,
   },
   {
     path: '/logs',
