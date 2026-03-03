@@ -10,7 +10,6 @@ import Logs from './pages/Logs'
 import Playground from './pages/Playground'
 import Catalog from './pages/Catalog'
 import Namespaces from './pages/Namespaces'
-import Governance from './pages/Governance'
 
 function App() {
   return (
@@ -25,7 +24,6 @@ function App() {
         <Route path="agents" element={<Agents />} />
         <Route path="namespaces" element={<Namespaces />} />
         <Route path="policies" element={<Policies />} />
-        <Route path="governance" element={<Governance />} />
         <Route path="logs" element={<Logs />} />
       </Route>
     </Routes>

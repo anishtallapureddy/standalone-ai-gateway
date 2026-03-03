@@ -642,3 +642,32 @@ export const pendingApprovals: PendingApproval[] = [
   { id: 'appr-4', assetName: 'Billing Service', assetType: 'tool', namespace: 'finance', requestedBy: 'dev-alex@contoso.com', requestedAt: '2026-03-02T10:00:00Z', action: 'update', ruleTriggered: 'Production approval required', status: 'approved' },
   { id: 'appr-5', assetName: 'Test Model v2', assetType: 'model', namespace: 'ai-research', requestedBy: 'dev-mike@contoso.com', requestedAt: '2026-03-01T09:00:00Z', action: 'register', ruleTriggered: 'Require description', status: 'rejected' },
 ];
+
+// --- RAI Guardrails ---
+
+export interface RAIGuardrail {
+  id: string;
+  name: string;
+  description: string;
+  category: 'content-safety' | 'pii-protection' | 'jailbreak' | 'hallucination' | 'fairness' | 'transparency';
+  target: 'input' | 'output' | 'both';
+  severity: 'block' | 'warn' | 'log';
+  enabled: boolean;
+  appliesTo: string[];
+  triggersToday: number;
+  blockedToday: number;
+  lastTriggered?: string;
+}
+
+export const raiGuardrails: RAIGuardrail[] = [
+  { id: 'rai-1', name: 'Hate & Violence Filter', description: 'Blocks prompts and responses containing hate speech, violent content, or threats. Uses Azure Content Safety categories.', category: 'content-safety', target: 'both', severity: 'block', enabled: true, appliesTo: ['models', 'agents'], triggersToday: 12, blockedToday: 12, lastTriggered: '2026-03-03T22:45:00Z' },
+  { id: 'rai-2', name: 'Self-Harm Prevention', description: 'Detects and blocks content related to self-harm or suicide, redirecting to support resources when appropriate.', category: 'content-safety', target: 'both', severity: 'block', enabled: true, appliesTo: ['models', 'agents'], triggersToday: 2, blockedToday: 2, lastTriggered: '2026-03-03T19:10:00Z' },
+  { id: 'rai-3', name: 'PII Redaction — Input', description: 'Scans inbound prompts for PII (SSN, credit cards, emails, phone numbers) and redacts before forwarding to model.', category: 'pii-protection', target: 'input', severity: 'warn', enabled: true, appliesTo: ['models', 'agents', 'tools'], triggersToday: 34, blockedToday: 0, lastTriggered: '2026-03-03T23:01:00Z' },
+  { id: 'rai-4', name: 'PII Redaction — Output', description: 'Scans model responses for inadvertently generated PII and masks it before returning to the caller.', category: 'pii-protection', target: 'output', severity: 'warn', enabled: true, appliesTo: ['models', 'agents'], triggersToday: 8, blockedToday: 0, lastTriggered: '2026-03-03T22:30:00Z' },
+  { id: 'rai-5', name: 'Jailbreak Detection', description: 'Detects prompt injection and jailbreak attempts using pattern matching and classifier model. Blocks suspicious requests.', category: 'jailbreak', target: 'input', severity: 'block', enabled: true, appliesTo: ['models', 'agents'], triggersToday: 7, blockedToday: 7, lastTriggered: '2026-03-03T21:55:00Z' },
+  { id: 'rai-6', name: 'Indirect Prompt Injection Guard', description: 'Scans tool outputs and grounding data for embedded instructions that could manipulate agent behavior.', category: 'jailbreak', target: 'input', severity: 'block', enabled: true, appliesTo: ['agents'], triggersToday: 3, blockedToday: 3, lastTriggered: '2026-03-03T20:40:00Z' },
+  { id: 'rai-7', name: 'Groundedness Check', description: 'Validates that model responses are grounded in provided context and flags potential hallucinations.', category: 'hallucination', target: 'output', severity: 'warn', enabled: true, appliesTo: ['models', 'agents'], triggersToday: 15, blockedToday: 0, lastTriggered: '2026-03-03T23:12:00Z' },
+  { id: 'rai-8', name: 'Sexual Content Filter', description: 'Blocks generation and passthrough of sexually explicit content across all model interactions.', category: 'content-safety', target: 'both', severity: 'block', enabled: true, appliesTo: ['models', 'agents'], triggersToday: 4, blockedToday: 4, lastTriggered: '2026-03-03T18:30:00Z' },
+  { id: 'rai-9', name: 'Bias & Fairness Monitor', description: 'Logs outputs that exhibit demographic bias patterns. Sends alerts but does not block responses.', category: 'fairness', target: 'output', severity: 'log', enabled: true, appliesTo: ['models', 'agents'], triggersToday: 6, blockedToday: 0, lastTriggered: '2026-03-03T17:15:00Z' },
+  { id: 'rai-10', name: 'AI Disclosure Watermark', description: 'Appends AI-generated disclosure metadata to all model outputs for transparency compliance.', category: 'transparency', target: 'output', severity: 'log', enabled: true, appliesTo: ['models', 'agents', 'tools'], triggersToday: 1240, blockedToday: 0, lastTriggered: '2026-03-03T23:50:00Z' },
+];

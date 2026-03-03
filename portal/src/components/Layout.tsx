@@ -26,8 +26,6 @@ import {
   Search24Filled,
   Folder24Regular,
   Folder24Filled,
-  ShieldCheckmark24Regular,
-  ShieldCheckmark24Filled,
 } from '@fluentui/react-icons';
 
 const useStyles = makeStyles({
@@ -198,12 +196,6 @@ const navItems: NavItem[] = [
     icon: <Shield24Regular />,
     activeIcon: <Shield24Filled />,
     section: 'Governance',
-  },
-  {
-    path: '/governance',
-    label: 'Design-Time Rules',
-    icon: <ShieldCheckmark24Regular />,
-    activeIcon: <ShieldCheckmark24Filled />,
   },
   {
     path: '/logs',
