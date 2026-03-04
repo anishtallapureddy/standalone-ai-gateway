@@ -501,3 +501,174 @@ Lifecycle: published
 3. **Access is role-based**
 4. **Policies enforce runtime safety**
 5. **Developers can build workloads without complex configuration**
+
+---
+
+## Asset Access Rules
+
+Asset access is controlled through **six core policy types** that determine which assets exist, who can see them, and who can use them.
+
+### Policy Types
+
+| Policy | Purpose |
+| --- | --- |
+| Asset Visibility Policy | Who can see an asset in the catalog |
+| Namespace Access Policy | Which namespaces can import and use an asset |
+| Identity Access Policy | Which users or services can invoke an asset |
+| Usage Requirement Policy | Conditions required before an asset can be used |
+| Asset Approval Policy | Whether an asset requires admin approval before usage |
+| Credential Scope Policy | Which credentials can be used with assets and where |
+
+---
+
+### 1. Asset Visibility Policy
+
+Controls who can discover or see an asset in the catalog.
+
+Visibility levels:
+
+```
+Private        — only the owner can see it
+Namespace      — visible within allowed namespaces
+Organization   — visible across all namespaces
+Public         — publicly discoverable (optional)
+```
+
+Example:
+
+```yaml
+visibility_policy:
+  asset: salesforce-tool
+  visibility: namespace
+  allowed_namespaces:
+    - retail-support
+```
+
+---
+
+### 2. Namespace Access Policy
+
+Controls which namespaces can import and use an asset.
+
+```yaml
+namespace_access_policy:
+  asset: gpt4o
+  allowed_namespaces:
+    - retail-support
+    - retail-analytics
+```
+
+Assets are **never usable unless explicitly allowed in a namespace**.
+
+---
+
+### 3. Identity Access Policy
+
+Controls which users or service identities can invoke the asset.
+
+Identities include: users, groups, service identities, AI keys.
+
+```yaml
+identity_access_policy:
+  asset: salesforce-tool
+  allowed_roles:
+    - ai-developer
+    - namespace-admin
+```
+
+Service identity example:
+
+```yaml
+identity_access_policy:
+  asset: support-agent
+  allowed_service_identities:
+    - support-agent-runtime
+```
+
+---
+
+### 4. Usage Requirement Policy
+
+Defines conditions required before an asset can be used.
+
+```yaml
+usage_requirements:
+  asset: gpt4o
+  requirements:
+    - content_safety_enabled
+    - token_quota_defined
+```
+
+Tool example:
+
+```yaml
+usage_requirements:
+  asset: salesforce-tool
+  requirements:
+    - oauth_credential_required
+    - namespace_admin_approval
+```
+
+---
+
+### 5. Asset Approval Policy
+
+Controls whether an asset requires admin approval before usage.
+
+```yaml
+approval_policy:
+  asset: external-tool
+  approval_required: true
+  approver_role: platform-admin
+```
+
+Useful for external APIs, SaaS connectors, and risky tools.
+
+---
+
+### 6. Credential Scope Policy
+
+Controls which credentials can be used with assets.
+
+```yaml
+credential_policy:
+  asset: salesforce-tool
+  allowed_credentials:
+    - salesforce-prod
+```
+
+Credentials are scoped to: Organization, Namespace, or Environment.
+
+---
+
+### Asset Access Governance Flow
+
+```
+Admin registers asset
+     ↓
+Sets visibility policy
+     ↓
+Defines allowed namespaces
+     ↓
+Defines identity access
+     ↓
+Sets usage requirements
+     ↓
+Configures credentials
+     ↓
+Approves asset (if required)
+     ↓
+Namespaces import asset
+     ↓
+Developers use asset
+```
+
+---
+
+### Key Principles
+
+1. **Assets are never usable unless explicitly allowed in a namespace**
+2. **Assets are discoverable but controlled**
+3. **Users inherit permissions through namespaces**
+4. **Assets require explicit approval for sensitive use**
+5. **Credentials are never exposed directly**

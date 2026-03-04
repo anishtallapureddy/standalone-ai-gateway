@@ -20,7 +20,6 @@ import {
   Dismiss24Regular,
   CheckmarkCircle24Regular,
   DismissCircle24Regular,
-  Warning24Regular,
   Info24Regular,
   ErrorCircle24Regular,
   ArrowSync24Regular,
@@ -33,11 +32,11 @@ import {
 } from '@fluentui/react-icons';
 import {
   policies,
-  governanceRules,
   pendingApprovals,
   raiGuardrails,
+  assetAccessRules,
 } from '../data/mockData';
-import type { PolicyCategory } from '../data/mockData';
+import type { PolicyCategory, AccessRuleType } from '../data/mockData';
 
 const useStyles = makeStyles({
   stats: {
@@ -179,21 +178,6 @@ const policyCategoryConfig: Record<PolicyCategory, { icon: React.ReactElement; l
   'agent-execution': { icon: <Bot24Regular />, label: 'Agent Execution', color: '#38bdf8', bg: '#1a2d3d' },
 };
 
-const severityConfig: Record<string, { icon: React.ReactElement; color: string; bg: string }> = {
-  error: { icon: <ErrorCircle24Regular />, color: '#f87171', bg: '#3d1a1a' },
-  warning: { icon: <Warning24Regular />, color: '#fbbf24', bg: '#3d2800' },
-  info: { icon: <Info24Regular />, color: '#60cdff', bg: '#1a2d4d' },
-};
-
-const categoryLabels: Record<string, string> = {
-  registration: 'Registration',
-  schema: 'Schema Validation',
-  approval: 'Approval Workflow',
-  naming: 'Naming Convention',
-  security: 'Security',
-  compliance: 'Compliance',
-};
-
 const assetTypeColors: Record<string, 'brand' | 'success' | 'informative' | 'warning' | 'danger'> = {
   model: 'brand',
   tool: 'informative',
@@ -223,13 +207,21 @@ const severityActionConfig: Record<string, { color: string; bg: string; label: s
   log: { color: '#a78bfa', bg: '#1e1a3d', label: '📝 Log' },
 };
 
+const accessRuleTypeConfig: Record<AccessRuleType, { icon: React.ReactElement; label: string; color: string; bg: string; description: string }> = {
+  visibility: { icon: <Eye24Regular />, label: 'Visibility', color: '#38bdf8', bg: '#1a2d3d', description: 'Who can see an asset in the catalog' },
+  'namespace-access': { icon: <ShieldCheckmark24Regular />, label: 'Namespace Access', color: '#4ade80', bg: '#1a3a2a', description: 'Which namespaces can import and use an asset' },
+  'identity-access': { icon: <Key24Regular />, label: 'Identity Access', color: '#c084fc', bg: '#2d1a4d', description: 'Which users or services can invoke an asset' },
+  'usage-requirements': { icon: <CheckmarkCircle24Regular />, label: 'Usage Requirements', color: '#fbbf24', bg: '#3d2800', description: 'Conditions required before an asset can be used' },
+  approval: { icon: <Clock24Regular />, label: 'Approval', color: '#fb923c', bg: '#3d2200', description: 'Whether an asset requires admin approval before usage' },
+  'credential-scope': { icon: <LockClosed24Regular />, label: 'Credential Scope', color: '#f87171', bg: '#3d1a1a', description: 'Which credentials can be used with assets and where' },
+};
+
 const Policies: React.FC = () => {
   const styles = useStyles();
   const [tab, setTab] = useState('runtime');
 
   const runtimePolicies = policies.filter(p => p.phase === 'runtime');
   const pendingCount = pendingApprovals.filter(a => a.status === 'pending').length;
-  const totalViolations = governanceRules.reduce((sum, r) => sum + r.violations24h, 0);
   const raiBlockedToday = raiGuardrails.reduce((sum, g) => sum + g.blockedToday, 0);
   const raiTriggersToday = raiGuardrails.reduce((sum, g) => sum + g.triggersToday, 0);
 
@@ -242,8 +234,8 @@ const Policies: React.FC = () => {
           <div className={styles.statLabel}>Runtime Rules</div>
         </Card>
         <Card className={styles.statCard}>
-          <div className={styles.statValue} style={{ color: '#6366f1' }}>{governanceRules.length}</div>
-          <div className={styles.statLabel}>Design-Time Rules</div>
+          <div className={styles.statValue} style={{ color: '#6366f1' }}>{assetAccessRules.length}</div>
+          <div className={styles.statLabel}>Asset Access Rules</div>
         </Card>
         <Card className={styles.statCard}>
           <div className={styles.statValue} style={{ color: '#ef4444' }}>{raiGuardrails.length}</div>
@@ -254,7 +246,7 @@ const Policies: React.FC = () => {
           <div className={styles.statLabel}>Pending Approvals</div>
         </Card>
         <Card className={styles.statCard}>
-          <div className={styles.statValue} style={{ color: '#ef4444' }}>{totalViolations + raiBlockedToday}</div>
+          <div className={styles.statValue} style={{ color: '#ef4444' }}>{raiBlockedToday}</div>
           <div className={styles.statLabel}>Violations (24h)</div>
         </Card>
       </div>
@@ -266,7 +258,7 @@ const Policies: React.FC = () => {
             Runtime Rules ({runtimePolicies.length})
           </Tab>
           <Tab value="design-time" icon={<ShieldCheckmark24Regular />}>
-            Asset Governance ({governanceRules.length})
+            Asset Access Rules ({assetAccessRules.length})
           </Tab>
           <Tab value="rai" icon={<HeartPulse24Regular />}>
             RAI Guardrails ({raiGuardrails.length})
@@ -342,12 +334,12 @@ const Policies: React.FC = () => {
         </div>
       )}
 
-      {/* =================== DESIGN-TIME RULES TAB =================== */}
+      {/* =================== ASSET ACCESS RULES TAB =================== */}
       {tab === 'design-time' && (
         <div>
           <div className={styles.toolbar}>
             <Text size={300} style={{ color: '#999' }}>
-              Asset lifecycle rules enforced when assets are registered, updated, published, or deprecated
+              {assetAccessRules.length} access rules across 6 policy types · Controls which assets exist, who can see them, and who can use them
             </Text>
             <div style={{ display: 'flex', gap: '8px' }}>
               {pendingCount > 0 && (
@@ -359,62 +351,127 @@ const Policies: React.FC = () => {
                   {pendingCount} Pending Approvals
                 </Button>
               )}
-              <Button appearance="primary" icon={<Add24Regular />}>Create Rule</Button>
+              <Button appearance="primary" icon={<Add24Regular />}>Create Access Rule</Button>
             </div>
           </div>
 
-          {governanceRules.map((rule) => {
-            const sev = severityConfig[rule.severity] || severityConfig.info;
+          {(['visibility', 'namespace-access', 'identity-access', 'usage-requirements', 'approval', 'credential-scope'] as AccessRuleType[]).map(ruleType => {
+            const rules = assetAccessRules.filter(r => r.type === ruleType);
+            if (rules.length === 0) return null;
+            const typeConfig = accessRuleTypeConfig[ruleType];
+
             return (
-              <Card key={rule.id} className={styles.ruleCard}>
-                <div className={styles.ruleHeader}>
-                  <div className={styles.ruleLeft}>
-                    <div className={styles.ruleIcon} style={{ backgroundColor: sev.bg, color: sev.color }}>
-                      {sev.icon}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Text weight="semibold" size={300}>{rule.name}</Text>
-                        <Badge appearance="outline" size="small">{categoryLabels[rule.category]}</Badge>
-                        <Badge appearance="filled" size="small" style={{ backgroundColor: sev.color, color: '#fff' }}>
-                          {rule.severity}
-                        </Badge>
-                        {rule.autoEnforce && (
-                          <Badge appearance="tint" color="brand" size="small">auto-enforce</Badge>
-                        )}
-                      </div>
-                      <Text size={200} style={{ color: '#999', marginTop: '4px', display: 'block' }}>
-                        {rule.description}
-                      </Text>
-                      <div className={styles.ruleMeta}>
-                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                          <Text size={200} style={{ color: '#999' }}>Applies to:</Text>
-                          {rule.appliesTo.map(t => (
-                            <Badge key={t} appearance="tint" color={assetTypeColors[t]} size="small">{t}</Badge>
-                          ))}
-                        </div>
-                        {rule.namespaces.length > 0 && (
-                          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                            <Text size={200} style={{ color: '#999' }}>Namespaces:</Text>
-                            {rule.namespaces.map(ns => (
-                              <Badge key={ns} appearance="outline" size="small">{ns}</Badge>
-                            ))}
-                          </div>
-                        )}
-                        {rule.namespaces.length === 0 && (
-                          <Text size={200} style={{ color: '#999' }}>All namespaces</Text>
-                        )}
-                        {rule.violations24h > 0 && (
-                          <Badge appearance="filled" color="danger" size="small">
-                            {rule.violations24h} violation{rule.violations24h > 1 ? 's' : ''} (24h)
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
+              <div key={ruleType} style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                  <div style={{
+                    width: '32px', height: '32px', borderRadius: '8px',
+                    backgroundColor: typeConfig.bg, color: typeConfig.color,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {typeConfig.icon}
                   </div>
-                  <Switch checked={rule.enabled} />
+                  <div>
+                    <Text weight="semibold" size={400}>{typeConfig.label}</Text>
+                    <Text size={200} style={{ color: '#999', display: 'block' }}>{typeConfig.description}</Text>
+                  </div>
+                  <Badge appearance="outline" size="small">{rules.length}</Badge>
                 </div>
-              </Card>
+
+                {rules.map(rule => (
+                  <Card key={rule.id} className={styles.ruleCard}>
+                    <div className={styles.ruleHeader}>
+                      <div className={styles.ruleLeft}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Text weight="semibold" size={300}>{rule.name}</Text>
+                            <Badge appearance="tint" color={assetTypeColors[rule.assetType] || 'informative'} size="small">
+                              {rule.assetType}
+                            </Badge>
+                            {rule.namespace !== 'global' && (
+                              <Badge appearance="outline" size="small" style={{ fontFamily: 'monospace' }}>
+                                {rule.namespace}
+                              </Badge>
+                            )}
+                          </div>
+                          <Text size={200} style={{ color: '#999', marginTop: '4px', display: 'block' }}>
+                            {rule.description}
+                          </Text>
+                          <div className={styles.ruleMeta}>
+                            {rule.type === 'visibility' && (
+                              <Badge appearance="filled" size="small" style={{
+                                backgroundColor: rule.config.visibility === 'public' ? '#1a3a2a' : rule.config.visibility === 'organization' ? '#1a2d3d' : rule.config.visibility === 'namespace' ? '#3d2800' : '#3d1a1a',
+                                color: rule.config.visibility === 'public' ? '#4ade80' : rule.config.visibility === 'organization' ? '#38bdf8' : rule.config.visibility === 'namespace' ? '#fbbf24' : '#f87171',
+                              }}>
+                                {String(rule.config.visibility)}
+                              </Badge>
+                            )}
+                            {Boolean(rule.config.allowed_namespaces) && (
+                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                <Text size={200} style={{ color: '#999' }}>Namespaces:</Text>
+                                {(rule.config.allowed_namespaces as string[]).map(ns => (
+                                  <Badge key={ns} appearance="outline" size="small" style={{ fontFamily: 'monospace' }}>{ns}</Badge>
+                                ))}
+                              </div>
+                            )}
+                            {Boolean(rule.config.allowed_roles) && (
+                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                <Text size={200} style={{ color: '#999' }}>Roles:</Text>
+                                {(rule.config.allowed_roles as string[]).map(role => (
+                                  <Badge key={role} appearance="tint" color="brand" size="small">{role}</Badge>
+                                ))}
+                              </div>
+                            )}
+                            {Boolean(rule.config.allowed_service_identities) && (
+                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                <Text size={200} style={{ color: '#999' }}>Identities:</Text>
+                                {(rule.config.allowed_service_identities as string[]).map(id => (
+                                  <Badge key={id} appearance="tint" color="informative" size="small">{id}</Badge>
+                                ))}
+                              </div>
+                            )}
+                            {Boolean(rule.config.requirements) && (
+                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                <Text size={200} style={{ color: '#999' }}>Requires:</Text>
+                                {(rule.config.requirements as string[]).map(req => (
+                                  <Badge key={req} appearance="tint" color="warning" size="small">{req.replace(/_/g, ' ')}</Badge>
+                                ))}
+                              </div>
+                            )}
+                            {Boolean(rule.config.approval_required) && (
+                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                <Badge appearance="tint" color="danger" size="small">
+                                  Approver: {String(rule.config.approver_role)}
+                                </Badge>
+                                {Boolean(rule.config.environments) && (
+                                  <Badge appearance="outline" size="small">
+                                    {(rule.config.environments as string[]).join(', ')}
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                            {Boolean(rule.config.credential) && (
+                              <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                <Text size={200} style={{ color: '#999' }}>Credential:</Text>
+                                <Badge appearance="tint" color="danger" size="small" style={{ fontFamily: 'monospace' }}>
+                                  {String(rule.config.credential)}
+                                </Badge>
+                                <Badge appearance="outline" size="small">scope: {String(rule.config.scope)}</Badge>
+                                {rule.config.environment !== 'all' && (
+                                  <Badge appearance="outline" size="small">env: {String(rule.config.environment)}</Badge>
+                                )}
+                              </div>
+                            )}
+                            <Badge appearance="tint" size="small" color={rule.namespace === 'global' ? 'warning' : 'informative'}>
+                              {rule.namespace === 'global' ? 'All namespaces' : rule.namespace}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <Switch checked={rule.enabled} />
+                    </div>
+                  </Card>
+                ))}
+              </div>
             );
           })}
         </div>
@@ -430,7 +487,7 @@ const Policies: React.FC = () => {
                 size="small"
                 onClick={() => setTab('design-time')}
               >
-                ← Back to Rules
+                ← Back to Access Rules
               </Button>
               <Text size={300} style={{ color: '#999' }}>
                 Review and approve asset changes that triggered governance rules

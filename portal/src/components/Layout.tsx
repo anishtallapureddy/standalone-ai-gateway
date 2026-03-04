@@ -494,7 +494,7 @@ const Layout: React.FC<LayoutProps> = ({ onSignOut }) => {
     '/workflows': 'Multi-step orchestration patterns combining models, tools, and logic',
     '/namespaces': 'Organize assets into team and project boundaries',
     '/access': 'Users, service identities, API keys, access requests, and audit log',
-    '/policies': 'Runtime rules, design-time governance, and responsible AI guardrails',
+    '/policies': 'Runtime policies, asset access rules, and responsible AI guardrails',
     '/analytics': 'Token consumption, cost attribution, and usage analytics across workloads',
     '/logs': 'Real-time request tracing and observability across all gateway traffic',
   };

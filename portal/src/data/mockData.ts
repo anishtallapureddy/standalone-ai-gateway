@@ -875,6 +875,52 @@ export const governanceRules: GovernanceRule[] = [
   { id: 'gov-10', name: 'Agent model binding review', description: 'New model bindings on production agents require review by platform team', category: 'approval', appliesTo: ['agent'], severity: 'error', enabled: true, autoEnforce: true, namespaces: ['customer-ops', 'sales'], lastTriggered: '2026-03-03T17:00:00Z', violations24h: 1 },
 ];
 
+// --- Asset Access Rules (6 policy types from governance spec) ---
+
+export type AccessRuleType = 'visibility' | 'namespace-access' | 'identity-access' | 'usage-requirements' | 'approval' | 'credential-scope';
+
+export interface AssetAccessRule {
+  id: string;
+  name: string;
+  description: string;
+  type: AccessRuleType;
+  assetName: string;
+  assetType: AssetType;
+  enabled: boolean;
+  namespace: string;
+  config: Record<string, unknown>;
+  createdAt: string;
+}
+
+export const assetAccessRules: AssetAccessRule[] = [
+  // ─── Visibility Policies ───
+  { id: 'aar-v1', name: 'GPT-4o — Organization Visibility', description: 'GPT-4o is visible across all namespaces in the organization catalog. Any team can discover and request access.', type: 'visibility', assetName: 'GPT-4o', assetType: 'model', enabled: true, namespace: 'ai-platform', config: { visibility: 'organization' }, createdAt: '2026-02-01T10:00:00Z' },
+  { id: 'aar-v2', name: 'Salesforce Tool — Namespace Visibility', description: 'Salesforce CRM API only visible within the customer-ops namespace. Other teams cannot discover it.', type: 'visibility', assetName: 'Salesforce CRM API', assetType: 'tool', enabled: true, namespace: 'customer-ops', config: { visibility: 'namespace', allowed_namespaces: ['customer-ops'] }, createdAt: '2026-02-05T10:00:00Z' },
+  { id: 'aar-v3', name: 'Fraud Detection Model — Private', description: 'Internal fraud scoring model is private to the owner. Must request access explicitly.', type: 'visibility', assetName: 'Fraud Detection Model', assetType: 'model', enabled: true, namespace: 'fraud-detection', config: { visibility: 'private' }, createdAt: '2026-02-10T10:00:00Z' },
+  { id: 'aar-v4', name: 'Weather API — Public', description: 'Weather API is publicly discoverable and usable from any namespace without approval.', type: 'visibility', assetName: 'Weather API', assetType: 'tool', enabled: true, namespace: 'external-data', config: { visibility: 'public' }, createdAt: '2026-02-15T10:00:00Z' },
+  // ─── Namespace Access Policies ───
+  { id: 'aar-n1', name: 'GPT-4o — Allowed Namespaces', description: 'GPT-4o can be imported by retail-support, retail-analytics, and customer-ops namespaces.', type: 'namespace-access', assetName: 'GPT-4o', assetType: 'model', enabled: true, namespace: 'ai-platform', config: { allowed_namespaces: ['retail-support', 'retail-analytics', 'customer-ops', 'engineering'] }, createdAt: '2026-02-01T10:00:00Z' },
+  { id: 'aar-n2', name: 'Salesforce Tool — Retail Only', description: 'Salesforce CRM API restricted to retail-support namespace. Prevents accidental access from other teams.', type: 'namespace-access', assetName: 'Salesforce CRM API', assetType: 'tool', enabled: true, namespace: 'customer-ops', config: { allowed_namespaces: ['retail-support'] }, createdAt: '2026-02-05T10:00:00Z' },
+  { id: 'aar-n3', name: 'Llama 3.1 70B — Research Only', description: 'Open-weight model restricted to ai-research namespace for evaluation purposes.', type: 'namespace-access', assetName: 'Llama 3.1 70B', assetType: 'model', enabled: true, namespace: 'ai-research', config: { allowed_namespaces: ['ai-research'] }, createdAt: '2026-02-20T10:00:00Z' },
+  { id: 'aar-n4', name: 'Payment Gateway — Finance Only', description: 'Stripe payment processing tool restricted to finance namespace due to PCI compliance.', type: 'namespace-access', assetName: 'Payment Gateway', assetType: 'tool', enabled: true, namespace: 'finance', config: { allowed_namespaces: ['finance'] }, createdAt: '2026-02-22T10:00:00Z' },
+  // ─── Identity Access Policies ───
+  { id: 'aar-i1', name: 'Salesforce — Developer & Admin Only', description: 'Only AI Developers and Namespace Admins can invoke the Salesforce CRM API. Viewers have read-only catalog access.', type: 'identity-access', assetName: 'Salesforce CRM API', assetType: 'tool', enabled: true, namespace: 'customer-ops', config: { allowed_roles: ['ai-developer', 'namespace-admin'] }, createdAt: '2026-02-05T10:00:00Z' },
+  { id: 'aar-i2', name: 'Support Agent — Runtime Identity', description: 'Customer Support Agent can only be invoked by the support-agent-runtime service identity.', type: 'identity-access', assetName: 'Customer Support Agent', assetType: 'agent', enabled: true, namespace: 'customer-ops', config: { allowed_service_identities: ['support-agent-runtime', 'app-helpdesk'] }, createdAt: '2026-02-20T10:00:00Z' },
+  { id: 'aar-i3', name: 'GPT-4o — All Authenticated Users', description: 'GPT-4o accessible to any authenticated user with a valid Entra token or API key.', type: 'identity-access', assetName: 'GPT-4o', assetType: 'model', enabled: true, namespace: 'ai-platform', config: { allowed_roles: ['ai-developer', 'namespace-admin', 'viewer'] }, createdAt: '2026-02-01T10:00:00Z' },
+  // ─── Usage Requirement Policies ───
+  { id: 'aar-u1', name: 'Salesforce — OAuth Required', description: 'Salesforce CRM API requires OAuth credential and namespace admin approval before usage.', type: 'usage-requirements', assetName: 'Salesforce CRM API', assetType: 'tool', enabled: true, namespace: 'customer-ops', config: { requirements: ['oauth_credential_required', 'namespace_admin_approval'] }, createdAt: '2026-02-05T10:00:00Z' },
+  { id: 'aar-u2', name: 'GPT-4o — Safety & Quota Required', description: 'GPT-4o requires content safety policy enabled and token quota defined before use.', type: 'usage-requirements', assetName: 'GPT-4o', assetType: 'model', enabled: true, namespace: 'ai-platform', config: { requirements: ['content_safety_enabled', 'token_quota_defined'] }, createdAt: '2026-02-01T10:00:00Z' },
+  { id: 'aar-u3', name: 'Support Agent — Audit Logging', description: 'Customer Support Agent requires audit logging enabled in the namespace.', type: 'usage-requirements', assetName: 'Customer Support Agent', assetType: 'agent', enabled: true, namespace: 'customer-ops', config: { requirements: ['audit_logging_enabled', 'content_safety_enabled'] }, createdAt: '2026-02-20T10:00:00Z' },
+  // ─── Approval Policies ───
+  { id: 'aar-a1', name: 'External Tools — Admin Approval', description: 'All external API tools and SaaS connectors require platform admin approval before registration.', type: 'approval', assetName: 'All External Tools', assetType: 'tool', enabled: true, namespace: 'global', config: { approval_required: true, approver_role: 'platform-admin' }, createdAt: '2026-02-10T10:00:00Z' },
+  { id: 'aar-a2', name: 'Production Agents — Namespace Admin', description: 'Agents deployed to production namespaces require namespace admin sign-off.', type: 'approval', assetName: 'Production Agents', assetType: 'agent', enabled: true, namespace: 'global', config: { approval_required: true, approver_role: 'namespace-admin', environments: ['production'] }, createdAt: '2026-02-15T10:00:00Z' },
+  { id: 'aar-a3', name: 'Sensitive Models — Platform Approval', description: 'Models marked as sensitive (PII, regulated data) require platform admin approval.', type: 'approval', assetName: 'Sensitive Models', assetType: 'model', enabled: true, namespace: 'global', config: { approval_required: true, approver_role: 'platform-admin', condition: 'pii_handling' }, createdAt: '2026-02-18T10:00:00Z' },
+  // ─── Credential Scope Policies ───
+  { id: 'aar-c1', name: 'Salesforce Credential — Prod Only', description: 'Salesforce production credential scoped to customer-ops namespace, production environment only.', type: 'credential-scope', assetName: 'salesforce-prod', assetType: 'tool', enabled: true, namespace: 'customer-ops', config: { credential: 'salesforce-prod', scope: 'namespace', environment: 'production' }, createdAt: '2026-02-05T10:00:00Z' },
+  { id: 'aar-c2', name: 'Stripe Credential — Finance Only', description: 'Stripe API credential restricted to finance namespace. Cannot be used from other namespaces.', type: 'credential-scope', assetName: 'stripe-api-key', assetType: 'tool', enabled: true, namespace: 'finance', config: { credential: 'stripe-api-key', scope: 'namespace', environment: 'all' }, createdAt: '2026-02-22T10:00:00Z' },
+  { id: 'aar-c3', name: 'Azure OpenAI Key — Org Scope', description: 'Azure OpenAI service key available at organization level. All namespaces can use it with managed identity.', type: 'credential-scope', assetName: 'azure-openai-key', assetType: 'model', enabled: true, namespace: 'global', config: { credential: 'azure-openai-key', scope: 'organization', environment: 'all' }, createdAt: '2026-01-15T10:00:00Z' },
+];
+
 // --- Pending Approvals ---
 
 export interface PendingApproval {
