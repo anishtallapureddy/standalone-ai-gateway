@@ -16,8 +16,9 @@ import {
   TableCell,
   Button,
 } from '@fluentui/react-components';
-import { ArrowClockwise24Regular, Search24Regular } from '@fluentui/react-icons';
+import { ArrowClockwise24Regular, Search24Regular, Dismiss24Regular } from '@fluentui/react-icons';
 import { recentLogs } from '../data/mockData';
+import type { LogEntry } from '../data/mockData';
 
 const useStyles = makeStyles({
   toolbar: {
@@ -72,6 +73,43 @@ const useStyles = makeStyles({
     color: '#ef4444',
     fontWeight: 600,
   },
+  clickableRow: {
+    cursor: 'pointer',
+    ':hover': {
+      backgroundColor: tokens.colorNeutralBackground3,
+    },
+  },
+  detailPanel: {
+    padding: '20px',
+    marginTop: '16px',
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  detailGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr',
+    gap: '16px',
+    marginTop: '12px',
+  },
+  detailField: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px',
+  },
+  detailLabel: {
+    fontSize: '11px',
+    color: tokens.colorNeutralForeground3,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+  },
+  detailValue: {
+    fontSize: '14px',
+    fontWeight: 600,
+  },
+  statusStats: {
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+  },
 });
 
 const getStatusColor = (code: number): string => {
@@ -101,15 +139,24 @@ const assetTypeColors: Record<string, 'brand' | 'success' | 'informative' | 'war
 const Logs: React.FC = () => {
   const styles = useStyles();
   const [filter, setFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState<string>('');
+  const [selectedLog, setSelectedLog] = useState<LogEntry | null>(null);
 
   const filteredLogs = recentLogs.filter((log) => {
     if (filter !== 'all' && log.assetType !== filter) return false;
+    if (statusFilter === 'success' && (log.statusCode < 200 || log.statusCode >= 300)) return false;
+    if (statusFilter === 'error' && log.statusCode < 400) return false;
+    if (statusFilter === '4xx' && (log.statusCode < 400 || log.statusCode >= 500)) return false;
+    if (statusFilter === '5xx' && log.statusCode < 500) return false;
     if (search && !log.assetName.toLowerCase().includes(search.toLowerCase()) &&
         !log.path.toLowerCase().includes(search.toLowerCase()) &&
         !log.userId.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+
+  const successCount = recentLogs.filter(l => l.statusCode >= 200 && l.statusCode < 300).length;
+  const errorCount = recentLogs.filter(l => l.statusCode >= 400).length;
 
   return (
     <div>
@@ -132,12 +179,32 @@ const Logs: React.FC = () => {
             onOptionSelect={(_, data) => setFilter(data.optionValue || 'all')}
             style={{ minWidth: '140px' }}
           >
-            <Option value="all">All types</Option>
-            <Option value="model">Models</Option>
-            <Option value="tool">Tools</Option>
-            <Option value="mcp-server">MCP Servers</Option>
-            <Option value="agent">Agents</Option>
+            <Option value="all" text="All types">All types</Option>
+            <Option value="model" text="Models">Models</Option>
+            <Option value="tool" text="Tools">Tools</Option>
+            <Option value="mcp-server" text="MCP Servers">MCP Servers</Option>
+            <Option value="agent" text="Agents">Agents</Option>
           </Dropdown>
+          <Dropdown
+            placeholder="All statuses"
+            value={statusFilter === 'all' ? 'All statuses' : statusFilter === 'success' ? '2xx Success' : statusFilter === '4xx' ? '4xx Client Error' : statusFilter === '5xx' ? '5xx Server Error' : 'All errors'}
+            onOptionSelect={(_, data) => setStatusFilter(data.optionValue || 'all')}
+            style={{ minWidth: '150px' }}
+          >
+            <Option value="all" text="All statuses">All statuses</Option>
+            <Option value="success" text="2xx Success">2xx Success</Option>
+            <Option value="error" text="All errors">All errors</Option>
+            <Option value="4xx" text="4xx Client Error">4xx Client Error</Option>
+            <Option value="5xx" text="5xx Server Error">5xx Server Error</Option>
+          </Dropdown>
+        </div>
+        <div className={styles.statusStats}>
+          <Badge appearance="filled" size="small" style={{ backgroundColor: '#1a3a2a', color: '#4ade80' }}>
+            {successCount} ok
+          </Badge>
+          <Badge appearance="filled" size="small" style={{ backgroundColor: '#3d1a1a', color: '#f87171' }}>
+            {errorCount} error{errorCount !== 1 ? 's' : ''}
+          </Badge>
         </div>
         <Button appearance="subtle" icon={<ArrowClockwise24Regular />}>Refresh</Button>
         <Text size={200} style={{ color: '#999' }}>
@@ -161,7 +228,12 @@ const Logs: React.FC = () => {
           </TableHeader>
           <TableBody>
             {filteredLogs.map((log) => (
-              <TableRow key={log.id}>
+              <TableRow
+                key={log.id}
+                className={styles.clickableRow}
+                onClick={() => setSelectedLog(selectedLog?.id === log.id ? null : log)}
+                style={selectedLog?.id === log.id ? { backgroundColor: tokens.colorNeutralBackground3 } : undefined}
+              >
                 <TableCell>
                   <Text size={200} style={{ fontFamily: 'monospace' }}>{formatTime(log.timestamp)}</Text>
                 </TableCell>
@@ -205,6 +277,70 @@ const Logs: React.FC = () => {
           </TableBody>
         </Table>
       </Card>
+
+      {/* ─── Log Detail Panel ─── */}
+      {selectedLog && (
+        <Card className={styles.detailPanel}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Text weight="semibold" size={400}>Request Detail</Text>
+              <Badge appearance="tint" color={assetTypeColors[selectedLog.assetType] || 'informative'} size="small">
+                {selectedLog.assetType}
+              </Badge>
+              <Text size={300}>{selectedLog.assetName}</Text>
+            </div>
+            <Button appearance="subtle" icon={<Dismiss24Regular />} size="small" onClick={() => setSelectedLog(null)} />
+          </div>
+          <div className={styles.detailGrid}>
+            <div className={styles.detailField}>
+              <span className={styles.detailLabel}>Timestamp</span>
+              <span className={styles.detailValue}>{new Date(selectedLog.timestamp).toLocaleString()}</span>
+            </div>
+            <div className={styles.detailField}>
+              <span className={styles.detailLabel}>Status</span>
+              <span className={styles.detailValue} style={{ color: getStatusColor(selectedLog.statusCode) }}>
+                {selectedLog.statusCode} {selectedLog.statusCode === 200 ? 'OK' : selectedLog.statusCode === 429 ? 'Too Many Requests' : selectedLog.statusCode === 500 ? 'Internal Server Error' : ''}
+              </span>
+            </div>
+            <div className={styles.detailField}>
+              <span className={styles.detailLabel}>Method & Path</span>
+              <span className={styles.detailValue} style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+                {selectedLog.method} {selectedLog.path}
+              </span>
+            </div>
+            <div className={styles.detailField}>
+              <span className={styles.detailLabel}>Latency</span>
+              <span className={styles.detailValue} style={{ color: selectedLog.latencyMs < 500 ? '#10b981' : selectedLog.latencyMs < 2000 ? '#f59e0b' : '#ef4444' }}>
+                {selectedLog.latencyMs}ms
+              </span>
+            </div>
+            <div className={styles.detailField}>
+              <span className={styles.detailLabel}>Tokens (In → Out)</span>
+              <span className={styles.detailValue}>
+                {selectedLog.tokensIn !== undefined ? `${selectedLog.tokensIn} → ${selectedLog.tokensOut}` : 'N/A'}
+              </span>
+            </div>
+            <div className={styles.detailField}>
+              <span className={styles.detailLabel}>User / Identity</span>
+              <span className={styles.detailValue} style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+                {selectedLog.userId}
+              </span>
+            </div>
+            <div className={styles.detailField}>
+              <span className={styles.detailLabel}>IP Address</span>
+              <span className={styles.detailValue} style={{ fontFamily: 'monospace' }}>
+                {selectedLog.ipAddress}
+              </span>
+            </div>
+            <div className={styles.detailField}>
+              <span className={styles.detailLabel}>Request ID</span>
+              <span className={styles.detailValue} style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+                {selectedLog.id}
+              </span>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

@@ -495,8 +495,8 @@ const Layout: React.FC<LayoutProps> = ({ onSignOut }) => {
     '/namespaces': 'Organize assets into team and project boundaries',
     '/access': 'Manage who can access the gateway and its assets',
     '/policies': 'Runtime policies, asset access rules, and safety guardrails',
-    '/analytics': 'Token consumption, cost attribution, and usage analytics across workloads',
-    '/logs': 'Real-time request tracing and observability across all gateway traffic',
+    '/analytics': 'Token usage, cost, and performance metrics across namespaces',
+    '/logs': 'Trace and inspect every request flowing through the gateway',
   };
 
   let lastSection = '';

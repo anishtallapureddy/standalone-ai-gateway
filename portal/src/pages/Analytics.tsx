@@ -12,6 +12,8 @@ import {
   TableRow,
   TableCell,
   ToggleButton,
+  Dropdown,
+  Option,
 } from '@fluentui/react-components';
 import {
   DataUsage24Regular,
@@ -27,6 +29,7 @@ import {
   tokenUsageByModel,
   enterpriseTimeSeries24h,
   consumers,
+  namespaces,
 } from '../data/mockData';
 
 // ---------------------------------------------------------------------------
@@ -285,6 +288,10 @@ const useStyles = makeStyles({
 const Analytics: React.FC = () => {
   const styles = useStyles();
   const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d'>('24h');
+  const [nsFilter, setNsFilter] = useState<string>('all');
+
+  // Filter consumers by namespace
+  const filteredConsumers = nsFilter === 'all' ? consumers : consumers.filter(c => c.namespace === nsFilter);
 
   // Aggregated stats
   const totalTokens = tokenUsageByModel.reduce((s, m) => s + m.totalTokens, 0);
@@ -301,13 +308,13 @@ const Analytics: React.FC = () => {
   // Sorted models
   const sortedModels = [...tokenUsageByModel].sort((a, b) => b.totalTokens - a.totalTokens);
 
-  // Sorted consumers
-  const sortedConsumers = [...consumers].sort(
+  // Sorted consumers (namespace-filtered)
+  const sortedConsumers = [...filteredConsumers].sort(
     (a, b) => b.usage24h.totalTokens - a.usage24h.totalTokens,
   );
 
   // Namespace aggregation
-  const nsByTokens = consumers.reduce<Record<string, number>>((acc, c) => {
+  const nsByTokens = filteredConsumers.reduce<Record<string, number>>((acc, c) => {
     acc[c.namespace] = (acc[c.namespace] || 0) + c.usage24h.totalTokens;
     return acc;
   }, {});
@@ -351,8 +358,24 @@ const Analytics: React.FC = () => {
           <Text size={600} weight="semibold">
             Token Analytics
           </Text>
+          {nsFilter !== 'all' && (
+            <Badge appearance="tint" color="brand" size="medium">
+              {namespaces.find(n => n.name === nsFilter)?.displayName || nsFilter}
+            </Badge>
+          )}
         </div>
         <div className={styles.toggleGroup}>
+          <Dropdown
+            placeholder="All namespaces"
+            value={nsFilter === 'all' ? 'All namespaces' : (namespaces.find(n => n.name === nsFilter)?.displayName || nsFilter)}
+            onOptionSelect={(_, data) => setNsFilter(data.optionValue || 'all')}
+            style={{ minWidth: '180px' }}
+          >
+            <Option value="all" text="All namespaces">All namespaces</Option>
+            {namespaces.map(ns => (
+              <Option key={ns.name} value={ns.name} text={ns.displayName}>{ns.displayName}</Option>
+            ))}
+          </Dropdown>
           {(['24h', '7d', '30d'] as const).map((r) => (
             <ToggleButton
               key={r}
