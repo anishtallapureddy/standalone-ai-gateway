@@ -20,7 +20,6 @@ import {
   Grid24Regular,
   ArrowRight16Regular,
   Flow24Regular,
-  BoxMultiple24Regular,
 } from '@fluentui/react-icons';
 import StatusBadge from '../components/StatusBadge';
 import { catalogItems, namespaces } from '../data/mockData';
@@ -133,7 +132,6 @@ const assetTypeConfig: Record<string, { icon: React.ReactElement; color: string;
   agent: { icon: <Bot24Regular />, color: '#10b981', bg: '#d1fae5', label: 'Agent' },
   skill: { icon: <LightbulbFilament24Regular />, color: '#f59e0b', bg: '#fef3c7', label: 'Skill' },
   workflow: { icon: <Flow24Regular />, color: '#60a5fa', bg: '#dbeafe', label: 'Workflow' },
-  workload: { icon: <BoxMultiple24Regular />, color: '#f472b6', bg: '#fce7f3', label: 'Workload' },
 };
 
 // Maps Browse tabs to sidebar routes for navigation
@@ -143,7 +141,6 @@ const tabRoutes: Record<string, string> = {
   agent: '/agents',
   skill: '/skills',
   workflow: '/workflows',
-  workload: '/workloads',
 };
 
 const Catalog: React.FC = () => {
@@ -184,7 +181,6 @@ const Catalog: React.FC = () => {
     agent: catalogItems.filter(i => i.assetType === 'agent').length,
     skill: catalogItems.filter(i => i.assetType === 'skill').length,
     workflow: catalogItems.filter(i => i.assetType === 'workflow').length,
-    workload: catalogItems.filter(i => i.assetType === 'workload').length,
   };
 
   const handleTabSelect = (_: unknown, data: { value: unknown }) => {
@@ -217,7 +213,6 @@ const Catalog: React.FC = () => {
           <Tab value="agent" icon={<Bot24Regular />}>Agents ({typeCounts.agent})</Tab>
           <Tab value="skill" icon={<LightbulbFilament24Regular />}>Skills ({typeCounts.skill})</Tab>
           <Tab value="workflow" icon={<Flow24Regular />}>Workflows ({typeCounts.workflow})</Tab>
-          <Tab value="workload" icon={<BoxMultiple24Regular />}>Workloads ({typeCounts.workload})</Tab>
         </TabList>
       </div>
 

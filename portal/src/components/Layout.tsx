@@ -37,8 +37,6 @@ import {
   Settings24Regular,
   Lightbulb24Regular,
   Lightbulb24Filled,
-  BoxMultiple24Regular,
-  BoxMultiple24Filled,
   Flow24Regular,
   Flow24Filled,
 } from '@fluentui/react-icons';
@@ -423,13 +421,6 @@ const navItems: NavItem[] = [
     icon: <Flow24Regular />,
     activeIcon: <Flow24Filled />,
     nested: true,
-  },
-  {
-    path: '/workloads',
-    label: 'Workloads',
-    icon: <BoxMultiple24Regular />,
-    activeIcon: <BoxMultiple24Filled />,
-    section: 'Operations',
   },
   {
     path: '/namespaces',
