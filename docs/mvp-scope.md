@@ -1,4 +1,4 @@
-# MVP Scope — Standalone AI Gateway
+# MVP Scope — Azure AI Gateway
 
 ## Phase 1 — MVP (End of March 2026)
 

@@ -1,16 +1,39 @@
-# Standalone AI Gateway
+# Azure AI Gateway
 
 ## Overview
 
-A multi-tenant, cloud-agnostic AI Gateway platform that enables organizations to discover, manage, and govern AI assets across distributed ecosystems. The gateway acts as the unified control and runtime layer for models, tools, MCP servers, skills, and agents — regardless of provider or platform.
+A multi-tenant platform that enables organizations to securely build, route, govern, and observe AI workloads across models, tools, and agents.
+
+> **The control plane for AI workloads** — routing, governance, security, and observability across the full AI application stack.
 
 **Key differentiators:**
 
-- **Cloud-agnostic** — works with Azure OpenAI, OpenAI, Anthropic, Google Vertex AI, AWS Bedrock, and any custom model
-- **AI-native** — models, tools, MCP servers, skills, and agents are first-class entities, not just APIs
-- **Serverless-first** — start in minutes, scale to dedicated enterprise gateway when needed
-- **Unified experience** — one portal for discovery, governance, and operations (no fragmented tooling)
-- **Multi-tenant** — built for teams, organizations, and shared AI asset collaboration
+- **AI-Native Asset Model** — models, tools, agents, skills, workflows, and connectors are first-class platform objects, not just API proxies
+- **Namespace-Based Governance** — namespaces are the primary governance boundary, grouping assets, policies, credentials, and observability
+- **Built-In Tool Governance** — tool catalogs, allowlists, invocation rate limits, credential management, and execution auditing
+- **Enterprise Identity & Credentials** — JWT validation, Entra ID, managed identity for tools, namespace-scoped credentials
+- **Safety & Compliance Controls** — PII detection, harmful content blocking, prompt injection detection, tool action guardrails
+- **Advanced Routing & Resilience** — cross-region, multi-provider, PTU→PAYGO fallback, cost-aware and capability-aware routing
+- **Full AI Workload Observability** — prompt/response tracing, tool invocation tracking, agent execution traces, token analytics, cost attribution by namespace
+- **Cloud-Agnostic** — works with Azure OpenAI, OpenAI, Anthropic, Google Gemini, AWS Bedrock, and custom models
+
+## Why Azure AI Gateway?
+
+Unlike LiteLLM and Portkey which focus primarily on model routing and observability, or Kong and Cloudflare which extend traditional API gateways for LLM traffic, Azure AI Gateway provides a complete control plane for AI workloads — supporting agentic applications, tool governance, namespace-based access control, and enterprise-grade safety enforcement.
+
+## Target Users
+
+### Platform Engineers / Admins
+
+- Define namespaces, policies, and credential scopes to govern AI workloads at scale
+- Configure multi-provider routing, failover strategies, and cost controls across teams
+- Monitor token usage, tool invocations, and agent behavior through unified observability
+
+### AI Developers / Agent Builders
+
+- Discover approved models, tools, and skills through governed catalogs
+- Build agentic applications with standardized endpoints, built-in auth, and safety guardrails
+- Compose multi-tool workflows without managing individual provider credentials
 
 ## Architecture
 
@@ -22,7 +45,7 @@ graph TB
         APP[Applications]
     end
 
-    subgraph "Standalone AI Gateway"
+    subgraph "Azure AI Gateway"
         subgraph "Control Plane"
             CAT[Catalog & Discovery]
             GOV_DT[Design-Time Governance]
@@ -195,6 +218,8 @@ npm test             # Run tests
 | [Competitive Analysis](docs/competitive-analysis.md) | Market landscape and differentiation |
 | [MVP Scope](docs/mvp-scope.md) | Phase 1 deliverables and success criteria |
 | [Entity Model](docs/entity-model.md) | First-class asset types and relationships |
+| [Governance](docs/governance.md) | Namespace-based governance model and policy enforcement |
+| [User Flows](docs/user-flows.md) | End-to-end user journeys for platform engineers and developers |
 
 ## Contributing
 

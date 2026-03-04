@@ -1,4 +1,4 @@
-# Scenario Matrix — Standalone AI Gateway
+# Scenario Matrix — Azure AI Gateway
 
 This document contains the full scenario inventory, organized by asset type and persona, with prioritization for the standalone AI gateway.
 

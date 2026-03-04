@@ -1,4 +1,4 @@
-# Architecture — Standalone AI Gateway
+# Architecture — Azure AI Gateway
 
 ## High-Level Architecture
 
@@ -10,7 +10,7 @@ graph TB
         APP["📱 Applications"]
     end
 
-    subgraph "Standalone AI Gateway"
+    subgraph "Azure AI Gateway"
         direction TB
 
         subgraph "Control Plane"

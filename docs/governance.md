@@ -313,6 +313,8 @@ Agent runs:      12K executions
 
 ## Admin Access UX
 
+The governance experience in the portal is organized as follows:
+
 ```
 Access
    ├ Users

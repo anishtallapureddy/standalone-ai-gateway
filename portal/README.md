@@ -1,73 +1,79 @@
-# React + TypeScript + Vite
+# Azure AI Gateway — Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The Azure AI Gateway portal is a React single-page application that provides a unified experience for managing AI workloads. It serves as the primary interface for platform administrators and AI developers to discover, govern, and observe AI assets.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 18** with TypeScript
+- **Fluent UI v9** (Microsoft's design system)
+- **Vite** for build tooling
+- **React Router** for client-side routing
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Dashboard
+Overview of gateway health, active models, tools, agents, token usage, cost analytics, and recent activity.
 
-## Expanding the ESLint configuration
+### AI Asset Catalog
+Browse and manage AI assets organized by type:
+- **Models** — Multi-provider AI models (Azure OpenAI, Anthropic, Gemini, Bedrock)
+- **Tools** — APIs, databases, MCP servers, SaaS connectors
+- **Agents** — AI agents that orchestrate models and tools
+- **Skills** — Reusable automation patterns
+- **Workflows** — Multi-step orchestrations
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Governance
+- **Namespaces** — Primary governance boundaries for grouping assets, policies, and credentials
+- **Access** — Role-based access control with users, service identities, and domains
+- **Policies** — Runtime policies, asset access rules, and safety guardrails
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Observability
+- **Analytics** — Token usage, cost attribution, latency metrics by namespace
+- **Logs** — Request/response logs, execution traces, audit trail
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Playground
+Three-column developer console for testing AI workloads:
+- **Request Builder** — Configure model, agent, tools, parameters, and prompt
+- **Execution Tracker** — Step-by-step trace with collapsible request/response details
+- **Gateway Inspector** — Routing decisions, performance metrics, applied policies
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Getting Started
+
+### Prerequisites
+- Node.js 20+
+- npm 9+
+
+### Development
+
+```bash
+cd portal
+npm install
+npm run dev          # Start at http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Build
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build        # Production build to dist/
+npm run preview      # Preview production build
 ```
+
+## Project Structure
+
+```
+portal/
+  src/
+    components/       # Shared components (Layout, StatCard, etc.)
+    pages/            # Page components (Dashboard, Playground, etc.)
+    App.tsx           # Root component with routing
+    main.tsx          # Entry point
+  public/             # Static assets
+  index.html          # HTML template
+```
+
+## Design
+
+- **Dark theme** using Fluent UI `webDarkTheme`
+- Custom color palette: backgrounds (#141414, #1e1e1e, #1b1a19), accent blue (#0078d4), cyan (#00d4ff)
+- Glass-morphism cards, subtle gradients, developer console aesthetic
+- Responsive layout with collapsible sidebar navigation

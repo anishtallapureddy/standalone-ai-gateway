@@ -1,11 +1,11 @@
-# User Flows — Standalone AI Gateway Portal
+# User Flows — Azure AI Gateway Portal
 
 > **Purpose:** Step-by-step user flow specs for every key scenario in the AI Gateway portal.
 > These flows cover both the **Admin / Platform Engineer** and **Developer / Agent Builder** personas
 > and serve as the product spec for the mock implementation.
 >
 > **Portal pages referenced:**
-> _Existing:_ Dashboard, Playground, Catalog, Models, Tools, MCP Servers, Agents, Namespaces, Policies (Runtime Rules / Design-Time Rules / RAI Guardrails), Logs
+> _Existing:_ Dashboard, Playground, Catalog, Models, Tools, MCP Servers, Agents, Namespaces, Policies (Runtime Rules / Design-Time Rules / Safety Guardrails), Logs
 > _New:_ **Analytics** (token consumption observability), **Consumers** (per-user/per-app auth & quotas)
 > _Enhanced:_ **Models** (Routing tab, Failover tab)
 
@@ -379,7 +379,7 @@
 8. System shows three tabs:
    - **Runtime Rules**: Rate limits, ACLs, IP filters, token limits, circuit breakers.
    - **Design-Time Rules**: Model registration approval, tool onboarding checklists, naming conventions.
-   - **RAI Guardrails**: Content safety filters, PII detection, prompt injection protection.
+   - **Safety Guardrails**: Content safety filters, PII detection, prompt injection protection.
 9. Admin clicks **Consumers** to review access control.
 10. System shows all consumers with quota utilisation and status.
 11. Admin clicks **Analytics** to review usage trends.
@@ -809,7 +809,7 @@
 | Agents | AI Assets | Admin | Existing | Agent registration & exposure |
 | Namespaces | Organization | Admin | Existing | Team/project scoping |
 | **Consumers** | Organization | Both | **New** | Consumer CRUD, auth, quotas, keys, enforcement log |
-| Policies | Governance | Admin | Existing | Runtime Rules, Design-Time Rules, RAI Guardrails |
+| Policies | Governance | Admin | Existing | Runtime Rules, Design-Time Rules, Safety Guardrails |
 | Logs | Observability | Admin | Existing | Request logs, policy enforcement audit |
 | **Analytics** | Observability | Both | **New** | Token consumption dashboard, filters, budget alerts |
 

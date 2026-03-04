@@ -1,15 +1,8 @@
-# AI Gateway Platform — Product Specification
+# Azure AI Gateway — Product Vision
 
 ## 1. Product Overview
 
-The **AI Gateway** is a **lightweight, multi-tenant platform** that enables organizations to **route, govern, and observe AI workloads** across:
-
-- Models
-- Tools
-- Agents
-- Skills / Workflows
-
-The gateway serves as the **control plane and runtime gateway for AI workloads**, enabling developers to build and operate **agent-based systems** safely and efficiently.
+The **Azure AI Gateway** is a **multi-tenant platform** that enables organizations to **securely build, route, govern, and observe AI workloads** across models, tools, agents, skills, and workflows. It serves as the **control plane for AI workloads**, enabling developers to build and operate **agent-based systems** safely and efficiently.
 
 Unlike traditional API gateways, the AI Gateway is designed around **AI-native assets and workloads**, allowing enterprises and AI-native teams to manage distributed AI infrastructure through a unified platform.
 
@@ -37,7 +30,7 @@ Rather than exposing legacy capabilities and expecting customers to assemble sol
 
 ### Lightweight architecture
 
-"Lightweight" means easy deployment, minimal configuration, fast onboarding, simple developer experience, and low cost of entry. The gateway should feel closer to **LiteLLM simplicity**, while delivering enterprise capabilities.
+"Lightweight" means easy deployment, minimal configuration, fast onboarding, simple developer experience, and low cost of entry. The gateway should feel as simple as **LiteLLM** for getting started, while delivering **enterprise-grade governance, security, and observability** at scale.
 
 ### AI-native asset model
 
@@ -130,7 +123,9 @@ An **AI workload** is the deployable unit of the platform. A workload may includ
 
 ## 7. Workspace and Namespace Model
 
-The gateway supports organizational constructs such as projects, namespaces, and workspaces. These enable governance boundaries for teams, applications, and environments.
+Namespaces are the **primary governance boundary** in the Azure AI Gateway. A namespace groups related AI assets (models, tools, agents, workflows), applies access policies, enforces runtime rules, manages credentials, and aggregates observability data.
+
+Organizations can define **domains** (e.g., Retail AI, Finance AI) containing multiple **namespaces** (e.g., retail-support, retail-analytics). This structure aligns governance with real-world team and workload boundaries.
 
 ---
 
@@ -174,12 +169,12 @@ Each asset page supports asset discovery, creation, policy configuration, and us
 
 | Competitor | Strengths | Our Differentiation |
 |-----------|-----------|---------------------|
-| LiteLLM | Simple model routing | Full governance + tool/agent platform |
-| Portkey | AI observability | Multi-asset governance, not just models |
+| LiteLLM | Simple model routing, open source | Full governance + tool/agent platform, namespace-based multi-tenancy |
+| Portkey | AI observability, prompt management | Multi-asset governance, not just models; built-in tool governance |
 | Kong AI Gateway | AI plugins, serverless | AI-native asset model, Azure integration |
 | Cloudflare AI Gateway | Edge caching, rate limiting | Enterprise governance, agent workloads |
 
-Differentiation: AI-native asset model, deep Azure ecosystem integration, enterprise governance capabilities, and agent workload platform.
+Azure AI Gateway differentiates through its **AI-native asset model**, **namespace-based governance**, **built-in tool governance**, **enterprise identity management**, **safety controls**, and **full AI workload observability**.
 
 ---
 
@@ -208,15 +203,17 @@ Long-term portal at: `gateway.azure.com`
 
 ## 14. Open Questions
 
-1. How should skills relate to workflows and agents?
-2. What level of catalog governance should be required before asset use?
-3. How should sandbox environments be hosted and isolated?
+The following questions have been resolved:
+
+1. **Skills vs. Workflows** — Skills are reusable automation patterns combining models, prompts, tools, and logic. Workflows are multi-step orchestrations. Both are first-class assets in the catalog.
+2. **Catalog governance** — Assets require namespace assignment before use. Visibility policies control catalog exposure.
+3. **Sandbox environments** — Sandbox environments run within namespace boundaries with relaxed policies for testing.
 
 ---
 
 ## 15. Next Steps
 
-1. Produce a concise two-page strategy document
-2. Validate key scenarios with field teams
-3. Deliver a working prototype
-4. Gather feedback at MVP Summit
+1. ✅ Working prototype delivered and demonstrated
+2. ✅ Portal built at `gateway.azure.com`
+3. 🔄 Gathering feedback from field teams and early adopters
+4. 🔄 Iterating on MVP based on feedback and real-world usage
