@@ -256,6 +256,7 @@ npm test             # Run tests
 | [Entity Model](docs/entity-model.md) | First-class asset types and relationships |
 | [Governance](docs/governance.md) | Namespace-based governance model and policy enforcement |
 | [User Flows](docs/user-flows.md) | End-to-end user journeys for platform engineers and developers |
+| [Credential Management](docs/credential-management.md) | Credential store architecture, mediation flows, and security |
 
 ## Contributing
 
