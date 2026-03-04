@@ -1,9 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import {
-  Card,
-  Text,
   makeStyles,
-  tokens,
+  Text,
   Button,
   Textarea,
   Dropdown,
@@ -11,17 +9,41 @@ import {
   Badge,
   Spinner,
   Slider,
-  TabList,
-  Tab,
+  Switch,
 } from '@fluentui/react-components';
 import {
   Send24Regular,
+  Add24Regular,
+  Play24Regular,
   BrainCircuit24Regular,
   PlugConnected24Regular,
   Bot24Regular,
-  Play24Regular,
+  Settings24Regular,
+  ArrowReset24Regular,
 } from '@fluentui/react-icons';
 import { models, tools, agents } from '../data/mockData';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+interface TraceStep {
+  icon: string;
+  label: string;
+  detail?: string;
+  color: string;
+  done: boolean;
+}
+
+interface ExecResult {
+  steps: TraceStep[];
+  response: string;
+  stats: {
+    latency: string;
+    modelCalls: number;
+    toolInvocations: number;
+    tokens: number;
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Styles
@@ -30,440 +52,500 @@ const useStyles = makeStyles({
   page: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px',
     height: 'calc(100vh - 140px)',
   },
   header: {
     display: 'flex',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     flexShrink: 0,
+    paddingBottom: '16px',
   },
-  container: {
+  columns: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '16px',
+    gridTemplateColumns: '40% 60%',
     flex: 1,
     minHeight: 0,
   },
-  panel: {
+  leftPanel: {
+    backgroundColor: '#1e1e1e',
+    borderRight: '1px solid #333',
+    padding: '24px',
+    overflowY: 'auto',
+  },
+  rightPanel: {
+    backgroundColor: '#141414',
+    padding: '24px',
+    overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
-    minHeight: 0,
   },
-  card: {
-    padding: '20px',
-    flex: 1,
+  sectionTitle: {
     display: 'flex',
-    flexDirection: 'column',
-    minHeight: 0,
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '12px',
+    marginTop: '20px',
   },
-  configRow: {
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'flex-end',
-  },
-  configItem: {
-    flex: 1,
-  },
-  label: {
-    display: 'block',
-    marginBottom: '4px',
-    fontSize: '12px',
-    fontWeight: 600,
-    color: tokens.colorNeutralForeground3,
-  },
-  responseArea: {
-    flex: 1,
-    padding: '16px',
-    backgroundColor: tokens.colorNeutralBackground3,
+  modelInfo: {
+    backgroundColor: '#2d2d3d',
     borderRadius: '8px',
-    fontFamily: 'monospace',
+    padding: '12px',
+    marginTop: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  capBadge: {
+    display: 'inline-flex',
+    backgroundColor: '#3b3b5c',
+    color: '#c4b5fd',
+    borderRadius: '4px',
+    padding: '2px 8px',
+    fontSize: '11px',
+    marginRight: '4px',
+    marginBottom: '4px',
+  },
+  toolChips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '6px',
+    marginTop: '8px',
+  },
+  toolChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    backgroundColor: '#2d2d3d',
+    color: '#e0e0e0',
+    borderRadius: '16px',
+    padding: '4px 12px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    border: '1px solid transparent',
+    ':hover': {
+      backgroundColor: '#3b3b5c',
+    },
+  },
+  toolChipSelected: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    backgroundColor: '#1e3a5f',
+    color: '#7dd3fc',
+    borderRadius: '16px',
+    padding: '4px 12px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    border: '1px solid #0ea5e9',
+    ':hover': {
+      backgroundColor: '#1e4a7f',
+    },
+  },
+  selectedToolList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+    marginTop: '8px',
+  },
+  selectedToolItem: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1a2a3a',
+    borderRadius: '6px',
+    padding: '6px 12px',
     fontSize: '13px',
-    lineHeight: 1.6,
-    overflow: 'auto',
-    whiteSpace: 'pre-wrap',
-    minHeight: '200px',
+    color: '#7dd3fc',
+  },
+  agentInfo: {
+    backgroundColor: '#1a2e2a',
+    borderRadius: '8px',
+    padding: '12px',
+    marginTop: '8px',
+    borderLeft: '3px solid #10b981',
+  },
+  promptArea: {
+    marginTop: '8px',
+  },
+  quickPrompts: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '6px',
+    marginTop: '8px',
+  },
+  quickBadge: {
+    backgroundColor: '#2d2d3d',
+    color: '#ccc',
+    borderRadius: '16px',
+    padding: '6px 14px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    border: 'none',
+    ':hover': {
+      backgroundColor: '#3b3b5c',
+      color: '#fff',
+    },
+  },
+  runBtn: {
+    marginTop: '20px',
+    width: '100%',
   },
   emptyState: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
-    color: tokens.colorNeutralForeground3,
-    gap: '8px',
-  },
-  statsRow: {
-    display: 'flex',
+    flex: 1,
     gap: '16px',
-    paddingTop: '12px',
-    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+    color: '#999',
   },
-  stat: {
+  traceContainer: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '2px',
+    gap: '0px',
+    flex: 1,
   },
-  promptTemplates: {
+  stepCard: {
+    padding: '12px 16px',
+    marginLeft: '12px',
+    marginBottom: '2px',
+    backgroundColor: '#1a1a2e',
+    borderRadius: '6px',
     display: 'flex',
-    gap: '8px',
-    flexWrap: 'wrap',
-    marginBottom: '8px',
+    alignItems: 'center',
+    gap: '10px',
+    fontSize: '13px',
   },
-  infoBlock: {
-    padding: '12px',
-    backgroundColor: tokens.colorNeutralBackground3,
+  stepDetail: {
+    fontSize: '12px',
+    color: '#999',
+    marginTop: '2px',
+  },
+  '@keyframes pulse': {
+    '0%': { opacity: 1 },
+    '50%': { opacity: 0.5 },
+    '100%': { opacity: 1 },
+  },
+  activeStep: {
+    boxShadow: '0 0 8px rgba(99, 102, 241, 0.3)',
+    animationName: {
+      '0%': { opacity: 1 },
+      '50%': { opacity: 0.7 },
+      '100%': { opacity: 1 },
+    },
+    animationDuration: '1.5s',
+    animationIterationCount: 'infinite',
+  },
+  responseBox: {
+    backgroundColor: '#0d1117',
+    border: '1px solid #30363d',
     borderRadius: '8px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
+    padding: '16px',
+    fontFamily: '"Cascadia Code", "Fira Code", "Consolas", monospace',
+    fontSize: '13px',
+    lineHeight: '1.6',
+    color: '#e6edf3',
+    whiteSpace: 'pre-wrap',
+    marginTop: '12px',
   },
-  policyRow: {
+  statsBar: {
+    backgroundColor: '#1e1e1e',
+    borderTop: '1px solid #333',
+    padding: '12px 16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '24px',
+    flexWrap: 'wrap',
+    marginTop: '16px',
+    borderRadius: '8px',
+    fontSize: '13px',
+  },
+  statItem: {
     display: 'flex',
     alignItems: 'center',
     gap: '6px',
+    color: '#ccc',
   },
-  traceStep: {
+  statValue: {
+    fontWeight: 600,
+    color: '#fff',
+  },
+  sliderRow: {
     display: 'flex',
-    gap: '10px',
-    padding: '8px 0',
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    gap: '12px',
+    marginTop: '8px',
+  },
+  panelTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '4px',
+  },
+  toolSelectorArea: {
+    marginTop: '8px',
+  },
+  switchRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    marginTop: '8px',
   },
 });
 
 // ---------------------------------------------------------------------------
-// Model tab data
+// Quick prompts with contextual responses
 // ---------------------------------------------------------------------------
-const samplePrompts = [
-  { label: 'Summarize', prompt: 'Summarize the key benefits of using an AI Gateway for enterprise applications in 3 bullet points.' },
-  { label: 'Code Gen', prompt: 'Write a TypeScript function that validates an MCP tool schema against a JSON Schema definition.' },
-  { label: 'Analysis', prompt: 'Analyze the trade-offs between semantic caching and real-time model responses for a customer support chatbot.' },
-  { label: 'Translation', prompt: 'Translate the following to Spanish: "The AI Gateway provides unified access to models, tools, and agents across all providers."' },
+const QUICK_PROMPTS: { label: string; prompt: string }[] = [
+  {
+    label: 'Summarize a document',
+    prompt:
+      'Summarize the key findings from the Q4 2025 product strategy document, including the main priorities, risks, and recommended next steps.',
+  },
+  {
+    label: 'Look up customer #12345',
+    prompt:
+      'Look up customer #12345 in the CRM, retrieve their billing history for the past 6 months, and highlight any overdue invoices.',
+  },
+  {
+    label: 'Triage incident INC-789',
+    prompt:
+      'Triage incident INC-789: determine the severity, identify impacted services, pull recent deployment logs, and suggest a mitigation plan.',
+  },
+  {
+    label: 'Generate quarterly report',
+    prompt:
+      'Generate a quarterly performance report for Q1 2026 covering API usage trends, top consumers, error rates, and cost breakdown by model.',
+  },
 ];
 
-const mockResponses: Record<string, string> = {
-  'Summarize': '**Key Benefits of an AI Gateway:**\n\n• **Unified Access** — Single API endpoint for 1000+ models across Azure OpenAI, Anthropic, Google Vertex AI, and AWS Bedrock, eliminating provider-specific integrations.\n\n• **Enterprise Governance** — Centralized policy enforcement including token quotas, rate limiting, content safety guardrails, and role-based access control across all AI assets.\n\n• **Operational Resilience** — Automatic cross-provider failover, semantic caching, and real-time observability (logs, traces, metrics) ensuring high availability and cost optimization.',
-  'Code Gen': '```typescript\nimport Ajv from \'ajv\';\n\ninterface MCPToolSchema {\n  name: string;\n  description: string;\n  inputSchema: Record<string, unknown>;\n}\n\nfunction validateMCPToolSchema(tool: MCPToolSchema): {\n  valid: boolean;\n  errors: string[];\n} {\n  const ajv = new Ajv({ allErrors: true });\n  \n  // Validate the input schema is a valid JSON Schema\n  const isValid = ajv.validateSchema(tool.inputSchema);\n  \n  const errors: string[] = [];\n  if (!tool.name || tool.name.trim() === \'\') {\n    errors.push(\'Tool name is required\');\n  }\n  if (!tool.description || tool.description.length < 10) {\n    errors.push(\'Description must be at least 10 characters\');\n  }\n  if (!isValid) {\n    errors.push(...(ajv.errors?.map(e => e.message || \'Schema error\') || []));\n  }\n  \n  return { valid: errors.length === 0, errors };\n}\n```',
-  'Analysis': '## Semantic Caching vs Real-Time Responses\n\n**Semantic Caching Pros:**\n- 60-80% cost reduction on repetitive queries\n- Sub-100ms response times for cached prompts\n- Reduced load on model endpoints\n\n**Semantic Caching Cons:**\n- May return slightly stale responses\n- Similarity threshold tuning required\n- Not suitable for context-dependent conversations\n\n**Recommendation for Customer Support:**\nUse a hybrid approach — cache FAQ-style queries and common troubleshooting steps, but route novel or sensitive customer interactions directly to the model. Configure cache TTL of 1-4 hours with a similarity threshold of 0.92+.',
-  'Translation': '\"El AI Gateway proporciona acceso unificado a modelos, herramientas y agentes en todos los proveedores.\"',
-};
-
-// ---------------------------------------------------------------------------
-// Tool tab data
-// ---------------------------------------------------------------------------
-const toolOperations: Record<string, string[]> = {
-  'Customer CRM API': ['lookupCustomer', 'getAccountHistory', 'updateContact', 'searchAccounts'],
-  'Billing Service': ['getInvoice', 'getSubscription', 'listPayments', 'checkBalance'],
-  'Slack Connector': ['sendMessage', 'getChannels', 'getConversationHistory', 'createChannel'],
-  'GitHub Issues API': ['createIssue', 'listIssues', 'getPullRequest', 'addComment'],
-  'Jira Service Desk': ['createTicket', 'transitionIssue', 'getBacklog', 'assignTicket'],
-  'Internal Knowledge Base': ['searchArticles', 'getArticle', 'listCategories', 'getSuggestions'],
-  'Weather API': ['getCurrentWeather', 'getForecast', 'getAlerts'],
-  'Payment Gateway': ['processPayment', 'issueRefund', 'getTransaction', 'listMethods'],
-};
-
-const toolMockResponses: Record<string, Record<string, unknown>> = {
-  'Customer CRM API': {
-    status: 'success',
-    data: {
-      customerId: 'CUST-12345',
-      name: 'Acme Corporation',
-      tier: 'Enterprise',
-      accountManager: 'Sarah Chen',
-      contractExpiry: '2027-03-15',
-      totalSpend: 284500,
-      openTickets: 3,
-      healthScore: 92,
-    },
+const MOCK_RESPONSES: Record<string, { modelOnly: string; withTools: string; agent: string }> = {
+  'Summarize a document': {
+    modelOnly:
+      '## Q4 2025 Strategy Summary\n\n**Priorities:**\n1. Expand AI Gateway to support multi-region failover\n2. Launch self-service MCP server provisioning\n3. Reduce P95 latency to < 200ms\n\n**Risks:** Vendor lock-in with single LLM provider; token cost overruns projected at 115% of budget.\n\n**Next Steps:** Finalize multi-model routing policy by Jan 15; begin load testing with synthetic traffic.',
+    withTools:
+      '## Q4 2025 Strategy Summary\n\n*Retrieved document from Knowledge Base (doc-id: strategy-q4-2025)*\n\n**Priorities:**\n1. Expand AI Gateway to support multi-region failover\n2. Launch self-service MCP server provisioning\n3. Reduce P95 latency to < 200ms\n\n**Risks:** Vendor lock-in with single LLM provider; token cost overruns projected at 115% of budget.\n\n**Next Steps:** Finalize multi-model routing policy by Jan 15; begin load testing with synthetic traffic.',
+    agent:
+      '## Q4 2025 Strategy Summary\n\n*Agent retrieved document from Knowledge Base, cross-referenced with Jira roadmap items, and validated priorities against current sprint goals.*\n\n**Priorities:**\n1. Expand AI Gateway to support multi-region failover (JIRA: GW-1042 — In Progress)\n2. Launch self-service MCP server provisioning (JIRA: GW-1087 — Planning)\n3. Reduce P95 latency to < 200ms (JIRA: GW-998 — Done ✅)\n\n**Risks:** Vendor lock-in with single LLM provider; token cost overruns projected at 115% of budget.\n\n**Recommendation:** Escalate budget risk to VP Engineering; priority #3 is already achieved — reallocate resources to #2.',
   },
-  'Billing Service': {
-    status: 'success',
-    data: {
-      invoiceId: 'INV-2026-0847',
-      customerId: 'CUST-12345',
-      amount: 12750.00,
-      currency: 'USD',
-      status: 'paid',
-      dueDate: '2026-04-01',
-      lineItems: [
-        { description: 'Enterprise AI Gateway — Monthly', amount: 9500.00 },
-        { description: 'Additional token usage (2.1M)', amount: 3250.00 },
-      ],
-    },
+  'Look up customer #12345': {
+    modelOnly:
+      'I can help you look up customer #12345, but I don\'t currently have access to the CRM system. Please attach the Customer CRM API tool to enable direct lookups.',
+    withTools:
+      '## Customer #12345 — Contoso Industries\n\n**Account Status:** Active (Enterprise Tier)\n**Primary Contact:** Sarah Chen (sarah.chen@contoso-ind.com)\n**Account Manager:** James Rodriguez\n\n**Billing Summary (Last 6 months):**\n| Month | Amount | Status |\n|-------|--------|--------|\n| Mar 2026 | $12,450 | ✅ Paid |\n| Feb 2026 | $11,800 | ✅ Paid |\n| Jan 2026 | $13,200 | ⚠️ Overdue |\n| Dec 2025 | $10,950 | ✅ Paid |\n| Nov 2025 | $11,400 | ✅ Paid |\n| Oct 2025 | $12,100 | ✅ Paid |\n\n**⚠️ Alert:** January invoice ($13,200) is 47 days overdue. Recommended action: escalate to Finance.',
+    agent:
+      '## Customer #12345 — Full Account Analysis\n\n*Agent orchestrated 3 tool calls: CRM lookup → Billing history → Slack notification*\n\n**Account:** Contoso Industries (Enterprise Tier, Active)\n**Contact:** Sarah Chen | **AM:** James Rodriguez\n\n**Billing Alert:** January invoice ($13,200) is 47 days overdue.\n\n**Actions Taken:**\n1. ✅ Retrieved full account profile from CRM\n2. ✅ Pulled 6-month billing history\n3. ✅ Sent overdue notification to #finance-escalations Slack channel\n\n**Recommendation:** Schedule a call with Sarah Chen to discuss the overdue payment and review contract renewal (due in 60 days).',
   },
-  'Slack Connector': {
-    status: 'success',
-    data: {
-      messageId: 'msg-9f8e7d6c',
-      channel: '#platform-alerts',
-      text: 'Deployment v2.4.1 completed successfully',
-      timestamp: '2026-04-08T14:32:00Z',
-      delivered: true,
-    },
+  'Triage incident INC-789': {
+    modelOnly:
+      '## Incident INC-789 — Preliminary Analysis\n\nBased on the incident description, this appears to be a **P2 (High)** severity issue affecting the API Gateway\'s token routing layer.\n\n**Likely Impact:** Intermittent 503 errors for 15-20% of model routing requests.\n**Suggested Mitigation:** Enable failover routing to secondary model endpoints.\n\n*Note: For a complete triage, attach the GitHub Issues API and Jira Service Desk tools for deployment log correlation.*',
+    withTools:
+      '## Incident INC-789 — Full Triage Report\n\n**Severity:** P1 (Critical) ← upgraded from initial P2\n**Status:** Active | **Duration:** 43 minutes\n\n**Impacted Services:**\n- API Gateway model routing (primary)\n- Customer Support Agent (dependent)\n- Billing Service queries (intermittent)\n\n**Root Cause (probable):** Deployment `deploy-gw-v2.14.3` at 14:23 UTC introduced a regression in the token bucket algorithm, causing rate limit miscalculation.\n\n**Recent Deployments (from GitHub):**\n- `deploy-gw-v2.14.3` — 14:23 UTC (⚠️ suspect)\n- `deploy-gw-v2.14.2` — 09:15 UTC (stable)\n\n**Mitigation Plan:**\n1. Rollback to `v2.14.2` immediately\n2. Disable adaptive rate limiting policy\n3. Monitor error rates for 15 minutes post-rollback',
+    agent:
+      '## Incident INC-789 — Agent Triage Complete\n\n*Agent executed full triage workflow: Jira ticket analysis → GitHub deployment correlation → Model impact assessment → Slack escalation*\n\n**Severity:** P1 (Critical) — auto-escalated\n**Root Cause:** Regression in `deploy-gw-v2.14.3` token bucket algorithm\n\n**Actions Completed:**\n1. ✅ Analyzed Jira ticket INC-789 (reported by: monitoring-bot)\n2. ✅ Correlated with GitHub deployment history (suspect: v2.14.3)\n3. ✅ Identified 3 impacted services via dependency graph\n4. ✅ Posted triage summary to #incident-response Slack channel\n5. ✅ Created rollback PR #4521 on GitHub\n\n**Auto-Mitigation:**\n- Rollback PR created and assigned to on-call engineer\n- Rate limiting policy temporarily disabled\n- Estimated recovery: 8 minutes post-rollback',
   },
-  'GitHub Issues API': {
-    status: 'success',
-    data: {
-      issueNumber: 1842,
-      title: 'Fix token rate limiter edge case on burst traffic',
-      state: 'open',
-      labels: ['bug', 'priority:high'],
-      assignee: 'devops-bot',
-      createdAt: '2026-04-07T09:15:00Z',
-      commentsCount: 5,
-    },
-  },
-  'Jira Service Desk': {
-    status: 'success',
-    data: {
-      ticketKey: 'PLAT-3291',
-      summary: 'Investigate elevated p99 latency on CRM endpoint',
-      status: 'In Progress',
-      priority: 'High',
-      assignee: 'Mike Torres',
-      sprint: 'Sprint 24',
-    },
-  },
-  'Internal Knowledge Base': {
-    status: 'success',
-    data: {
-      results: [
-        { id: 'KB-1024', title: 'AI Gateway — Getting Started Guide', relevance: 0.97 },
-        { id: 'KB-1031', title: 'Configuring Token Rate Limits', relevance: 0.89 },
-        { id: 'KB-1048', title: 'MCP Server Troubleshooting', relevance: 0.84 },
-      ],
-      totalResults: 3,
-      queryTime: '42ms',
-    },
-  },
-  'Weather API': {
-    status: 'success',
-    data: {
-      location: 'Seattle, WA',
-      temperature: 58,
-      unit: 'F',
-      condition: 'Partly Cloudy',
-      humidity: 72,
-      windSpeed: '8 mph',
-    },
-  },
-  'Payment Gateway': {
-    status: 'success',
-    data: {
-      transactionId: 'TXN-20260408-7721',
-      amount: 12750.00,
-      currency: 'USD',
-      status: 'completed',
-      method: 'ACH Transfer',
-      processedAt: '2026-04-08T10:00:12Z',
-    },
+  'Generate quarterly report': {
+    modelOnly:
+      '## Q1 2026 Performance Report\n\n**API Usage:**\n- Total requests: 1.43M (+22% QoQ)\n- Avg latency: 187ms (P95: 342ms)\n- Error rate: 0.8%\n\n**Top Consumers:**\n1. Customer Support Agent — 267K requests\n2. DevOps Assistant — 94K requests\n3. Sales Intelligence — 72K requests\n\n**Cost by Model:**\n- GPT-4o: $8,420 (58%)\n- GPT-4o-mini: $2,150 (15%)\n- Claude 3.5: $2,040 (14%)\n- Others: $1,890 (13%)\n\n**Total Token Spend:** $14,500',
+    withTools:
+      '## Q1 2026 Performance Report\n\n*Data sourced from: CRM API, Billing Service, Knowledge Base*\n\n**API Usage:**\n- Total requests: 1.43M (+22% QoQ)\n- Avg latency: 187ms (P95: 342ms)\n- Error rate: 0.8% (down from 1.2% in Q4)\n\n**Top Consumers:**\n1. Customer Support Agent — 267K requests ($4,890)\n2. DevOps Assistant — 94K requests ($1,720)\n3. Sales Intelligence — 72K requests ($1,310)\n\n**Cost Breakdown by Model:**\n| Model | Requests | Tokens | Cost |\n|-------|----------|--------|------|\n| GPT-4o | 542K | 8.7M | $8,420 |\n| GPT-4o-mini | 389K | 2.2M | $2,150 |\n| Claude 3.5 | 198K | 1.0M | $2,040 |\n| Gemini 1.5 | 126K | 340K | $890 |\n| Llama 3.1 | 175K | 190K | $1,000 |\n\n**Total Q1 Spend:** $14,500',
+    agent:
+      '## Q1 2026 Performance Report — Executive Summary\n\n*Agent compiled report from 4 data sources with automated analysis*\n\n**Headline:** API usage grew 22% QoQ with costs held flat (+3%) through model optimization.\n\n**Key Metrics:**\n- 1.43M total requests | 0.8% error rate | 187ms avg latency\n- $14,500 total spend (+$420 vs Q4 despite 22% more traffic)\n\n**Cost Savings Achieved:**\n- Model downtier routing saved $3,200 (auto-routing simple queries to GPT-4o-mini)\n- Semantic caching saved $1,800 (14% cache hit rate)\n\n**Recommendations:**\n1. Increase cache TTL for knowledge base queries (potential $800/mo saving)\n2. Migrate Sales Agent to GPT-4o-mini (no quality degradation in A/B test)\n3. Add Llama 3.1 as fallback for non-critical workloads\n\n*Full report exported to Knowledge Base (doc-id: report-q1-2026)*',
   },
 };
 
+const DEFAULT_RESPONSE = {
+  modelOnly: 'The request has been processed successfully. Here is a summary of the analysis based on the provided prompt.',
+  withTools: 'The request has been processed using the attached tools. Tool results have been synthesized into the response below.',
+  agent: 'The agent has completed the orchestrated task. Multiple tools were invoked and results have been compiled.',
+};
+
 // ---------------------------------------------------------------------------
-// Agent tab data
+// Helpers
 // ---------------------------------------------------------------------------
-interface TraceStep {
-  icon: string;
-  label: string;
-  detail: string;
-  color: string;
+const activeModels = models.filter((m) => m.status === 'active');
+const activeTools = tools.filter((t) => t.status === 'active');
+const activeAgents = agents.filter((a) => a.status === 'active');
+
+function findPromptKey(prompt: string): string | undefined {
+  for (const qp of QUICK_PROMPTS) {
+    if (prompt.includes(qp.prompt) || prompt.includes(qp.label)) return qp.label;
+  }
+  return undefined;
 }
 
-const agentTraces: Record<string, { steps: TraceStep[]; finalResponse: string }> = {
-  'agent-support': {
-    steps: [
-      { icon: '🔄', label: 'Analyzing task...', detail: 'Parsing customer request', color: '#999' },
-      { icon: '🧠', label: 'Calling GPT-4o for task planning...', detail: 'Determining required tools', color: '#6366f1' },
-      { icon: '🔧', label: 'Invoking CRM API — lookupCustomer...', detail: 'Fetching account details for CUST-12345', color: '#0ea5e9' },
-      { icon: '🔧', label: 'Invoking Billing Service — getInvoice...', detail: 'Retrieving latest invoice INV-2026-0847', color: '#0ea5e9' },
-      { icon: '🧠', label: 'Calling GPT-4o for response synthesis...', detail: 'Composing customer-friendly summary', color: '#6366f1' },
-      { icon: '✅', label: 'Task complete', detail: 'Response ready', color: '#10b981' },
-    ],
-    finalResponse: 'Customer CUST-12345 (Acme Corporation) is an Enterprise-tier account managed by Sarah Chen. Their health score is 92/100 with 3 open tickets. The latest invoice INV-2026-0847 for $12,750.00 (paid) covers the monthly AI Gateway subscription ($9,500) and additional token usage ($3,250). No outstanding issues detected.',
-  },
-  'agent-devops': {
-    steps: [
-      { icon: '🔄', label: 'Analyzing task...', detail: 'Parsing engineering request', color: '#999' },
-      { icon: '🧠', label: 'Calling Claude 3.5 Sonnet for task planning...', detail: 'Planning triage workflow', color: '#6366f1' },
-      { icon: '🔧', label: 'Invoking GitHub Issues API — listIssues...', detail: 'Fetching open issues with priority:high', color: '#0ea5e9' },
-      { icon: '🔧', label: 'Invoking Jira Service Desk — getBacklog...', detail: 'Querying Sprint 24 backlog', color: '#0ea5e9' },
-      { icon: '🧠', label: 'Calling Claude 3.5 Sonnet for analysis...', detail: 'Correlating issues across systems', color: '#6366f1' },
-      { icon: '✅', label: 'Task complete', detail: 'Triage report ready', color: '#10b981' },
-    ],
-    finalResponse: 'Triage Summary:\n• GitHub: 4 open high-priority issues, including #1842 (token rate limiter edge case) needing immediate attention.\n• Jira: PLAT-3291 is in progress — elevated p99 latency on CRM endpoint correlates with GitHub #1842.\n• Recommendation: Link PLAT-3291 to GitHub #1842 and escalate to on-call engineer. Sprint 24 has 6 remaining story points of capacity.',
-  },
-  'agent-sales': {
-    steps: [
-      { icon: '🔄', label: 'Analyzing task...', detail: 'Parsing sales request', color: '#999' },
-      { icon: '🧠', label: 'Calling GPT-4o-mini for task planning...', detail: 'Identifying data requirements', color: '#6366f1' },
-      { icon: '🔧', label: 'Invoking CRM API — lookupCustomer...', detail: 'Pulling account insights', color: '#0ea5e9' },
-      { icon: '🔧', label: 'Invoking CRM API — getAccountHistory...', detail: 'Fetching engagement timeline', color: '#0ea5e9' },
-      { icon: '🧠', label: 'Calling GPT-4o-mini for scoring...', detail: 'Computing deal score and recommendations', color: '#6366f1' },
-      { icon: '✅', label: 'Task complete', detail: 'Report generated', color: '#10b981' },
-    ],
-    finalResponse: 'Account Intelligence — Acme Corporation:\n• Deal Score: 87/100 (High potential)\n• Contract renewal in 11 months — recommend starting renewal conversation in Q3.\n• Usage trend: +34% token consumption MoM, suggesting expansion opportunity.\n• Suggested upsell: Premium SLA add-on ($2,400/mo) based on their uptime requirements.',
-  },
-  'agent-hr': {
-    steps: [
-      { icon: '🔄', label: 'Analyzing task...', detail: 'Parsing HR request', color: '#999' },
-      { icon: '🧠', label: 'Calling Gemini 1.5 Pro for task planning...', detail: 'Mapping onboarding steps', color: '#6366f1' },
-      { icon: '🔧', label: 'Invoking Knowledge Base — searchArticles...', detail: 'Finding onboarding guides and policies', color: '#0ea5e9' },
-      { icon: '🔧', label: 'Invoking Knowledge Base — getArticle...', detail: 'Retrieving KB-1024: Getting Started Guide', color: '#0ea5e9' },
-      { icon: '🧠', label: 'Calling Gemini 1.5 Pro for personalization...', detail: 'Tailoring onboarding checklist', color: '#6366f1' },
-      { icon: '✅', label: 'Task complete', detail: 'Onboarding plan ready', color: '#10b981' },
-    ],
-    finalResponse: 'New Hire Onboarding Checklist:\n1. ✅ Complete IT access request (KB-1024) — submit via ServiceNow portal\n2. ✅ Review company policies handbook (KB-1031)\n3. ✅ Set up development environment — follow AI Gateway Getting Started Guide\n4. ✅ Schedule 1:1 with team lead within first 3 days\n5. ✅ Complete security awareness training by end of Week 1\n\nAll relevant knowledge base articles have been compiled and shared via email.',
-  },
-};
+function getResponse(key: string | undefined, mode: 'modelOnly' | 'withTools' | 'agent'): string {
+  if (key && MOCK_RESPONSES[key]) return MOCK_RESPONSES[key][mode];
+  return DEFAULT_RESPONSE[mode];
+}
 
-const agentQuickTasks = [
-  { label: 'Lookup customer', task: 'Look up customer CUST-12345 and provide a summary of their account status, recent billing, and any open support tickets.' },
-  { label: 'Triage issue', task: 'Triage the current high-priority issues across GitHub and Jira and provide a summary with recommendations.' },
-  { label: 'Generate report', task: 'Generate a sales intelligence report for our top enterprise account with deal scoring and upsell recommendations.' },
-  { label: 'Onboard employee', task: 'Create a personalized onboarding checklist for a new engineer joining the platform team.' },
-];
+function toolMockResult(toolName: string): string {
+  const snippets: Record<string, string> = {
+    'Customer CRM API': '{ "customerId": "12345", "name": "Contoso Industries", "tier": "Enterprise", "status": "active" }',
+    'Billing Service': '{ "invoices": [{ "month": "Jan 2026", "amount": 13200, "status": "overdue" }], "total": 6 }',
+    'Slack Connector': '{ "ok": true, "channel": "#finance-escalations", "message": "Notification sent" }',
+    'GitHub Issues API': '{ "deployments": [{ "tag": "v2.14.3", "time": "14:23 UTC", "status": "suspect" }] }',
+    'Jira Service Desk': '{ "ticket": "INC-789", "severity": "P1", "status": "active", "duration": "43min" }',
+    'Internal Knowledge Base': '{ "docId": "strategy-q4-2025", "title": "Q4 Product Strategy", "sections": 5 }',
+    'Weather API': '{ "location": "Seattle", "temp": "52°F", "condition": "Partly cloudy" }',
+    'Payment Gateway': '{ "transactionId": "txn-9821", "status": "completed", "amount": "$1,250.00" }',
+  };
+  return snippets[toolName] || '{ "status": "ok", "result": "..." }';
+}
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 const Playground: React.FC = () => {
   const styles = useStyles();
-  const [activeTab, setActiveTab] = useState<string>('models');
 
-  // --- Model state ---
-  const [selectedModel, setSelectedModel] = useState<string>('model-gpt4o');
-  const [prompt, setPrompt] = useState<string>('');
-  const [response, setResponse] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
+  // Config state
+  const [selectedModelId, setSelectedModelId] = useState<string>('');
   const [temperature, setTemperature] = useState(0.7);
-  const [lastStats, setLastStats] = useState<{ latency: number; tokensIn: number; tokensOut: number } | null>(null);
+  const [showToolSelector, setShowToolSelector] = useState(false);
+  const [selectedToolIds, setSelectedToolIds] = useState<string[]>([]);
+  const [agentMode, setAgentMode] = useState(false);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('');
+  const [prompt, setPrompt] = useState('');
 
-  // --- Tool state ---
-  const [selectedTool, setSelectedTool] = useState<string>('tool-crm');
-  const [selectedOp, setSelectedOp] = useState<string>('');
-  const [toolInput, setToolInput] = useState<string>('{\n  "customerId": "CUST-12345",\n  "includeHistory": true\n}');
-  const [toolResponse, setToolResponse] = useState<string>('');
-  const [toolLoading, setToolLoading] = useState(false);
-  const [toolStats, setToolStats] = useState<{ latency: number; statusCode: number; size: number } | null>(null);
+  // Execution state
+  const [isRunning, setIsRunning] = useState(false);
+  const [traceSteps, setTraceSteps] = useState<TraceStep[]>([]);
+  const [activeStepIdx, setActiveStepIdx] = useState(-1);
+  const [response, setResponse] = useState<string | null>(null);
+  const [stats, setStats] = useState<ExecResult['stats'] | null>(null);
+  const [hasRun, setHasRun] = useState(false);
+  const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  // --- Agent state ---
-  const [selectedAgent, setSelectedAgent] = useState<string>('agent-support');
-  const [agentTask, setAgentTask] = useState<string>('');
-  const [agentSteps, setAgentSteps] = useState<TraceStep[]>([]);
-  const [agentFinal, setAgentFinal] = useState<string>('');
-  const [agentLoading, setAgentLoading] = useState(false);
-  const [agentStats, setAgentStats] = useState<{ latency: number; modelCalls: number; toolCalls: number; tokens: number } | null>(null);
-  const agentAbort = useRef(false);
+  const selectedModel = models.find((m) => m.id === selectedModelId);
+  const selectedAgent = agents.find((a) => a.id === selectedAgentId);
 
-  const activeModels = models.filter(m => m.status === 'active');
-  const selectedModelData = models.find(m => m.id === selectedModel);
-  const activeTools = tools.filter(t => t.status === 'active');
-  const selectedToolData = tools.find(t => t.id === selectedTool);
-  const activeAgents = agents.filter(a => a.status === 'active');
-  const selectedAgentData = agents.find(a => a.id === selectedAgent);
+  // Agent mode: override model + tools
+  const effectiveModelId = agentMode && selectedAgent ? selectedAgent.modelIds[0] : selectedModelId;
+  const effectiveModel = models.find((m) => m.id === effectiveModelId);
+  const effectiveToolIds = agentMode && selectedAgent ? selectedAgent.toolIds : selectedToolIds;
 
-  // Resolve names
-  const resolveModelNames = (ids: string[]) => ids.map(id => models.find(m => m.id === id)?.name || id);
-  const resolveToolNames = (ids: string[]) => ids.map(id => tools.find(t => t.id === id)?.name || id);
+  const toggleTool = useCallback((id: string) => {
+    setSelectedToolIds((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+  }, []);
 
-  // ---- Handlers ----
-  const handleSend = (): void => {
-    if (!prompt.trim()) return;
-    setIsLoading(true);
-    setResponse('');
-    setLastStats(null);
+  const reset = useCallback(() => {
+    timeouts.current.forEach(clearTimeout);
+    timeouts.current = [];
+    setSelectedModelId('');
+    setTemperature(0.7);
+    setShowToolSelector(false);
+    setSelectedToolIds([]);
+    setAgentMode(false);
+    setSelectedAgentId('');
+    setPrompt('');
+    setIsRunning(false);
+    setTraceSteps([]);
+    setActiveStepIdx(-1);
+    setResponse(null);
+    setStats(null);
+    setHasRun(false);
+  }, []);
 
-    const matchedTemplate = samplePrompts.find(sp => prompt.includes(sp.prompt));
-    const delay = 800 + Math.random() * 2000;
+  const runExecution = useCallback(() => {
+    if (!effectiveModel || !prompt.trim()) return;
 
-    setTimeout(() => {
-      const mockResp = matchedTemplate
-        ? mockResponses[matchedTemplate.label]
-        : `I understand your request. Here's my analysis:\n\n${prompt.split(' ').slice(0, 5).join(' ')}...\n\nThis is a simulated response from ${selectedModelData?.name || 'the model'}. In production, this would be routed through the AI Gateway to your selected model provider with full governance, observability, and failover capabilities applied.\n\n**Gateway Features Applied:**\n- ✅ Token quota check (within limits)\n- ✅ Rate limit check (passed)\n- ✅ Content safety scan (clean)\n- ✅ Request logged with OpenTelemetry`;
+    // Clear previous
+    timeouts.current.forEach(clearTimeout);
+    timeouts.current = [];
+    setTraceSteps([]);
+    setActiveStepIdx(-1);
+    setResponse(null);
+    setStats(null);
+    setIsRunning(true);
+    setHasRun(true);
 
-      setResponse(mockResp || 'Response generated.');
-      setLastStats({
-        latency: Math.round(delay),
-        tokensIn: prompt.split(' ').length * 3,
-        tokensOut: (mockResp || '').split(' ').length * 2,
-      });
-      setIsLoading(false);
-    }, delay);
-  };
+    const promptKey = findPromptKey(prompt);
+    const resolvedTools = effectiveToolIds
+      .map((id) => tools.find((t) => t.id === id))
+      .filter(Boolean) as typeof tools;
 
-  const handleInvokeTool = (): void => {
-    setToolLoading(true);
-    setToolResponse('');
-    setToolStats(null);
+    let steps: TraceStep[] = [];
+    let mode: 'modelOnly' | 'withTools' | 'agent' = 'modelOnly';
+    let modelCalls = 1;
+    let toolInvocations = 0;
 
-    const delay = 300 + Math.random() * 500;
-    setTimeout(() => {
-      const name = selectedToolData?.name || '';
-      const resp = toolMockResponses[name] || { status: 'success', data: {} };
-      const json = JSON.stringify(resp, null, 2);
-      setToolResponse(json);
-      setToolStats({
-        latency: Math.round(delay),
-        statusCode: 200,
-        size: new Blob([json]).size,
-      });
-      setToolLoading(false);
-    }, delay);
-  };
+    if (agentMode && selectedAgent) {
+      mode = 'agent';
+      modelCalls = 2;
+      toolInvocations = resolvedTools.length;
+      steps = [
+        { icon: '🤖', label: `Agent ${selectedAgent.name} starting task...`, color: '#10b981', done: false },
+        { icon: '🧠', label: 'Planning: analyzing task and determining approach...', color: '#10b981', done: false },
+        { icon: '🧠', label: `Calling ${effectiveModel.name} for task decomposition...`, color: '#6366f1', done: false },
+        ...resolvedTools.map((t) => ({
+          icon: '🔧',
+          label: `Executing tool: ${t.name}...`,
+          detail: toolMockResult(t.name),
+          color: '#0ea5e9',
+          done: false,
+        })),
+        { icon: '🧠', label: `Calling ${effectiveModel.name} for response synthesis...`, color: '#6366f1', done: false },
+        { icon: '✅', label: 'Task complete', color: '#10b981', done: false },
+      ];
+    } else if (resolvedTools.length > 0) {
+      mode = 'withTools';
+      modelCalls = 2;
+      toolInvocations = resolvedTools.length;
+      steps = [
+        { icon: '📤', label: `Sending prompt to ${effectiveModel.name}...`, color: '#6366f1', done: false },
+        { icon: '🧠', label: 'Model analyzing prompt and selecting tools...', color: '#6366f1', done: false },
+        ...resolvedTools.map((t) => ({
+          icon: '🔧',
+          label: `Invoking ${t.name}...`,
+          detail: toolMockResult(t.name),
+          color: '#0ea5e9',
+          done: false,
+        })),
+        { icon: '🧠', label: 'Model synthesizing results...', color: '#6366f1', done: false },
+        { icon: '📥', label: 'Response ready', color: '#6366f1', done: false },
+      ];
+    } else {
+      steps = [
+        { icon: '📤', label: `Sending prompt to ${effectiveModel.name}...`, color: '#6366f1', done: false },
+        { icon: '🧠', label: 'Model processing...', detail: `~${(Math.random() * 800 + 400).toFixed(0)}ms · ${(Math.random() * 1200 + 300).toFixed(0)} tokens`, color: '#6366f1', done: false },
+        { icon: '📥', label: 'Response received', color: '#6366f1', done: false },
+      ];
+    }
 
-  const handleRunAgent = useCallback((): void => {
-    if (!agentTask.trim()) return;
-    agentAbort.current = false;
-    setAgentLoading(true);
-    setAgentSteps([]);
-    setAgentFinal('');
-    setAgentStats(null);
-
-    const trace = agentTraces[selectedAgent] || agentTraces['agent-support'];
-    const startTime = Date.now();
-    let modelCalls = 0;
-    let toolCalls = 0;
-
-    trace.steps.forEach((step, i) => {
-      setTimeout(() => {
-        if (agentAbort.current) return;
-        setAgentSteps(prev => [...prev, step]);
-        if (step.icon === '🧠') modelCalls++;
-        if (step.icon === '🔧') toolCalls++;
-
-        // Last step
-        if (i === trace.steps.length - 1) {
-          setTimeout(() => {
-            if (agentAbort.current) return;
-            setAgentFinal(trace.finalResponse);
-            setAgentStats({
-              latency: Date.now() - startTime,
-              modelCalls,
-              toolCalls,
-              tokens: 1800 + Math.floor(Math.random() * 1200),
-            });
-            setAgentLoading(false);
-          }, 400);
-        }
-      }, (i + 1) * 600);
+    // Animate steps
+    steps.forEach((_, i) => {
+      const t1 = setTimeout(() => {
+        setActiveStepIdx(i);
+        setTraceSteps((prev) => {
+          const next = [...prev];
+          if (i > 0 && next[i - 1]) next[i - 1] = { ...next[i - 1], done: true };
+          if (!next[i]) next.push(steps[i]);
+          return next;
+        });
+      }, i * 500);
+      timeouts.current.push(t1);
     });
-  }, [agentTask, selectedAgent]);
 
-  // Update tool operation when tool changes
-  const handleToolChange = (toolId: string) => {
-    setSelectedTool(toolId);
-    setToolResponse('');
-    setToolStats(null);
-    const t = tools.find(t2 => t2.id === toolId);
-    const ops = t ? toolOperations[t.name] || [] : [];
-    setSelectedOp(ops[0] || '');
-  };
-
-  const currentToolOps = selectedToolData ? toolOperations[selectedToolData.name] || [] : [];
+    // Final
+    const totalTime = steps.length * 500 + 300;
+    const tf = setTimeout(() => {
+      setTraceSteps((prev) => prev.map((s) => ({ ...s, done: true })));
+      setActiveStepIdx(-1);
+      setResponse(getResponse(promptKey, mode));
+      const totalLatency = (steps.length * 0.4 + Math.random() * 0.5).toFixed(1);
+      const tokens = Math.floor(Math.random() * 1500 + 500);
+      setStats({
+        latency: `${totalLatency}s`,
+        modelCalls,
+        toolInvocations,
+        tokens,
+      });
+      setIsRunning(false);
+    }, totalTime);
+    timeouts.current.push(tf);
+  }, [effectiveModel, effectiveToolIds, prompt, agentMode, selectedAgent]);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -473,413 +555,301 @@ const Playground: React.FC = () => {
       {/* Header */}
       <div className={styles.header}>
         <div>
-          <Text size={500} weight="semibold">Playground</Text>
-          <br />
-          <Text size={200} style={{ color: '#999' }}>Experiment with models, tools, and agents through the gateway</Text>
+          <Text size={800} weight="bold" style={{ display: 'block', color: '#fff' }}>
+            Playground
+          </Text>
+          <Text size={300} style={{ color: '#999', marginTop: '4px', display: 'block' }}>
+            Compose and test AI experiences end-to-end — models, tools, and agents through the gateway
+          </Text>
         </div>
-        <TabList selectedValue={activeTab} onTabSelect={(_, d) => setActiveTab(d.value as string)}>
-          <Tab value="models" icon={<BrainCircuit24Regular />}>Models</Tab>
-          <Tab value="tools" icon={<PlugConnected24Regular />}>Tools</Tab>
-          <Tab value="agents" icon={<Bot24Regular />}>Agents</Tab>
-        </TabList>
+        <Button
+          icon={<ArrowReset24Regular />}
+          appearance="subtle"
+          onClick={reset}
+        >
+          Reset
+        </Button>
       </div>
 
-      {/* ================================================================ */}
-      {/* TAB 1 — Models                                                   */}
-      {/* ================================================================ */}
-      {activeTab === 'models' && (
-        <div className={styles.container}>
-          <div className={styles.panel}>
-            <Card className={styles.card}>
-              <Text weight="semibold" size={300} style={{ marginBottom: '8px' }}>Configuration</Text>
-              <div className={styles.configRow}>
-                <div className={styles.configItem}>
-                  <span className={styles.label}>Model</span>
-                  <Dropdown
-                    value={selectedModelData?.name || ''}
-                    onOptionSelect={(_, data) => setSelectedModel(data.optionValue || 'model-gpt4o')}
-                    style={{ width: '100%' }}
-                  >
-                    {activeModels.map(m => (
-                      <Option key={m.id} value={m.id} text={m.name}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <Text>{m.name}</Text>
-                          <Text size={200} style={{ color: '#999' }}>{m.provider}</Text>
-                        </div>
-                      </Option>
-                    ))}
-                  </Dropdown>
-                </div>
-                <div style={{ width: '120px' }}>
-                  <span className={styles.label}>Temperature: {temperature}</span>
-                  <Slider
-                    min={0}
-                    max={1}
-                    step={0.1}
-                    value={temperature}
-                    onChange={(_, data) => setTemperature(data.value)}
-                  />
-                </div>
-              </div>
-
-              <div style={{ marginTop: '12px' }}>
-                <span className={styles.label}>Quick prompts</span>
-                <div className={styles.promptTemplates}>
-                  {samplePrompts.map(sp => (
-                    <Badge key={sp.label} appearance="tint" style={{ cursor: 'pointer' }} onClick={() => setPrompt(sp.prompt)}>
-                      {sp.label}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginTop: '8px' }}>
-                <span className={styles.label}>Prompt</span>
-                <Textarea
-                  placeholder="Enter your prompt here..."
-                  value={prompt}
-                  onChange={(_, data) => setPrompt(data.value)}
-                  style={{ flex: 1, minHeight: '200px' }}
-                  resize="vertical"
-                />
-              </div>
-
-              <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
-                <Button appearance="primary" icon={<Send24Regular />} onClick={handleSend} disabled={isLoading || !prompt.trim()}>
-                  {isLoading ? 'Sending...' : 'Send Request'}
-                </Button>
-              </div>
-            </Card>
+      {/* Two-column layout */}
+      <div className={styles.columns}>
+        {/* ---- LEFT PANEL ---- */}
+        <div className={styles.leftPanel}>
+          <div className={styles.panelTitle}>
+            <Settings24Regular style={{ color: '#999' }} />
+            <Text size={500} weight="semibold" style={{ color: '#fff' }}>Configuration</Text>
           </div>
 
-          <div className={styles.panel}>
-            <Card className={styles.card}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <Text weight="semibold" size={300}>Response</Text>
-                {selectedModelData && <Badge appearance="outline">{selectedModelData.provider}</Badge>}
-              </div>
-
-              <div className={styles.responseArea}>
-                {isLoading ? (
-                  <div className={styles.emptyState}>
-                    <Spinner size="medium" />
-                    <Text size={200}>Routing through AI Gateway...</Text>
-                  </div>
-                ) : response ? (
-                  response
-                ) : (
-                  <div className={styles.emptyState}>
-                    <BrainCircuit24Regular style={{ fontSize: '32px' }} />
-                    <Text size={300}>Send a prompt to see the response</Text>
-                    <Text size={200}>Your request will be routed through the AI Gateway with full governance applied</Text>
-                  </div>
-                )}
-              </div>
-
-              {lastStats && (
-                <div className={styles.statsRow}>
-                  <div className={styles.stat}>
-                    <Text size={200} style={{ color: '#999' }}>Latency</Text>
-                    <Text weight="semibold" size={200}>{lastStats.latency}ms</Text>
-                  </div>
-                  <div className={styles.stat}>
-                    <Text size={200} style={{ color: '#999' }}>Tokens In</Text>
-                    <Text weight="semibold" size={200}>{lastStats.tokensIn}</Text>
-                  </div>
-                  <div className={styles.stat}>
-                    <Text size={200} style={{ color: '#999' }}>Tokens Out</Text>
-                    <Text weight="semibold" size={200}>{lastStats.tokensOut}</Text>
-                  </div>
-                  <div className={styles.stat}>
-                    <Text size={200} style={{ color: '#999' }}>Model</Text>
-                    <Text weight="semibold" size={200}>{selectedModelData?.name}</Text>
-                  </div>
-                </div>
-              )}
-            </Card>
+          {/* Step 1: Model */}
+          <div className={styles.sectionTitle}>
+            <BrainCircuit24Regular style={{ color: '#6366f1' }} />
+            <Text size={400} weight="semibold" style={{ color: '#e0e0e0' }}>Step 1: Select a Model</Text>
+            <Badge appearance="filled" color="important" size="small">required</Badge>
           </div>
-        </div>
-      )}
-
-      {/* ================================================================ */}
-      {/* TAB 2 — Tools                                                    */}
-      {/* ================================================================ */}
-      {activeTab === 'tools' && (
-        <div className={styles.container}>
-          {/* Left – Tool Configuration */}
-          <div className={styles.panel}>
-            <Card className={styles.card}>
-              <Text weight="semibold" size={300} style={{ marginBottom: '8px' }}>Tool Configuration</Text>
-
-              <span className={styles.label}>Tool</span>
-              <Dropdown
-                value={selectedToolData?.name || ''}
-                onOptionSelect={(_, data) => handleToolChange(data.optionValue || 'tool-crm')}
-                style={{ width: '100%' }}
-              >
-                {activeTools.map(t => (
-                  <Option key={t.id} value={t.id} text={t.name}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Text>{t.name}</Text>
-                      <Text size={200} style={{ color: '#999' }}>{t.transport}</Text>
-                    </div>
-                  </Option>
+          <Dropdown
+            placeholder="Choose a model..."
+            value={selectedModel?.name || ''}
+            selectedOptions={selectedModelId ? [selectedModelId] : []}
+            onOptionSelect={(_, data) => setSelectedModelId(data.optionValue as string)}
+            style={{ width: '100%' }}
+          >
+            {activeModels.map((m) => (
+              <Option key={m.id} value={m.id} text={m.name}>
+                {m.name} — {m.provider}
+              </Option>
+            ))}
+          </Dropdown>
+          {selectedModel && (
+            <div className={styles.modelInfo}>
+              <div>
+                <Badge appearance="outline" color="informative" size="small">{selectedModel.provider}</Badge>
+              </div>
+              <div>
+                {selectedModel.capabilities.map((c) => (
+                  <span key={c} className={styles.capBadge}>{c}</span>
                 ))}
-              </Dropdown>
-
-              {selectedToolData && (
-                <div className={styles.infoBlock} style={{ marginTop: '12px' }}>
-                  <Text size={200} style={{ color: '#999' }}>{selectedToolData.description}</Text>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px' }}>
-                    <Badge appearance="tint" color="informative">{selectedToolData.transport}</Badge>
-                    <Text size={200} style={{ color: '#999' }}>•</Text>
-                    <Text size={200} style={{ color: '#999' }}>{selectedToolData.endpoint}</Text>
-                  </div>
-                  <Text size={200} style={{ color: '#999' }}>Owner: {selectedToolData.ownerTeam}</Text>
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                    {selectedToolData.tags.map(tag => (
-                      <Badge key={tag} appearance="outline" size="small">{tag}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div style={{ marginTop: '12px' }}>
-                <span className={styles.label}>Operation</span>
-                <Dropdown
-                  value={selectedOp || currentToolOps[0] || ''}
-                  onOptionSelect={(_, data) => setSelectedOp(data.optionValue || '')}
-                  style={{ width: '100%' }}
-                >
-                  {currentToolOps.map(op => (
-                    <Option key={op} value={op} text={op}>{op}</Option>
-                  ))}
-                </Dropdown>
               </div>
-
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginTop: '12px' }}>
-                <span className={styles.label}>Request Body (JSON)</span>
-                <Textarea
-                  placeholder={'{\n  "customerId": "CUST-12345",\n  "includeHistory": true\n}'}
-                  value={toolInput}
-                  onChange={(_, data) => setToolInput(data.value)}
-                  style={{ flex: 1, minHeight: '120px', fontFamily: 'monospace', fontSize: '13px' }}
-                  resize="vertical"
-                />
-              </div>
-
-              <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
-                <Button appearance="primary" icon={<Play24Regular />} onClick={handleInvokeTool} disabled={toolLoading}>
-                  {toolLoading ? 'Invoking...' : 'Invoke Tool'}
-                </Button>
-              </div>
-            </Card>
+              <Text size={200} style={{ color: '#999' }}>
+                Token limit: {(selectedModel.tokenLimit / 1_000_000).toFixed(0)}M · Used today: {(selectedModel.tokensUsedToday / 1_000_000).toFixed(1)}M
+              </Text>
+            </div>
+          )}
+          <div className={styles.sliderRow}>
+            <Text size={200} style={{ color: '#999' }}>Temperature</Text>
+            <Slider
+              min={0}
+              max={1}
+              step={0.1}
+              value={temperature}
+              onChange={(_, d) => setTemperature(d.value)}
+              style={{ flex: 1 }}
+            />
+            <Text size={200} style={{ color: '#ccc', minWidth: '28px' }}>{temperature.toFixed(1)}</Text>
           </div>
 
-          {/* Right – Tool Response */}
-          <div className={styles.panel}>
-            <Card className={styles.card}>
-              <Text weight="semibold" size={300} style={{ marginBottom: '12px' }}>Response</Text>
-
-              <div className={styles.responseArea}>
-                {toolLoading ? (
-                  <div className={styles.emptyState}>
-                    <Spinner size="medium" />
-                    <Text size={200}>Invoking tool through AI Gateway...</Text>
-                  </div>
-                ) : toolResponse ? (
-                  toolResponse
-                ) : (
-                  <div className={styles.emptyState}>
-                    <PlugConnected24Regular style={{ fontSize: '32px' }} />
-                    <Text size={300}>Invoke a tool to see the response</Text>
-                    <Text size={200}>Requests are routed through the gateway with auth, rate limiting, and schema validation</Text>
-                  </div>
-                )}
-              </div>
-
-              {toolStats && (
+          {/* Step 2: Tools */}
+          <div className={styles.sectionTitle}>
+            <PlugConnected24Regular style={{ color: '#0ea5e9' }} />
+            <Text size={400} weight="semibold" style={{ color: '#e0e0e0' }}>Step 2: Attach Tools</Text>
+            <Text size={200} style={{ color: '#999' }}>optional</Text>
+          </div>
+          {!agentMode && (
+            <>
+              <Button
+                icon={<Add24Regular />}
+                appearance="subtle"
+                size="small"
+                onClick={() => setShowToolSelector((p) => !p)}
+              >
+                {showToolSelector ? 'Hide tool selector' : 'Add Tool'}
+              </Button>
+              {showToolSelector && (
+                <div className={styles.toolChips}>
+                  {activeTools.map((t) => (
+                    <span
+                      key={t.id}
+                      className={selectedToolIds.includes(t.id) ? styles.toolChipSelected : styles.toolChip}
+                      onClick={() => toggleTool(t.id)}
+                    >
+                      {selectedToolIds.includes(t.id) ? '✓ ' : ''}{t.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {selectedToolIds.length > 0 && (
                 <>
-                  <div className={styles.statsRow}>
-                    <div className={styles.stat}>
-                      <Text size={200} style={{ color: '#999' }}>Latency</Text>
-                      <Text weight="semibold" size={200}>{toolStats.latency}ms</Text>
-                    </div>
-                    <div className={styles.stat}>
-                      <Text size={200} style={{ color: '#999' }}>Status</Text>
-                      <Text weight="semibold" size={200} style={{ color: '#10b981' }}>{toolStats.statusCode} OK</Text>
-                    </div>
-                    <div className={styles.stat}>
-                      <Text size={200} style={{ color: '#999' }}>Response Size</Text>
-                      <Text weight="semibold" size={200}>{toolStats.size} bytes</Text>
-                    </div>
-                  </div>
-                  <div style={{ marginTop: '12px' }}>
-                    <Text size={200} weight="semibold" style={{ marginBottom: '6px', display: 'block' }}>Gateway policies applied</Text>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div className={styles.policyRow}>
-                        <Text size={200} style={{ color: '#10b981' }}>✅</Text>
-                        <Text size={200}>Auth verified</Text>
-                      </div>
-                      <div className={styles.policyRow}>
-                        <Text size={200} style={{ color: '#10b981' }}>✅</Text>
-                        <Text size={200}>Rate limit check</Text>
-                      </div>
-                      <div className={styles.policyRow}>
-                        <Text size={200} style={{ color: '#10b981' }}>✅</Text>
-                        <Text size={200}>Schema validated</Text>
-                      </div>
-                    </div>
+                  <Text size={200} style={{ color: '#0ea5e9', marginTop: '8px', display: 'block' }}>
+                    {selectedToolIds.length} tool{selectedToolIds.length > 1 ? 's' : ''} attached
+                  </Text>
+                  <div className={styles.selectedToolList}>
+                    {selectedToolIds.map((id) => {
+                      const t = tools.find((x) => x.id === id);
+                      if (!t) return null;
+                      return (
+                        <div key={id} className={styles.selectedToolItem}>
+                          <span>✓ {t.name}</span>
+                          <button
+                            onClick={() => toggleTool(id)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#f87171',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                              padding: '0 4px',
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </>
               )}
-            </Card>
+            </>
+          )}
+          {agentMode && (
+            <Text size={200} style={{ color: '#999', fontStyle: 'italic' }}>
+              Tools are managed by the selected agent.
+            </Text>
+          )}
+
+          {/* Step 3: Agent Mode */}
+          <div className={styles.sectionTitle}>
+            <Bot24Regular style={{ color: '#10b981' }} />
+            <Text size={400} weight="semibold" style={{ color: '#e0e0e0' }}>Step 3: Agent Mode</Text>
+            <Text size={200} style={{ color: '#999' }}>optional</Text>
           </div>
-        </div>
-      )}
-
-      {/* ================================================================ */}
-      {/* TAB 3 — Agents                                                   */}
-      {/* ================================================================ */}
-      {activeTab === 'agents' && (
-        <div className={styles.container}>
-          {/* Left – Agent Configuration */}
-          <div className={styles.panel}>
-            <Card className={styles.card}>
-              <Text weight="semibold" size={300} style={{ marginBottom: '8px' }}>Agent Configuration</Text>
-
-              <span className={styles.label}>Agent</span>
+          <div className={styles.switchRow}>
+            <Switch
+              checked={agentMode}
+              onChange={(_, d) => {
+                setAgentMode(d.checked);
+                if (!d.checked) setSelectedAgentId('');
+              }}
+              label="Enable Agent Mode"
+            />
+          </div>
+          {agentMode && (
+            <>
               <Dropdown
-                value={selectedAgentData?.name || ''}
+                placeholder="Choose an agent..."
+                value={selectedAgent?.name || ''}
+                selectedOptions={selectedAgentId ? [selectedAgentId] : []}
                 onOptionSelect={(_, data) => {
-                  setSelectedAgent(data.optionValue || 'agent-support');
-                  setAgentSteps([]);
-                  setAgentFinal('');
-                  setAgentStats(null);
+                  const aid = data.optionValue as string;
+                  setSelectedAgentId(aid);
+                  const ag = agents.find((a) => a.id === aid);
+                  if (ag) {
+                    setSelectedModelId(ag.modelIds[0]);
+                    setSelectedToolIds(ag.toolIds);
+                  }
                 }}
-                style={{ width: '100%' }}
+                style={{ width: '100%', marginTop: '8px' }}
               >
-                {activeAgents.map(a => (
+                {activeAgents.map((a) => (
                   <Option key={a.id} value={a.id} text={a.name}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Text>{a.name}</Text>
-                      <Text size={200} style={{ color: '#999' }}>{a.protocol}</Text>
-                    </div>
+                    {a.name}
                   </Option>
                 ))}
               </Dropdown>
-
-              {selectedAgentData && (
-                <div className={styles.infoBlock} style={{ marginTop: '12px' }}>
-                  <Text size={200} style={{ color: '#999' }}>{selectedAgentData.description}</Text>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
-                    <Badge appearance="tint" color="informative">{selectedAgentData.protocol}</Badge>
-                  </div>
-                  <div style={{ marginTop: '4px' }}>
-                    <Text size={200} style={{ color: '#999' }}>Models: </Text>
-                    <Text size={200}>{resolveModelNames(selectedAgentData.modelIds).join(', ')}</Text>
-                  </div>
-                  <div>
-                    <Text size={200} style={{ color: '#999' }}>Tools: </Text>
-                    <Text size={200}>{resolveToolNames(selectedAgentData.toolIds).join(', ')}</Text>
-                  </div>
+              {selectedAgent && (
+                <div className={styles.agentInfo}>
+                  <Badge appearance="outline" color="success" size="small">{selectedAgent.protocol}</Badge>
+                  <Text size={200} style={{ color: '#a7f3d0', display: 'block', marginTop: '6px' }}>
+                    {selectedAgent.description}
+                  </Text>
+                  <Text size={200} style={{ color: '#6ee7b7', display: 'block', marginTop: '8px', fontStyle: 'italic' }}>
+                    Agent will orchestrate model + tools automatically
+                  </Text>
                 </div>
               )}
+            </>
+          )}
 
-              <div style={{ marginTop: '12px' }}>
-                <span className={styles.label}>Quick tasks</span>
-                <div className={styles.promptTemplates}>
-                  {agentQuickTasks.map(qt => (
-                    <Badge key={qt.label} appearance="tint" style={{ cursor: 'pointer' }} onClick={() => setAgentTask(qt.task)}>
-                      {qt.label}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginTop: '8px' }}>
-                <span className={styles.label}>Task</span>
-                <Textarea
-                  placeholder="Describe what you want the agent to do..."
-                  value={agentTask}
-                  onChange={(_, data) => setAgentTask(data.value)}
-                  style={{ flex: 1, minHeight: '120px' }}
-                  resize="vertical"
-                />
-              </div>
-
-              <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
-                <Button appearance="primary" icon={<Play24Regular />} onClick={handleRunAgent} disabled={agentLoading || !agentTask.trim()}>
-                  {agentLoading ? 'Running...' : 'Run Agent'}
-                </Button>
-              </div>
-            </Card>
+          {/* Step 4: Prompt */}
+          <div className={styles.sectionTitle}>
+            <Send24Regular style={{ color: '#f59e0b' }} />
+            <Text size={400} weight="semibold" style={{ color: '#e0e0e0' }}>Step 4: Prompt</Text>
+          </div>
+          <div className={styles.promptArea}>
+            <Textarea
+              placeholder="Describe what you want to do..."
+              value={prompt}
+              onChange={(_, d) => setPrompt(d.value)}
+              resize="vertical"
+              style={{ width: '100%', minHeight: '100px' }}
+            />
+          </div>
+          <div className={styles.quickPrompts}>
+            {QUICK_PROMPTS.map((qp) => (
+              <button
+                key={qp.label}
+                className={styles.quickBadge}
+                onClick={() => setPrompt(qp.prompt)}
+              >
+                {qp.label}
+              </button>
+            ))}
           </div>
 
-          {/* Right – Agent Execution */}
-          <div className={styles.panel}>
-            <Card className={styles.card}>
-              <Text weight="semibold" size={300} style={{ marginBottom: '12px' }}>Agent Execution</Text>
-
-              <div className={styles.responseArea}>
-                {agentSteps.length === 0 && !agentLoading ? (
-                  <div className={styles.emptyState}>
-                    <Bot24Regular style={{ fontSize: '32px' }} />
-                    <Text size={300}>Run an agent to see the execution trace</Text>
-                    <Text size={200}>The agent will orchestrate model calls and tool invocations to complete your task</Text>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    {agentSteps.map((step, i) => (
-                      <div key={i} className={styles.traceStep}>
-                        <span>{step.icon}</span>
-                        <div style={{ flex: 1 }}>
-                          <Text size={200} weight="semibold" style={{ color: step.color }}>{step.label}</Text>
-                          <br />
-                          <Text size={200} style={{ color: '#999' }}>{step.detail}</Text>
-                        </div>
-                      </div>
-                    ))}
-                    {agentLoading && !agentFinal && (
-                      <div style={{ padding: '12px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Spinner size="tiny" />
-                        <Text size={200} style={{ color: '#999' }}>Processing...</Text>
-                      </div>
-                    )}
-                    {agentFinal && (
-                      <div style={{ marginTop: '16px', padding: '12px', backgroundColor: tokens.colorNeutralBackground3, borderRadius: '8px', border: `1px solid ${tokens.colorNeutralStroke2}` }}>
-                        <Text size={200} weight="semibold" style={{ color: '#10b981', marginBottom: '8px', display: 'block' }}>Final Response</Text>
-                        <Text size={200} style={{ whiteSpace: 'pre-wrap' }}>{agentFinal}</Text>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {agentStats && (
-                <div className={styles.statsRow}>
-                  <div className={styles.stat}>
-                    <Text size={200} style={{ color: '#999' }}>Total Latency</Text>
-                    <Text weight="semibold" size={200}>{agentStats.latency}ms</Text>
-                  </div>
-                  <div className={styles.stat}>
-                    <Text size={200} style={{ color: '#999' }}>Model Calls</Text>
-                    <Text weight="semibold" size={200} style={{ color: '#6366f1' }}>{agentStats.modelCalls}</Text>
-                  </div>
-                  <div className={styles.stat}>
-                    <Text size={200} style={{ color: '#999' }}>Tool Calls</Text>
-                    <Text weight="semibold" size={200} style={{ color: '#0ea5e9' }}>{agentStats.toolCalls}</Text>
-                  </div>
-                  <div className={styles.stat}>
-                    <Text size={200} style={{ color: '#999' }}>Tokens Used</Text>
-                    <Text weight="semibold" size={200}>{agentStats.tokens}</Text>
-                  </div>
-                </div>
-              )}
-            </Card>
-          </div>
+          {/* Run button */}
+          <Button
+            className={styles.runBtn}
+            appearance="primary"
+            size="large"
+            icon={<Play24Regular />}
+            disabled={!effectiveModel || !prompt.trim() || isRunning}
+            onClick={runExecution}
+          >
+            {isRunning ? 'Running...' : 'Run'}
+          </Button>
         </div>
-      )}
+
+        {/* ---- RIGHT PANEL ---- */}
+        <div className={styles.rightPanel}>
+          <div className={styles.panelTitle}>
+            <Play24Regular style={{ color: '#999' }} />
+            <Text size={500} weight="semibold" style={{ color: '#fff' }}>Execution &amp; Results</Text>
+          </div>
+
+          {!hasRun && !isRunning ? (
+            <div className={styles.emptyState}>
+              <BrainCircuit24Regular style={{ fontSize: '48px', color: '#555' }} />
+              <Text size={300} style={{ color: '#999', textAlign: 'center' }}>
+                Configure your experience and click Run to see results here
+              </Text>
+            </div>
+          ) : (
+            <div className={styles.traceContainer}>
+              {traceSteps.map((step, i) => (
+                <div
+                  key={i}
+                  className={`${styles.stepCard} ${i === activeStepIdx ? styles.activeStep : ''}`}
+                  style={{ borderLeft: `3px solid ${step.color}`, opacity: step.done || i === activeStepIdx ? 1 : 0.5 }}
+                >
+                  <span style={{ fontSize: '16px' }}>{step.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <Text size={300} style={{ color: '#e0e0e0' }}>{step.label}</Text>
+                    {step.detail && (
+                      <div className={styles.stepDetail}>
+                        <code style={{ fontSize: '11px', color: '#8b949e' }}>{step.detail}</code>
+                      </div>
+                    )}
+                  </div>
+                  {i === activeStepIdx && <Spinner size="tiny" />}
+                  {step.done && <span style={{ color: '#10b981', fontSize: '14px' }}>✓</span>}
+                </div>
+              ))}
+
+              {response && (
+                <div className={styles.responseBox}>{response}</div>
+              )}
+
+              {stats && (
+                <div className={styles.statsBar}>
+                  <div className={styles.statItem}>
+                    ⏱ <span className={styles.statValue}>{stats.latency}</span>
+                  </div>
+                  <div className={styles.statItem}>
+                    🧠 <span className={styles.statValue}>{stats.modelCalls} call{stats.modelCalls > 1 ? 's' : ''}</span>
+                  </div>
+                  <div className={styles.statItem}>
+                    🔧 <span className={styles.statValue}>{stats.toolInvocations} invocation{stats.toolInvocations !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className={styles.statItem}>
+                    📊 <span className={styles.statValue}>{stats.tokens.toLocaleString()} tokens</span>
+                  </div>
+                  <div className={styles.statItem} style={{ color: '#10b981' }}>
+                    ✅ Auth · ✅ Rate limit · ✅ Content safety
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
