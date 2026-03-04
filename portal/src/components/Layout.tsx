@@ -484,6 +484,22 @@ const Layout: React.FC<LayoutProps> = ({ onSignOut }) => {
     return item?.label || 'Dashboard';
   };
 
+  const pageSubtitles: Record<string, string> = {
+    '/': 'Overview of your AI gateway — quick actions, usage stats, and recent activity',
+    '/playground': 'Compose and test AI experiences end-to-end through the gateway',
+    '/catalog': 'Discover and explore AI assets across your organization',
+    '/models': 'Register, route, and monitor AI models from any provider',
+    '/tools': 'APIs, MCP servers, connectors, and triggers available through the gateway',
+    '/agents': 'Manage agents that orchestrate models and tools to complete tasks',
+    '/skills': 'Reusable AI automation patterns — prompt chains, analysis, and automations',
+    '/workflows': 'Multi-step orchestration patterns combining models, tools, and logic',
+    '/namespaces': 'Organize assets into team and project boundaries',
+    '/consumers': 'Per-user and per-app authentication, quotas, and API key management',
+    '/policies': 'Runtime rules, design-time governance, and responsible AI guardrails',
+    '/analytics': 'Token consumption, cost attribution, and usage analytics across workloads',
+    '/logs': 'Real-time request tracing and observability across all gateway traffic',
+  };
+
   let lastSection = '';
 
   return (
@@ -586,9 +602,18 @@ const Layout: React.FC<LayoutProps> = ({ onSignOut }) => {
         <div className={styles.content}>
           <div className={styles.header}>
             <div className={styles.headerLeft}>
-              <Text size={500} weight="semibold">
-                {getPageTitle()}
-              </Text>
+              <div>
+                <Text size={500} weight="semibold">
+                  {getPageTitle()}
+                </Text>
+                {pageSubtitles[location.pathname] && (
+                  <div style={{ marginTop: '2px' }}>
+                    <Text size={200} style={{ color: '#999' }}>
+                      {pageSubtitles[location.pathname]}
+                    </Text>
+                  </div>
+                )}
+              </div>
             </div>
             <div className={styles.headerRight}>
               <div className={styles.envIndicator}>

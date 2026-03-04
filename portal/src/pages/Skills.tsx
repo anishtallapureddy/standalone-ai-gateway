@@ -326,14 +326,6 @@ const Skills: React.FC = () => {
     <div>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className={styles.header}>
-        <div>
-          <Text as="h1" size={700} weight="bold" block>
-            Skills
-          </Text>
-          <Text size={300} style={{ color: '#999' }}>
-            Reusable AI automation patterns — prompt chains, automations, and analysis templates
-          </Text>
-        </div>
         <div className={styles.headerRight}>
           <Input
             placeholder="Search skills..."

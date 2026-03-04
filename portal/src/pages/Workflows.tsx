@@ -257,14 +257,7 @@ const Workflows: React.FC = () => {
     <div>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className={styles.header}>
-        <div>
-          <Text as="h1" size={700} weight="bold" block>
-            Workflows
-          </Text>
-          <Text size={300} style={{ color: '#999' }}>
-            Multi-step orchestration patterns combining models, tools, and logic
-          </Text>
-        </div>
+        <div />
         <Button appearance="primary" icon={<Add24Regular />}>
           Create Workflow
         </Button>

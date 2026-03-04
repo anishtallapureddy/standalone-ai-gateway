@@ -196,9 +196,6 @@ const Catalog: React.FC = () => {
   return (
     <div>
       <div className={styles.header}>
-        <Text size={200} className={styles.subtitle}>
-          Discover and explore AI assets across your organization — models, tools, agents, skills, and workflows.
-        </Text>
       </div>
 
       {/* Type tabs */}
