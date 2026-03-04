@@ -1,129 +1,210 @@
-# Entity Model — Standalone AI Gateway
+# Entity Model — AI Gateway
+
+## Governance Hierarchy
+
+```
+Organization
+   ↓
+Domain (optional grouping by business unit)
+   ↓
+Namespace   ← primary governance boundary
+   ↓
+Assets (Models, Tools, Agents, Skills, Workflows, Connectors, Credentials)
+```
 
 ## First-Class Entities
 
-The AI Gateway treats the following as core platform primitives:
-
-### Entity Hierarchy
-
 ```mermaid
 graph TD
-    TENANT[🏢 Tenant] --> TEAM[👥 Team]
-    TENANT --> MODEL[🧠 Model]
-    TENANT --> TOOL[🔧 Tool]
-    TENANT --> MCP[⚡ MCP Server]
-    TENANT --> SKILL[🎯 Skill]
-    TENANT --> AGENT[🤖 Agent]
-    TENANT --> PRODUCT[📦 Product]
-    TENANT --> POLICY[📋 Policy]
+    ORG[🏢 Organization] --> DOMAIN[📂 Domain]
+    DOMAIN --> NS[📁 Namespace]
 
-    TOOL -->|"converts to"| MCP
-    MCP -->|"exposes"| MCP_TOOL[MCP Tool Definition]
+    NS --> MODEL[🧠 Model]
+    NS --> TOOL[🔧 Tool]
+    NS --> AGENT[🤖 Agent]
+    NS --> SKILL[🎯 Skill]
+    NS --> WORKFLOW[⚙️ Workflow]
+    NS --> CONNECTOR[🔌 Connector]
+    NS --> CREDENTIAL[🔑 Credential]
+    NS --> POLICY[📋 Policy]
 
-    SKILL -->|"composed of"| TOOL
+    TOOL -->|"types"| TOOL_TYPES["APIs, MCP Servers,\nConnectors, Triggers"]
     AGENT -->|"consumes"| MODEL
     AGENT -->|"consumes"| TOOL
-    AGENT -->|"consumes"| SKILL
-    AGENT -->|"connects to"| MCP
-
-    PRODUCT -->|"bundles"| MODEL
-    PRODUCT -->|"bundles"| TOOL
-    PRODUCT -->|"bundles"| SKILL
-    PRODUCT -->|"bundles"| AGENT
+    AGENT -->|"uses"| SKILL
+    WORKFLOW -->|"orchestrates"| MODEL
+    WORKFLOW -->|"orchestrates"| TOOL
+    WORKFLOW -->|"uses"| SKILL
 
     POLICY -->|"governs"| MODEL
     POLICY -->|"governs"| TOOL
-    POLICY -->|"governs"| MCP
     POLICY -->|"governs"| AGENT
+    POLICY -->|"governs"| WORKFLOW
 ```
 
 ## Entity Definitions
 
-### Tenant
-The top-level organizational boundary. Everything is scoped to a tenant.
-- Contains teams, which contain members
-- Owns all assets (models, tools, agents, etc.)
-- Has quotas (tokens/min, requests/min, max assets)
-- Operates in a tier: `serverless` or `dedicated`
+### Organization
+
+The top-level boundary. One organization per AI Gateway deployment.
+
+- Contains domains (optional) and namespaces
+- Defines global policies that cascade to all namespaces
+- Manages platform-wide settings and admin roles
+
+### Domain (optional)
+
+Logical grouping by business unit.
+
+- Groups related namespaces (e.g., "Retail AI", "Finance AI")
+- No direct governance enforcement — purely organizational
+
+### Namespace
+
+The **primary governance boundary**. All assets, identities, policies, and observability data are scoped to a namespace.
+
+- Groups AI assets
+- Controls user and service identity access
+- Defines runtime policies
+- Manages credentials
+- Supports multiple environments (sandbox, development, production)
+- Types: `managed` (admin-created) or `personal` (developer-created)
 
 ### Model
-A registered AI model from any provider.
-- **Provider**: Azure OpenAI, OpenAI, Anthropic, Google Vertex AI, AWS Bedrock, custom
-- **Capabilities**: chat, completion, embedding, image, audio, vision
-- **Cost config**: per-1k token pricing for cost tracking
-- **Failover chain**: ordered list of backup models (can cross providers)
+
+A registered AI model endpoint from any provider.
+
+- **Providers**: Azure OpenAI, OpenAI, Anthropic, Google Vertex AI, AWS Bedrock, custom
+- **Capabilities**: chat, completion, embedding, image, audio, vision, function-calling
+- **Governance**: namespace assignment, visibility level, token quotas, rate limits, routing rules, region restrictions
+- **Failover**: ordered list of backup models (can cross providers and regions)
 
 ### Tool
-An API or service that can be invoked by agents.
-- **Transport**: REST, GraphQL, gRPC, MCP, custom
-- **Auth**: API key, OAuth2, Entra ID, none, custom
-- **Schema**: OpenAPI spec or JSON Schema for input/output
-- **Visibility**: public, private, or team-scoped
-- Can be **converted to an MCP server** for agent consumption
 
-### MCP Server
-A Model Context Protocol endpoint exposing tools to agents.
-- **Hosting**: managed (gateway-hosted) or external
-- **Transport**: stdio, SSE, streamable-http
-- **Source**: can be created from an OpenAPI spec (API→MCP conversion)
-- Exposes a list of **MCP Tool Definitions** (name, description, input schema)
+An external capability that agents can invoke. Tools include multiple sub-types:
 
-### Skill
-A higher-level construct composed of tools, prompts, and workflows.
-- Built from multiple tools combined with logic
-- Has its own input/output schema
-- Reusable across agents
-- Workflow steps: tool invocation, prompt template, condition, parallel execution
+- **APIs**: REST, GraphQL, gRPC endpoints
+- **MCP Servers**: Model Context Protocol endpoints (managed or external)
+- **Connectors**: SaaS integrations (Salesforce, ServiceNow, etc.)
+- **Triggers**: Event-driven invocation sources
+
+**Governance**: namespace access, invocation limits, authentication credentials, network restrictions, audit logging.
 
 ### Agent
-An AI agent that consumes models, tools, and skills.
+
+A reasoning system that orchestrates models and tools to accomplish tasks.
+
 - **Protocol**: RAPI (request-response), A2A (agent-to-agent), custom
 - Connected to models for reasoning
-- Connected to tools and MCP servers for action
-- Connected to skills for composed capabilities
-- Governed by policies
+- Connected to tools for action
+- Uses skills for composed capabilities
+- **Governance**: allowed tools, allowed models, execution limits, namespace membership
 
-### Product
-A bundled collection of assets for simplified consumption.
-- Groups models, tools, skills, agents, MCP servers
-- Applies unified policies to the bundle
-- Simplifies developer onboarding — subscribe to a product, get everything
+### Skill
+
+A reusable AI automation pattern combining models and tools.
+
+- Types: prompt-chain, automation, analysis
+- Has step pipeline with ordered execution
+- Reusable across agents and workflows
+- **Governance**: namespace visibility, execution permissions, tool access inheritance
+
+### Workflow
+
+A multi-step orchestration pattern.
+
+- Combines models, tools, skills, and logic
+- Types: orchestration, pipeline, event-driven
+- Supports conditional branching and parallel execution
+- **Governance**: namespace visibility, execution permissions
+
+### Connector
+
+An integration configuration used by tools.
+
+- Links to external services (Salesforce, ServiceNow, SQL databases)
+- **Governance**: credential scoping, namespace access, environment restrictions
+
+### Credential
+
+Secrets used for tool and connector access.
+
+- Types: API keys, OAuth tokens, managed identities, Key Vault references
+- **Governance**: namespace scope, rotation policies, restricted visibility, no direct exposure to agents
 
 ### Policy
-A governance rule applied to assets at design-time or runtime.
-- **Design-time**: registration validation, schema checks, approval workflows
-- **Runtime**: rate limiting, token quotas, content safety, access control, IP filtering
-- Targets specific asset types or specific asset instances
+
+A governance rule applied at design-time or runtime.
+
+- **Categories**: Authentication, Credentials, Rate limits, Content safety, Routing/transformation, Agent execution
+- **Attachment points**: Organization, Namespace, Asset, Agent
+- Policies cascade downward through the hierarchy
 - Composable — multiple policies can apply to the same asset
 
-## Entity Lifecycle
+## Asset Visibility
+
+Assets have visibility levels that control discoverability:
+
+| Level | Description |
+|-------|-------------|
+| `private` | Only visible to the asset owner |
+| `namespace` | Visible to all members of the namespace |
+| `organization` | Visible across all namespaces in the organization |
+| `public` | Visible to all (optional, for shared catalogs) |
+
+## Asset Lifecycle
+
+Assets follow a governed lifecycle:
 
 ```mermaid
 stateDiagram-v2
     [*] --> Registered: Register asset
-    Registered --> Validated: Design-time governance
-    Validated --> Published: Publish to catalog
-    Published --> Active: Consumed by agents/developers
-    Active --> Deprecated: Mark as deprecated
-    Deprecated --> Archived: Archive
-    Archived --> [*]
+    Registered --> Approved: Admin approval
+    Approved --> Published: Publish to catalog
+    Published --> Deprecated: Mark as deprecated
+    Deprecated --> [*]
 
-    Active --> Suspended: Policy violation
-    Suspended --> Active: Remediation
+    Published --> Registered: Policy violation / revoke
 ```
+
+| State | Description |
+|-------|-------------|
+| `registered` | Asset created, pending review |
+| `approved` | Reviewed and approved, not yet in catalog |
+| `published` | Live in the catalog, available for use |
+| `deprecated` | Marked for removal, still functional |
+
+## Access Control
+
+Access is granted at three levels:
+
+1. **Namespace** — default access boundary
+2. **Asset** — fine-grained per-asset overrides
+3. **Environment** — sandbox vs. production restrictions
+
+### Roles
+
+| Role | Scope | Permissions |
+|------|-------|-------------|
+| Platform Admin | Global | Manage namespaces, register assets, define policies, manage users |
+| Namespace Admin | Namespace | Add users, import assets, configure policies, deploy workloads |
+| AI Developer | Namespace | Use models, invoke tools, create agents, run workflows |
+| Viewer | Namespace | View assets, view metrics, inspect executions |
+| Service Identity | Runtime | Invoke models, run agents, call tools |
 
 ## Relationships Summary
 
 | From | To | Relationship |
 |------|----|-------------|
-| Tenant | Team | has many |
-| Tenant | All assets | owns |
-| Tool | MCP Server | can be converted to |
-| MCP Server | MCP Tool Definition | exposes many |
-| Skill | Tool | composed of many |
-| Agent | Model | consumes many |
-| Agent | Tool | consumes many |
-| Agent | Skill | consumes many |
-| Agent | MCP Server | connects to many |
-| Product | Model, Tool, Skill, Agent | bundles many |
-| Policy | Model, Tool, MCP Server, Agent | governs many |
+| Organization | Domain | has many |
+| Domain | Namespace | has many |
+| Namespace | All assets | owns |
+| Namespace | User / Service Identity | grants access to |
+| Namespace | Policy | defines |
+| Tool | Sub-types (API, MCP, Connector, Trigger) | classified as |
+| Skill | Tool, Model | composed of |
+| Agent | Model | consumes |
+| Agent | Tool | consumes |
+| Agent | Skill | uses |
+| Workflow | Model, Tool, Skill | orchestrates |
+| Policy | Model, Tool, Agent, Workflow | governs |

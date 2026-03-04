@@ -1,5 +1,8 @@
 // Mock data for AI Gateway Portal
 
+export type AssetVisibility = 'private' | 'namespace' | 'organization' | 'public';
+export type AssetLifecycle = 'registered' | 'approved' | 'published' | 'deprecated';
+
 export interface Model {
   id: string;
   name: string;
@@ -11,6 +14,9 @@ export interface Model {
   tokenLimit: number;
   requestsToday: number;
   failoverTargets: string[];
+  namespace: string;
+  visibility: AssetVisibility;
+  lifecycle: AssetLifecycle;
   createdAt: string;
 }
 
@@ -21,8 +27,9 @@ export interface Tool {
   transport: string;
   endpoint: string;
   ownerTeam: string;
-  visibility: 'public' | 'private' | 'team';
+  visibility: AssetVisibility;
   status: 'active' | 'inactive';
+  lifecycle: AssetLifecycle;
   invocationsToday: number;
   tags: string[];
   createdAt: string;
@@ -52,6 +59,9 @@ export interface Agent {
   toolIds: string[];
   status: 'active' | 'inactive' | 'degraded';
   requestsToday: number;
+  namespace: string;
+  visibility: AssetVisibility;
+  lifecycle: AssetLifecycle;
   createdAt: string;
 }
 
@@ -93,6 +103,9 @@ export const models: Model[] = [
     tokenLimit: 15_000_000,
     requestsToday: 18_432,
     failoverTargets: ['model-gpt4o-mini', 'model-claude35'],
+    namespace: 'ai-platform',
+    visibility: 'organization',
+    lifecycle: 'published',
     createdAt: '2026-02-01T09:00:00Z',
   },
   {
@@ -106,6 +119,9 @@ export const models: Model[] = [
     tokenLimit: 10_000_000,
     requestsToday: 12_870,
     failoverTargets: ['model-gpt4o'],
+    namespace: 'ai-platform',
+    visibility: 'organization',
+    lifecycle: 'published',
     createdAt: '2026-02-01T09:15:00Z',
   },
   {
@@ -119,6 +135,9 @@ export const models: Model[] = [
     tokenLimit: 8_000_000,
     requestsToday: 6_540,
     failoverTargets: ['model-gpt4o'],
+    namespace: 'ai-platform',
+    visibility: 'organization',
+    lifecycle: 'published',
     createdAt: '2026-02-10T14:30:00Z',
   },
   {
@@ -132,6 +151,9 @@ export const models: Model[] = [
     tokenLimit: 5_000_000,
     requestsToday: 4_210,
     failoverTargets: ['model-claude35'],
+    namespace: 'ai-platform',
+    visibility: 'organization',
+    lifecycle: 'published',
     createdAt: '2026-02-15T11:00:00Z',
   },
   {
@@ -145,6 +167,9 @@ export const models: Model[] = [
     tokenLimit: 4_000_000,
     requestsToday: 3_820,
     failoverTargets: [],
+    namespace: 'ai-research',
+    visibility: 'namespace',
+    lifecycle: 'approved',
     createdAt: '2026-02-20T16:45:00Z',
   },
   {
@@ -158,6 +183,9 @@ export const models: Model[] = [
     tokenLimit: 3_000_000,
     requestsToday: 0,
     failoverTargets: [],
+    namespace: 'ai-research',
+    visibility: 'namespace',
+    lifecycle: 'registered',
     createdAt: '2026-03-01T08:00:00Z',
   },
 ];
@@ -175,6 +203,7 @@ export const tools: Tool[] = [
     ownerTeam: 'Customer Platform',
     visibility: 'public',
     status: 'active',
+    lifecycle: 'published',
     invocationsToday: 9_340,
     tags: ['crm', 'customer', 'accounts'],
     createdAt: '2026-02-01T10:00:00Z',
@@ -188,6 +217,7 @@ export const tools: Tool[] = [
     ownerTeam: 'Finance Engineering',
     visibility: 'public',
     status: 'active',
+    lifecycle: 'published',
     invocationsToday: 5_120,
     tags: ['billing', 'payments', 'invoices'],
     createdAt: '2026-02-01T10:30:00Z',
@@ -201,6 +231,7 @@ export const tools: Tool[] = [
     ownerTeam: 'Platform Integrations',
     visibility: 'public',
     status: 'active',
+    lifecycle: 'published',
     invocationsToday: 3_780,
     tags: ['messaging', 'slack', 'notifications'],
     createdAt: '2026-02-05T13:00:00Z',
@@ -214,6 +245,7 @@ export const tools: Tool[] = [
     ownerTeam: 'DevOps',
     visibility: 'public',
     status: 'active',
+    lifecycle: 'published',
     invocationsToday: 2_650,
     tags: ['github', 'issues', 'devops'],
     createdAt: '2026-02-08T09:00:00Z',
@@ -227,6 +259,7 @@ export const tools: Tool[] = [
     ownerTeam: 'DevOps',
     visibility: 'public',
     status: 'active',
+    lifecycle: 'published',
     invocationsToday: 1_940,
     tags: ['jira', 'tickets', 'project-management'],
     createdAt: '2026-02-08T09:30:00Z',
@@ -240,6 +273,7 @@ export const tools: Tool[] = [
     ownerTeam: 'Knowledge Management',
     visibility: 'public',
     status: 'active',
+    lifecycle: 'published',
     invocationsToday: 4_510,
     tags: ['knowledge', 'search', 'documentation'],
     createdAt: '2026-02-12T11:00:00Z',
@@ -253,6 +287,7 @@ export const tools: Tool[] = [
     ownerTeam: 'Platform Integrations',
     visibility: 'public',
     status: 'active',
+    lifecycle: 'published',
     invocationsToday: 820,
     tags: ['weather', 'external', 'utility'],
     createdAt: '2026-02-18T15:00:00Z',
@@ -266,6 +301,7 @@ export const tools: Tool[] = [
     ownerTeam: 'Finance Engineering',
     visibility: 'private',
     status: 'active',
+    lifecycle: 'approved',
     invocationsToday: 1_360,
     tags: ['payments', 'transactions', 'sensitive'],
     createdAt: '2026-02-22T10:00:00Z',
@@ -354,6 +390,9 @@ export const agents: Agent[] = [
     toolIds: ['tool-crm', 'tool-billing'],
     status: 'active',
     requestsToday: 8_920,
+    namespace: 'customer-ops',
+    visibility: 'organization',
+    lifecycle: 'published',
     createdAt: '2026-03-01T09:00:00Z',
   },
   {
@@ -366,6 +405,9 @@ export const agents: Agent[] = [
     toolIds: ['tool-github', 'tool-jira'],
     status: 'active',
     requestsToday: 3_150,
+    namespace: 'engineering',
+    visibility: 'namespace',
+    lifecycle: 'published',
     createdAt: '2026-03-02T10:00:00Z',
   },
   {
@@ -378,6 +420,9 @@ export const agents: Agent[] = [
     toolIds: ['tool-crm'],
     status: 'active',
     requestsToday: 2_410,
+    namespace: 'sales',
+    visibility: 'namespace',
+    lifecycle: 'published',
     createdAt: '2026-03-04T14:00:00Z',
   },
   {
@@ -390,6 +435,9 @@ export const agents: Agent[] = [
     toolIds: ['tool-kb'],
     status: 'active',
     requestsToday: 780,
+    namespace: 'hr',
+    visibility: 'namespace',
+    lifecycle: 'approved',
     createdAt: '2026-03-06T08:00:00Z',
   },
 ];
@@ -525,8 +573,9 @@ export interface CatalogItem {
   namespace: string;
   tags: string[];
   status: 'active' | 'inactive' | 'pending-approval' | 'deprecated';
+  lifecycle: AssetLifecycle;
   owner: string;
-  visibility: 'public' | 'private' | 'team';
+  visibility: AssetVisibility;
   createdAt: string;
   updatedAt: string;
   usageLast24h: number;
@@ -534,45 +583,45 @@ export interface CatalogItem {
 
 export const catalogItems: CatalogItem[] = [
   // Models
-  { id: 'model-1', name: 'GPT-4o', description: 'Latest OpenAI flagship model with vision capabilities', assetType: 'model', namespace: 'ai-platform', tags: ['chat', 'vision', 'production'], status: 'active', owner: 'Platform Team', visibility: 'public', createdAt: '2026-02-01T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 15420 },
-  { id: 'model-2', name: 'GPT-4o-mini', description: 'Cost-efficient OpenAI model for simpler tasks', assetType: 'model', namespace: 'ai-platform', tags: ['chat', 'embedding', 'cost-efficient'], status: 'active', owner: 'Platform Team', visibility: 'public', createdAt: '2026-02-01T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 8930 },
-  { id: 'model-3', name: 'Claude 3.5 Sonnet', description: 'Anthropic reasoning model for complex analysis', assetType: 'model', namespace: 'ai-platform', tags: ['chat', 'reasoning', 'analysis'], status: 'active', owner: 'Platform Team', visibility: 'public', createdAt: '2026-02-15T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 6210 },
-  { id: 'model-4', name: 'Gemini 1.5 Pro', description: 'Google multimodal model with long context window', assetType: 'model', namespace: 'ai-platform', tags: ['chat', 'multimodal', 'long-context'], status: 'active', owner: 'Platform Team', visibility: 'public', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 3450 },
-  { id: 'model-5', name: 'Llama 3.1 70B', description: 'Meta open-weight model hosted on AWS Bedrock', assetType: 'model', namespace: 'ai-research', tags: ['chat', 'open-weight', 'research'], status: 'active', owner: 'Research Team', visibility: 'team', createdAt: '2026-02-25T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1200 },
-  { id: 'model-6', name: 'Mistral Large', description: 'Custom-hosted Mistral model for internal experiments', assetType: 'model', namespace: 'ai-research', tags: ['chat', 'experimental'], status: 'inactive', owner: 'Research Team', visibility: 'team', createdAt: '2026-02-28T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 0 },
+  { id: 'model-1', name: 'GPT-4o', description: 'Latest OpenAI flagship model with vision capabilities', assetType: 'model', namespace: 'ai-platform', tags: ['chat', 'vision', 'production'], status: 'active', owner: 'Platform Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-01T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 15420 },
+  { id: 'model-2', name: 'GPT-4o-mini', description: 'Cost-efficient OpenAI model for simpler tasks', assetType: 'model', namespace: 'ai-platform', tags: ['chat', 'embedding', 'cost-efficient'], status: 'active', owner: 'Platform Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-01T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 8930 },
+  { id: 'model-3', name: 'Claude 3.5 Sonnet', description: 'Anthropic reasoning model for complex analysis', assetType: 'model', namespace: 'ai-platform', tags: ['chat', 'reasoning', 'analysis'], status: 'active', owner: 'Platform Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-15T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 6210 },
+  { id: 'model-4', name: 'Gemini 1.5 Pro', description: 'Google multimodal model with long context window', assetType: 'model', namespace: 'ai-platform', tags: ['chat', 'multimodal', 'long-context'], status: 'active', owner: 'Platform Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 3450 },
+  { id: 'model-5', name: 'Llama 3.1 70B', description: 'Meta open-weight model hosted on AWS Bedrock', assetType: 'model', namespace: 'ai-research', tags: ['chat', 'open-weight', 'research'], status: 'active', owner: 'Research Team', visibility: 'namespace', lifecycle: 'published', createdAt: '2026-02-25T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1200 },
+  { id: 'model-6', name: 'Mistral Large', description: 'Custom-hosted Mistral model for internal experiments', assetType: 'model', namespace: 'ai-research', tags: ['chat', 'experimental'], status: 'inactive', owner: 'Research Team', visibility: 'namespace', lifecycle: 'published', createdAt: '2026-02-28T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 0 },
   // Tools
-  { id: 'tool-1', name: 'Customer CRM API', description: 'Salesforce CRM integration for customer data lookup and updates', assetType: 'tool', namespace: 'customer-ops', tags: ['crm', 'customer-data', 'salesforce'], status: 'active', owner: 'CRM Team', visibility: 'public', createdAt: '2026-01-15T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 4530 },
-  { id: 'tool-2', name: 'Billing Service', description: 'Internal billing and invoice management API', assetType: 'tool', namespace: 'finance', tags: ['billing', 'invoicing', 'finance'], status: 'active', owner: 'Finance Engineering', visibility: 'team', createdAt: '2026-01-20T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2180 },
-  { id: 'tool-3', name: 'Slack Connector', description: 'Send messages, create channels, and manage Slack workspace', assetType: 'tool', namespace: 'communications', tags: ['messaging', 'slack', 'notifications'], status: 'active', owner: 'DevOps', visibility: 'public', createdAt: '2026-02-01T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1890 },
-  { id: 'tool-4', name: 'GitHub Issues API', description: 'Create, update, and query GitHub issues and PRs', assetType: 'tool', namespace: 'engineering', tags: ['github', 'issues', 'development'], status: 'active', owner: 'DevOps', visibility: 'public', createdAt: '2026-02-05T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 3210 },
-  { id: 'tool-5', name: 'Payment Gateway', description: 'Stripe payment processing for subscription management', assetType: 'tool', namespace: 'finance', tags: ['payments', 'stripe', 'sensitive'], status: 'active', owner: 'Finance Engineering', visibility: 'private', createdAt: '2026-02-10T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 890 },
-  { id: 'tool-6', name: 'Weather API', description: 'Real-time weather data from OpenWeatherMap', assetType: 'tool', namespace: 'external-data', tags: ['weather', 'external', 'data'], status: 'active', owner: 'Data Team', visibility: 'public', createdAt: '2026-02-15T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 560 },
-  { id: 'tool-7', name: 'Internal Knowledge Base', description: 'Enterprise knowledge search across Confluence and SharePoint', assetType: 'tool', namespace: 'knowledge', tags: ['search', 'knowledge', 'enterprise'], status: 'active', owner: 'IT Team', visibility: 'public', createdAt: '2026-02-18T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2340 },
-  { id: 'tool-8', name: 'Jira Service Desk', description: 'Atlassian Jira ticket creation and management', assetType: 'tool', namespace: 'engineering', tags: ['jira', 'tickets', 'project-mgmt'], status: 'active', owner: 'DevOps', visibility: 'public', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1670 },
+  { id: 'tool-1', name: 'Customer CRM API', description: 'Salesforce CRM integration for customer data lookup and updates', assetType: 'tool', namespace: 'customer-ops', tags: ['crm', 'customer-data', 'salesforce'], status: 'active', owner: 'CRM Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-01-15T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 4530 },
+  { id: 'tool-2', name: 'Billing Service', description: 'Internal billing and invoice management API', assetType: 'tool', namespace: 'finance', tags: ['billing', 'invoicing', 'finance'], status: 'active', owner: 'Finance Engineering', visibility: 'namespace', lifecycle: 'published', createdAt: '2026-01-20T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2180 },
+  { id: 'tool-3', name: 'Slack Connector', description: 'Send messages, create channels, and manage Slack workspace', assetType: 'tool', namespace: 'communications', tags: ['messaging', 'slack', 'notifications'], status: 'active', owner: 'DevOps', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-01T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1890 },
+  { id: 'tool-4', name: 'GitHub Issues API', description: 'Create, update, and query GitHub issues and PRs', assetType: 'tool', namespace: 'engineering', tags: ['github', 'issues', 'development'], status: 'active', owner: 'DevOps', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-05T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 3210 },
+  { id: 'tool-5', name: 'Payment Gateway', description: 'Stripe payment processing for subscription management', assetType: 'tool', namespace: 'finance', tags: ['payments', 'stripe', 'sensitive'], status: 'active', owner: 'Finance Engineering', visibility: 'private', lifecycle: 'published', createdAt: '2026-02-10T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 890 },
+  { id: 'tool-6', name: 'Weather API', description: 'Real-time weather data from OpenWeatherMap', assetType: 'tool', namespace: 'external-data', tags: ['weather', 'external', 'data'], status: 'active', owner: 'Data Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-15T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 560 },
+  { id: 'tool-7', name: 'Internal Knowledge Base', description: 'Enterprise knowledge search across Confluence and SharePoint', assetType: 'tool', namespace: 'knowledge', tags: ['search', 'knowledge', 'enterprise'], status: 'active', owner: 'IT Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-18T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2340 },
+  { id: 'tool-8', name: 'Jira Service Desk', description: 'Atlassian Jira ticket creation and management', assetType: 'tool', namespace: 'engineering', tags: ['jira', 'tickets', 'project-mgmt'], status: 'active', owner: 'DevOps', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1670 },
   // MCP Servers
-  { id: 'mcp-1', name: 'CRM MCP Server', description: 'MCP endpoint for CRM operations — converted from Customer CRM API', assetType: 'mcp-server', namespace: 'customer-ops', tags: ['crm', 'mcp', 'auto-converted'], status: 'active', owner: 'CRM Team', visibility: 'public', createdAt: '2026-02-10T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 3400 },
-  { id: 'mcp-2', name: 'DevOps Tools MCP', description: 'Unified MCP server for GitHub, Jira, and CI/CD tools', assetType: 'mcp-server', namespace: 'engineering', tags: ['devops', 'mcp', 'multi-tool'], status: 'active', owner: 'DevOps', visibility: 'public', createdAt: '2026-02-12T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2800 },
-  { id: 'mcp-3', name: 'Enterprise Search MCP', description: 'Search across knowledge bases, wikis, and docs via MCP', assetType: 'mcp-server', namespace: 'knowledge', tags: ['search', 'mcp', 'enterprise'], status: 'active', owner: 'IT Team', visibility: 'public', createdAt: '2026-02-15T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1560 },
+  { id: 'mcp-1', name: 'CRM MCP Server', description: 'MCP endpoint for CRM operations — converted from Customer CRM API', assetType: 'mcp-server', namespace: 'customer-ops', tags: ['crm', 'mcp', 'auto-converted'], status: 'active', owner: 'CRM Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-10T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 3400 },
+  { id: 'mcp-2', name: 'DevOps Tools MCP', description: 'Unified MCP server for GitHub, Jira, and CI/CD tools', assetType: 'mcp-server', namespace: 'engineering', tags: ['devops', 'mcp', 'multi-tool'], status: 'active', owner: 'DevOps', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-12T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2800 },
+  { id: 'mcp-3', name: 'Enterprise Search MCP', description: 'Search across knowledge bases, wikis, and docs via MCP', assetType: 'mcp-server', namespace: 'knowledge', tags: ['search', 'mcp', 'enterprise'], status: 'active', owner: 'IT Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-15T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1560 },
   // Agents
-  { id: 'agent-1', name: 'Customer Support Agent', description: 'AI agent for tier-1 customer support with CRM and billing access', assetType: 'agent', namespace: 'customer-ops', tags: ['support', 'customer-facing', 'production'], status: 'active', owner: 'Support Team', visibility: 'public', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 5630 },
-  { id: 'agent-2', name: 'DevOps Assistant', description: 'A2A agent for automated incident triage and resolution', assetType: 'agent', namespace: 'engineering', tags: ['devops', 'incident', 'automation'], status: 'active', owner: 'DevOps', visibility: 'team', createdAt: '2026-02-22T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1230 },
-  { id: 'agent-3', name: 'Sales Intelligence Agent', description: 'Lead scoring and competitive intel for sales team', assetType: 'agent', namespace: 'sales', tags: ['sales', 'intelligence', 'analytics'], status: 'active', owner: 'Sales Ops', visibility: 'team', createdAt: '2026-02-25T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 890 },
-  { id: 'agent-4', name: 'HR Onboarding Agent', description: 'Automated employee onboarding workflow with knowledge base', assetType: 'agent', namespace: 'hr', tags: ['hr', 'onboarding', 'workflow'], status: 'active', owner: 'HR Team', visibility: 'team', createdAt: '2026-02-27T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 340 },
+  { id: 'agent-1', name: 'Customer Support Agent', description: 'AI agent for tier-1 customer support with CRM and billing access', assetType: 'agent', namespace: 'customer-ops', tags: ['support', 'customer-facing', 'production'], status: 'active', owner: 'Support Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 5630 },
+  { id: 'agent-2', name: 'DevOps Assistant', description: 'A2A agent for automated incident triage and resolution', assetType: 'agent', namespace: 'engineering', tags: ['devops', 'incident', 'automation'], status: 'active', owner: 'DevOps', visibility: 'namespace', lifecycle: 'published', createdAt: '2026-02-22T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1230 },
+  { id: 'agent-3', name: 'Sales Intelligence Agent', description: 'Lead scoring and competitive intel for sales team', assetType: 'agent', namespace: 'sales', tags: ['sales', 'intelligence', 'analytics'], status: 'active', owner: 'Sales Ops', visibility: 'namespace', lifecycle: 'published', createdAt: '2026-02-25T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 890 },
+  { id: 'agent-4', name: 'HR Onboarding Agent', description: 'Automated employee onboarding workflow with knowledge base', assetType: 'agent', namespace: 'hr', tags: ['hr', 'onboarding', 'workflow'], status: 'active', owner: 'HR Team', visibility: 'namespace', lifecycle: 'published', createdAt: '2026-02-27T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 340 },
   // Skills (new!)
-  { id: 'skill-1', name: 'Customer 360 Lookup', description: 'Combines CRM, billing, and support history into a complete customer profile', assetType: 'skill', namespace: 'customer-ops', tags: ['customer', 'composite', 'production'], status: 'active', owner: 'Platform Team', visibility: 'public', createdAt: '2026-02-28T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2100 },
-  { id: 'skill-2', name: 'Incident Triage', description: 'Analyzes alerts, correlates logs, and suggests remediation steps', assetType: 'skill', namespace: 'engineering', tags: ['incident', 'triage', 'automation'], status: 'active', owner: 'DevOps', visibility: 'team', createdAt: '2026-03-01T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 450 },
-  { id: 'skill-3', name: 'Expense Report Processor', description: 'Extracts line items from receipts and creates expense reports', assetType: 'skill', namespace: 'finance', tags: ['finance', 'ocr', 'workflow'], status: 'pending-approval', owner: 'Finance Engineering', visibility: 'team', createdAt: '2026-03-02T10:00:00Z', updatedAt: '2026-03-02T10:00:00Z', usageLast24h: 0 },
+  { id: 'skill-1', name: 'Customer 360 Lookup', description: 'Combines CRM, billing, and support history into a complete customer profile', assetType: 'skill', namespace: 'customer-ops', tags: ['customer', 'composite', 'production'], status: 'active', owner: 'Platform Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-28T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2100 },
+  { id: 'skill-2', name: 'Incident Triage', description: 'Analyzes alerts, correlates logs, and suggests remediation steps', assetType: 'skill', namespace: 'engineering', tags: ['incident', 'triage', 'automation'], status: 'active', owner: 'DevOps', visibility: 'namespace', lifecycle: 'published', createdAt: '2026-03-01T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 450 },
+  { id: 'skill-3', name: 'Expense Report Processor', description: 'Extracts line items from receipts and creates expense reports', assetType: 'skill', namespace: 'finance', tags: ['finance', 'ocr', 'workflow'], status: 'pending-approval', owner: 'Finance Engineering', visibility: 'namespace', lifecycle: 'published', createdAt: '2026-03-02T10:00:00Z', updatedAt: '2026-03-02T10:00:00Z', usageLast24h: 0 },
   // Skills (additional)
-  { id: 'skill-4', name: 'Customer Intent Analysis', description: 'Prompt-chain skill that analyzes customer messages, extracts entities, and classifies intent', assetType: 'skill', namespace: 'customer-ops', tags: ['prompt-chain', 'intent', 'nlp'], status: 'active', owner: 'Support Team', visibility: 'public', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 3420 },
-  { id: 'skill-5', name: 'Code Review Assistant', description: 'Automated code review skill that fetches diffs, analyzes patterns, and posts review comments', assetType: 'skill', namespace: 'engineering', tags: ['code-review', 'automation', 'github'], status: 'active', owner: 'DevOps', visibility: 'team', createdAt: '2026-02-25T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1890 },
-  { id: 'skill-6', name: 'Document Summarization', description: 'Multi-step prompt chain that chunks, summarizes, and merges long documents', assetType: 'skill', namespace: 'knowledge', tags: ['summarization', 'prompt-chain', 'documents'], status: 'active', owner: 'Platform Team', visibility: 'public', createdAt: '2026-02-22T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2750 },
+  { id: 'skill-4', name: 'Customer Intent Analysis', description: 'Prompt-chain skill that analyzes customer messages, extracts entities, and classifies intent', assetType: 'skill', namespace: 'customer-ops', tags: ['prompt-chain', 'intent', 'nlp'], status: 'active', owner: 'Support Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 3420 },
+  { id: 'skill-5', name: 'Code Review Assistant', description: 'Automated code review skill that fetches diffs, analyzes patterns, and posts review comments', assetType: 'skill', namespace: 'engineering', tags: ['code-review', 'automation', 'github'], status: 'active', owner: 'DevOps', visibility: 'namespace', lifecycle: 'published', createdAt: '2026-02-25T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1890 },
+  { id: 'skill-6', name: 'Document Summarization', description: 'Multi-step prompt chain that chunks, summarizes, and merges long documents', assetType: 'skill', namespace: 'knowledge', tags: ['summarization', 'prompt-chain', 'documents'], status: 'active', owner: 'Platform Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-22T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2750 },
   // Workloads
-  { id: 'workload-1', name: 'Customer Support Platform', description: 'Production workload for customer support agents with CRM and billing integrations', assetType: 'workload', namespace: 'customer-ops', tags: ['production', 'customer-support', 'platform'], status: 'active', owner: 'Support Team', visibility: 'public', createdAt: '2026-02-15T10:00:00Z', updatedAt: '2026-03-03T10:00:00Z', usageLast24h: 12450 },
-  { id: 'workload-2', name: 'DevOps Automation Suite', description: 'Production workload for DevOps automation including incident triage and code review', assetType: 'workload', namespace: 'engineering', tags: ['production', 'devops', 'automation'], status: 'active', owner: 'DevOps', visibility: 'team', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-03T10:00:00Z', usageLast24h: 5630 },
+  { id: 'workload-1', name: 'Customer Support Platform', description: 'Production workload for customer support agents with CRM and billing integrations', assetType: 'workload', namespace: 'customer-ops', tags: ['production', 'customer-support', 'platform'], status: 'active', owner: 'Support Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-15T10:00:00Z', updatedAt: '2026-03-03T10:00:00Z', usageLast24h: 12450 },
+  { id: 'workload-2', name: 'DevOps Automation Suite', description: 'Production workload for DevOps automation including incident triage and code review', assetType: 'workload', namespace: 'engineering', tags: ['production', 'devops', 'automation'], status: 'active', owner: 'DevOps', visibility: 'namespace', lifecycle: 'published', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-03T10:00:00Z', usageLast24h: 5630 },
 
   // Workflows
-  { id: 'wf-1', name: 'Incident Triage', description: 'Parses alerts, checks incident history, assesses severity, creates tickets, and notifies teams', assetType: 'workflow', namespace: 'engineering', tags: ['incident', 'triage', 'automation'], status: 'active', owner: 'DevOps', visibility: 'team', createdAt: '2026-02-18T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 890 },
-  { id: 'wf-2', name: 'Travel Planning', description: 'End-to-end travel workflow — searches flights, checks weather, generates itineraries', assetType: 'workflow', namespace: 'operations', tags: ['travel', 'planning', 'multi-step'], status: 'active', owner: 'Travel Team', visibility: 'public', createdAt: '2026-02-22T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 560 },
+  { id: 'wf-1', name: 'Incident Triage', description: 'Parses alerts, checks incident history, assesses severity, creates tickets, and notifies teams', assetType: 'workflow', namespace: 'engineering', tags: ['incident', 'triage', 'automation'], status: 'active', owner: 'DevOps', visibility: 'namespace', lifecycle: 'published', createdAt: '2026-02-18T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 890 },
+  { id: 'wf-2', name: 'Travel Planning', description: 'End-to-end travel workflow — searches flights, checks weather, generates itineraries', assetType: 'workflow', namespace: 'operations', tags: ['travel', 'planning', 'multi-step'], status: 'active', owner: 'Travel Team', visibility: 'public', lifecycle: 'published', createdAt: '2026-02-22T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 560 },
 ];
 
 // --- Namespaces ---
@@ -1369,7 +1418,7 @@ export interface Skill {
   modelIds: string[];
   tags: string[];
   ownerTeam: string;
-  visibility: 'public' | 'private' | 'team';
+  visibility: AssetVisibility;
   status: 'active' | 'draft' | 'deprecated';
   invocationsToday: number;
   steps: { order: number; type: 'model' | 'tool' | 'logic'; label: string }[];
@@ -1425,7 +1474,7 @@ export const skills: Skill[] = [
     modelIds: ['model-gpt4o'],
     tags: ['incident', 'triage', 'devops'],
     ownerTeam: 'DevOps',
-    visibility: 'team',
+    visibility: 'namespace',
     status: 'active',
     invocationsToday: 450,
     steps: [
@@ -1466,7 +1515,7 @@ export const skills: Skill[] = [
     modelIds: ['model-gpt4o'],
     tags: ['code-review', 'github', 'engineering'],
     ownerTeam: 'DevOps',
-    visibility: 'team',
+    visibility: 'namespace',
     status: 'active',
     invocationsToday: 1_890,
     steps: [
@@ -1486,7 +1535,7 @@ export const skills: Skill[] = [
     modelIds: ['model-gpt4o'],
     tags: ['finance', 'reporting', 'analysis'],
     ownerTeam: 'Finance Engineering',
-    visibility: 'team',
+    visibility: 'namespace',
     status: 'active',
     invocationsToday: 320,
     steps: [
@@ -1506,7 +1555,7 @@ export const skills: Skill[] = [
     modelIds: ['model-gpt4o'],
     tags: ['hr', 'onboarding', 'automation'],
     ownerTeam: 'HR Team',
-    visibility: 'team',
+    visibility: 'namespace',
     status: 'active',
     invocationsToday: 140,
     steps: [
@@ -1526,7 +1575,7 @@ export const skills: Skill[] = [
     modelIds: ['model-gpt4o'],
     tags: ['sales', 'lead-scoring', 'analytics'],
     ownerTeam: 'Sales Ops',
-    visibility: 'team',
+    visibility: 'namespace',
     status: 'active',
     invocationsToday: 560,
     steps: [

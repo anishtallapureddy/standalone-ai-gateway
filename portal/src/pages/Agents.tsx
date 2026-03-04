@@ -96,7 +96,23 @@ const Agents: React.FC = () => {
               <StatusBadge status={agent.status} />
             </div>
 
-            <Badge appearance="outline">{agent.protocol.toUpperCase()}</Badge>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <Badge appearance="outline">{agent.protocol.toUpperCase()}</Badge>
+              <Badge
+                appearance="outline"
+                size="small"
+                style={{
+                  borderColor: agent.lifecycle === 'published' ? '#0E9349' : agent.lifecycle === 'approved' ? '#0078D4' : '#F7C948',
+                  color: agent.lifecycle === 'published' ? '#4ade80' : agent.lifecycle === 'approved' ? '#60cdff' : '#fbbf24',
+                }}
+              >
+                {agent.lifecycle}
+              </Badge>
+              <Badge appearance="tint" size="small" color={agent.visibility === 'organization' ? 'success' : 'informative'}>
+                {agent.visibility}
+              </Badge>
+              <Text size={200} style={{ color: '#999', fontFamily: 'monospace' }}>{agent.namespace}</Text>
+            </div>
 
             <div className={styles.connections}>
               <div className={styles.connectionSection}>

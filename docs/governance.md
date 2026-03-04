@@ -347,3 +347,157 @@ Access
 | Transformation | HTTP header manipulation |
 | Gateway | Request forwarding |
 | Agent runtime | Execution limits |
+
+---
+
+# Asset Governance Model
+
+## Goal
+
+Define which AI assets exist, how they are organized, and who can access or operate them — with namespaces as the core boundary.
+
+Governance is:
+
+- **Namespace-centric**: Namespaces are the primary access boundary
+- **Role-based**: Simple roles (Platform Admin, Namespace Admin, AI Developer, Viewer, Service Identity)
+- **Policy-driven**: Policies cascade from organization → namespace → asset
+- **Simple enough for AI developers**: Minimal configuration for common workflows
+
+---
+
+## Core Asset Types
+
+The gateway governs **six primary asset types**.
+
+### 1. Models
+
+LLM or AI inference endpoints from: Azure OpenAI, OpenAI, Anthropic, Bedrock, Vertex, custom deployments.
+
+Key governance controls: allowed namespaces, token quotas, rate limits, routing rules, region restrictions.
+
+### 2. Tools
+
+External capabilities agents can invoke: REST APIs, SaaS integrations, databases, MCP tools, enterprise services.
+
+Key governance controls: namespace access, invocation limits, authentication credentials, network restrictions, audit logging.
+
+### 3. Agents
+
+Reasoning systems that orchestrate models and tools: customer support agent, ticket triage agent, analytics agent.
+
+Key governance controls: allowed tools, allowed models, execution limits, namespace membership.
+
+### 4. Workflows / Skills
+
+Reusable automation patterns combining models and tools: refund workflow, document analysis, incident triage.
+
+Key governance controls: namespace visibility, execution permissions, tool access inheritance.
+
+### 5. Connectors
+
+Integration configurations used by tools: Salesforce connector, ServiceNow connector, SQL connector.
+
+Key governance controls: credential scoping, namespace access, environment restrictions.
+
+### 6. Credentials
+
+Secrets used for tool access: API keys, OAuth tokens, managed identities, Key Vault references.
+
+Key governance controls: namespace scope, rotation policies, restricted visibility.
+
+---
+
+## Asset Visibility Levels
+
+```
+Private       → Only visible to the asset owner
+Namespace     → Visible to all members of the namespace
+Organization  → Visible across all namespaces
+Public        → Visible to all (optional)
+```
+
+| Asset | Example Visibility |
+|-------|--------------------|
+| Payment Gateway | Private |
+| Salesforce Tool | Namespace |
+| GPT-4o | Organization |
+| Weather API | Public |
+
+---
+
+## Asset Lifecycle
+
+Assets follow a governed lifecycle:
+
+```
+Registered → Approved → Published → Deprecated
+```
+
+| State | Description |
+|-------|-------------|
+| Registered | Asset created, pending review |
+| Approved | Reviewed and approved, not yet in catalog |
+| Published | Live in the catalog, available for use |
+| Deprecated | Marked for removal, still functional |
+
+---
+
+## Policy Attachment Points
+
+Policies can be applied at:
+
+| Scope | Example |
+|-------|---------|
+| Organization | Global model restrictions, content safety |
+| Namespace | Token quotas, tool access control |
+| Asset | Tool rate limits, model region restrictions |
+| Agent | Execution limits, tool allow-lists |
+
+Policies cascade downward: Organization → Namespace → Asset → Agent.
+
+---
+
+## Governance Examples
+
+### Example 1 — Model Governance
+
+```
+Namespace: retail-support
+
+Allowed models: GPT-4o, Claude 3.5
+Token quota: 2M / month
+Visibility: organization
+Lifecycle: published
+```
+
+### Example 2 — Tool Governance
+
+```
+Tool: Salesforce CRM
+
+Allowed namespaces: retail-support
+Rate limit: 50 calls/min
+Visibility: namespace
+Lifecycle: published
+```
+
+### Example 3 — Agent Governance
+
+```
+Agent: Support Agent
+
+Allowed tools: Salesforce, Order Lookup API
+Execution limits: max tool calls: 20, max runtime: 60s
+Visibility: organization
+Lifecycle: published
+```
+
+---
+
+## Design Principles
+
+1. **Namespaces define the governance boundary**
+2. **Assets are reusable but controlled**
+3. **Access is role-based**
+4. **Policies enforce runtime safety**
+5. **Developers can build workloads without complex configuration**

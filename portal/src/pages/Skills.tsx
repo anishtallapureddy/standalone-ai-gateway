@@ -447,7 +447,7 @@ const Skills: React.FC = () => {
                   color={
                     skill.visibility === 'public'
                       ? 'success'
-                      : skill.visibility === 'team'
+                      : skill.visibility === 'namespace'
                         ? 'informative'
                         : 'warning'
                   }
@@ -508,7 +508,7 @@ const Skills: React.FC = () => {
                     color={
                       selected.visibility === 'public'
                         ? 'success'
-                        : selected.visibility === 'team'
+                        : selected.visibility === 'namespace'
                           ? 'informative'
                           : 'warning'
                     }

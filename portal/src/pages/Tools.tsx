@@ -183,7 +183,7 @@ const ToolCard: React.FC<{ tool: Tool; showTypeIcon?: boolean }> = ({ tool, show
             <Badge
               appearance="tint"
               size="small"
-              color={tool.visibility === 'public' ? 'success' : tool.visibility === 'team' ? 'informative' : 'warning'}
+              color={tool.visibility === 'public' ? 'success' : tool.visibility === 'namespace' ? 'informative' : 'warning'}
             >
               {tool.visibility}
             </Badge>

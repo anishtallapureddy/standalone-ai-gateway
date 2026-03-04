@@ -376,7 +376,7 @@ const Workflows: React.FC = () => {
                 color={
                   wf.visibility === 'public'
                     ? 'success'
-                    : wf.visibility === 'team'
+                    : wf.visibility === 'namespace'
                       ? 'informative'
                       : 'warning'
                 }
@@ -415,7 +415,7 @@ const Workflows: React.FC = () => {
                     color={
                       selected.visibility === 'public'
                         ? 'success'
-                        : selected.visibility === 'team'
+                        : selected.visibility === 'namespace'
                           ? 'informative'
                           : 'warning'
                     }

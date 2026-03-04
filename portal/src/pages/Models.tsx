@@ -653,6 +653,20 @@ const ModelDetail: React.FC<{ model: Model; onBack: () => void }> = ({
         <Text className={styles.detailTitle}>{model.name}</Text>
         <ProviderBadge provider={model.provider} />
         <StatusBadge status={model.status} />
+        <Badge
+          appearance="outline"
+          size="small"
+          style={{
+            borderColor: model.lifecycle === 'published' ? '#0E9349' : model.lifecycle === 'approved' ? '#0078D4' : '#F7C948',
+            color: model.lifecycle === 'published' ? '#4ade80' : model.lifecycle === 'approved' ? '#60cdff' : '#fbbf24',
+          }}
+        >
+          {model.lifecycle}
+        </Badge>
+        <Badge appearance="tint" size="small" color={model.visibility === 'organization' ? 'informative' : 'warning'}>
+          {model.visibility}
+        </Badge>
+        <Text size={200} style={{ color: '#999', fontFamily: 'monospace' }}>{model.namespace}</Text>
       </div>
 
       <TabList
@@ -717,7 +731,8 @@ const Models: React.FC = () => {
             <TableRow>
               <TableHeaderCell>Name</TableHeaderCell>
               <TableHeaderCell>Provider</TableHeaderCell>
-              <TableHeaderCell>Capabilities</TableHeaderCell>
+              <TableHeaderCell>Namespace</TableHeaderCell>
+              <TableHeaderCell>Lifecycle</TableHeaderCell>
               <TableHeaderCell>Status</TableHeaderCell>
               <TableHeaderCell>Token Usage (24h)</TableHeaderCell>
               <TableHeaderCell>Requests</TableHeaderCell>
@@ -741,13 +756,19 @@ const Models: React.FC = () => {
                     <ProviderBadge provider={model.provider} />
                   </TableCell>
                   <TableCell>
-                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                      {model.capabilities.map((c) => (
-                        <Badge key={c} appearance="tint" size="small">
-                          {c}
-                        </Badge>
-                      ))}
-                    </div>
+                    <Text size={200} style={{ fontFamily: 'monospace' }}>{model.namespace}</Text>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      appearance="outline"
+                      size="small"
+                      style={{
+                        borderColor: model.lifecycle === 'published' ? '#0E9349' : model.lifecycle === 'approved' ? '#0078D4' : model.lifecycle === 'registered' ? '#F7C948' : '#999',
+                        color: model.lifecycle === 'published' ? '#4ade80' : model.lifecycle === 'approved' ? '#60cdff' : model.lifecycle === 'registered' ? '#fbbf24' : '#999',
+                      }}
+                    >
+                      {model.lifecycle}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={model.status} />

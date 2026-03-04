@@ -303,9 +303,19 @@ const Catalog: React.FC = () => {
                       <Badge
                         appearance="tint"
                         size="small"
-                        color={item.visibility === 'public' ? 'success' : item.visibility === 'team' ? 'informative' : 'warning'}
+                        color={item.visibility === 'public' ? 'success' : item.visibility === 'namespace' ? 'informative' : 'warning'}
                       >
                         {item.visibility}
+                      </Badge>
+                      <Badge
+                        appearance="outline"
+                        size="small"
+                        style={{
+                          borderColor: item.lifecycle === 'published' ? '#0E9349' : item.lifecycle === 'approved' ? '#0078D4' : item.lifecycle === 'registered' ? '#F7C948' : '#999',
+                          color: item.lifecycle === 'published' ? '#4ade80' : item.lifecycle === 'approved' ? '#60cdff' : item.lifecycle === 'registered' ? '#fbbf24' : '#999',
+                        }}
+                      >
+                        {item.lifecycle}
                       </Badge>
                     </div>
                   </div>
