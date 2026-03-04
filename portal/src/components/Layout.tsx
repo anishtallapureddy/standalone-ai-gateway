@@ -427,7 +427,7 @@ const navItems: NavItem[] = [
     label: 'Namespaces',
     icon: <Folder24Regular />,
     activeIcon: <Folder24Filled />,
-    section: 'Organization',
+    section: 'Governance',
   },
   {
     path: '/consumers',
@@ -440,7 +440,6 @@ const navItems: NavItem[] = [
     label: 'Policies',
     icon: <Shield24Regular />,
     activeIcon: <Shield24Filled />,
-    section: 'Governance',
   },
   {
     path: '/analytics',
