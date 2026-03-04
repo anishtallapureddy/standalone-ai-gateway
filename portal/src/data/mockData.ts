@@ -515,7 +515,7 @@ export const recentLogs: LogEntry[] = [
 
 // --- Catalog: unified view across all asset types ---
 
-export type AssetType = 'model' | 'tool' | 'mcp-server' | 'skill' | 'agent';
+export type AssetType = 'model' | 'tool' | 'mcp-server' | 'skill' | 'agent' | 'workload';
 
 export interface CatalogItem {
   id: string;
@@ -562,6 +562,13 @@ export const catalogItems: CatalogItem[] = [
   { id: 'skill-1', name: 'Customer 360 Lookup', description: 'Combines CRM, billing, and support history into a complete customer profile', assetType: 'skill', namespace: 'customer-ops', tags: ['customer', 'composite', 'production'], status: 'active', owner: 'Platform Team', visibility: 'public', createdAt: '2026-02-28T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2100 },
   { id: 'skill-2', name: 'Incident Triage', description: 'Analyzes alerts, correlates logs, and suggests remediation steps', assetType: 'skill', namespace: 'engineering', tags: ['incident', 'triage', 'automation'], status: 'active', owner: 'DevOps', visibility: 'team', createdAt: '2026-03-01T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 450 },
   { id: 'skill-3', name: 'Expense Report Processor', description: 'Extracts line items from receipts and creates expense reports', assetType: 'skill', namespace: 'finance', tags: ['finance', 'ocr', 'workflow'], status: 'pending-approval', owner: 'Finance Engineering', visibility: 'team', createdAt: '2026-03-02T10:00:00Z', updatedAt: '2026-03-02T10:00:00Z', usageLast24h: 0 },
+  // Skills (additional)
+  { id: 'skill-4', name: 'Customer Intent Analysis', description: 'Prompt-chain skill that analyzes customer messages, extracts entities, and classifies intent', assetType: 'skill', namespace: 'customer-ops', tags: ['prompt-chain', 'intent', 'nlp'], status: 'active', owner: 'Support Team', visibility: 'public', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 3420 },
+  { id: 'skill-5', name: 'Code Review Assistant', description: 'Automated code review skill that fetches diffs, analyzes patterns, and posts review comments', assetType: 'skill', namespace: 'engineering', tags: ['code-review', 'automation', 'github'], status: 'active', owner: 'DevOps', visibility: 'team', createdAt: '2026-02-25T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 1890 },
+  { id: 'skill-6', name: 'Document Summarization', description: 'Multi-step prompt chain that chunks, summarizes, and merges long documents', assetType: 'skill', namespace: 'knowledge', tags: ['summarization', 'prompt-chain', 'documents'], status: 'active', owner: 'Platform Team', visibility: 'public', createdAt: '2026-02-22T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 2750 },
+  // Workloads
+  { id: 'workload-1', name: 'Customer Support Platform', description: 'Production workload for customer support agents with CRM and billing integrations', assetType: 'workload', namespace: 'customer-ops', tags: ['production', 'customer-support', 'platform'], status: 'active', owner: 'Support Team', visibility: 'public', createdAt: '2026-02-15T10:00:00Z', updatedAt: '2026-03-03T10:00:00Z', usageLast24h: 12450 },
+  { id: 'workload-2', name: 'DevOps Automation Suite', description: 'Production workload for DevOps automation including incident triage and code review', assetType: 'workload', namespace: 'engineering', tags: ['production', 'devops', 'automation'], status: 'active', owner: 'DevOps', visibility: 'team', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-03T10:00:00Z', usageLast24h: 5630 },
 ];
 
 // --- Namespaces ---
@@ -1203,4 +1210,317 @@ export const enforcementEvents: EnforcementEvent[] = [
   { id: 'enf-8', timestamp: '2026-03-03T12:30:00Z', consumerId: 'consumer-hr-onboarding', consumerName: 'agent-hr-onboarding', action: 'warned', reason: 'Groundedness check flagged low-confidence response', policyName: 'Content Safety', assetName: 'GPT-4o-mini', details: 'Model response flagged by groundedness check with confidence score 0.42. Warning metadata attached; response delivered with disclaimer.' },
   { id: 'enf-9', timestamp: '2026-03-03T10:05:00Z', consumerId: 'consumer-knowledge-index', consumerName: 'app-knowledge-index', action: 'throttled', reason: 'Token rate limit exceeded (50K TPM)', policyName: 'Token Rate Limit', assetName: 'GPT-4o-mini', details: 'Indexing batch exceeded 50,000 tokens/min quota. 22 embedding requests delayed by average 4.8s.' },
   { id: 'enf-10', timestamp: '2026-03-03T08:50:00Z', consumerId: 'consumer-mike', consumerName: 'dev-mike@contoso.com', action: 'blocked', reason: 'Unauthorized model access', policyName: 'Tool Access Control', assetName: 'Llama 3.1 70B', details: 'Consumer attempted to access Llama 3.1 70B but is not authorized for ai-research/llama models. Access denied.' },
+];
+
+// ---------------------------------------------------------------------------
+// Skills
+// ---------------------------------------------------------------------------
+
+export interface Skill {
+  id: string;
+  name: string;
+  description: string;
+  type: 'prompt-chain' | 'workflow' | 'automation' | 'analysis';
+  toolIds: string[];
+  modelIds: string[];
+  tags: string[];
+  ownerTeam: string;
+  visibility: 'public' | 'private' | 'team';
+  status: 'active' | 'draft' | 'deprecated';
+  invocationsToday: number;
+  steps: { order: number; type: 'model' | 'tool' | 'logic'; label: string }[];
+  createdAt: string;
+}
+
+export const skills: Skill[] = [
+  {
+    id: 'skill-intent-analysis',
+    name: 'Customer Intent Analysis',
+    description: 'Analyzes customer messages to extract entities and classify intent for routing and response generation.',
+    type: 'prompt-chain',
+    toolIds: ['tool-crm'],
+    modelIds: ['model-gpt4o'],
+    tags: ['nlp', 'intent', 'customer-support'],
+    ownerTeam: 'Support Team',
+    visibility: 'public',
+    status: 'active',
+    invocationsToday: 3_420,
+    steps: [
+      { order: 1, type: 'model', label: 'Analyze prompt' },
+      { order: 2, type: 'model', label: 'Extract entities' },
+      { order: 3, type: 'logic', label: 'Classify intent' },
+      { order: 4, type: 'model', label: 'Generate response' },
+    ],
+    createdAt: '2026-02-20T10:00:00Z',
+  },
+  {
+    id: 'skill-doc-summarization',
+    name: 'Document Summarization',
+    description: 'Multi-step prompt chain that chunks long documents, summarizes each chunk, and merges into a final summary.',
+    type: 'prompt-chain',
+    toolIds: [],
+    modelIds: ['model-gpt4o'],
+    tags: ['summarization', 'documents', 'nlp'],
+    ownerTeam: 'Platform Team',
+    visibility: 'public',
+    status: 'active',
+    invocationsToday: 2_750,
+    steps: [
+      { order: 1, type: 'logic', label: 'Chunk document' },
+      { order: 2, type: 'model', label: 'Summarize chunks' },
+      { order: 3, type: 'model', label: 'Merge summaries' },
+    ],
+    createdAt: '2026-02-22T10:00:00Z',
+  },
+  {
+    id: 'skill-incident-triage',
+    name: 'Incident Triage',
+    description: 'Parses incoming alerts, checks historical incident data, assesses severity, and creates tickets with team notifications.',
+    type: 'workflow',
+    toolIds: ['tool-jira', 'tool-slack'],
+    modelIds: ['model-gpt4o'],
+    tags: ['incident', 'triage', 'devops'],
+    ownerTeam: 'DevOps',
+    visibility: 'team',
+    status: 'active',
+    invocationsToday: 450,
+    steps: [
+      { order: 1, type: 'model', label: 'Parse alert' },
+      { order: 2, type: 'tool', label: 'Check history' },
+      { order: 3, type: 'model', label: 'Assess severity' },
+      { order: 4, type: 'tool', label: 'Create ticket' },
+      { order: 5, type: 'tool', label: 'Notify team' },
+    ],
+    createdAt: '2026-02-25T10:00:00Z',
+  },
+  {
+    id: 'skill-travel-planning',
+    name: 'Travel Planning',
+    description: 'End-to-end travel planning workflow that searches flights, checks weather, and generates detailed itineraries.',
+    type: 'workflow',
+    toolIds: ['tool-weather'],
+    modelIds: ['model-gpt4o'],
+    tags: ['travel', 'planning', 'workflow'],
+    ownerTeam: 'Platform Integrations',
+    visibility: 'public',
+    status: 'active',
+    invocationsToday: 680,
+    steps: [
+      { order: 1, type: 'model', label: 'Parse request' },
+      { order: 2, type: 'tool', label: 'Search flights' },
+      { order: 3, type: 'tool', label: 'Check weather' },
+      { order: 4, type: 'model', label: 'Generate itinerary' },
+    ],
+    createdAt: '2026-02-28T10:00:00Z',
+  },
+  {
+    id: 'skill-code-review',
+    name: 'Code Review Assistant',
+    description: 'Fetches pull request diffs, analyzes code patterns, generates review feedback, and posts comments to GitHub.',
+    type: 'prompt-chain',
+    toolIds: ['tool-github'],
+    modelIds: ['model-gpt4o'],
+    tags: ['code-review', 'github', 'engineering'],
+    ownerTeam: 'DevOps',
+    visibility: 'team',
+    status: 'active',
+    invocationsToday: 1_890,
+    steps: [
+      { order: 1, type: 'tool', label: 'Fetch diff' },
+      { order: 2, type: 'model', label: 'Analyze patterns' },
+      { order: 3, type: 'model', label: 'Generate review' },
+      { order: 4, type: 'tool', label: 'Post comments' },
+    ],
+    createdAt: '2026-02-25T10:00:00Z',
+  },
+  {
+    id: 'skill-financial-report',
+    name: 'Financial Report Generator',
+    description: 'Fetches financial data from SAP and billing systems, aggregates metrics, and generates formatted analysis reports.',
+    type: 'analysis',
+    toolIds: ['tool-billing'],
+    modelIds: ['model-gpt4o'],
+    tags: ['finance', 'reporting', 'analysis'],
+    ownerTeam: 'Finance Engineering',
+    visibility: 'team',
+    status: 'active',
+    invocationsToday: 320,
+    steps: [
+      { order: 1, type: 'tool', label: 'Fetch data' },
+      { order: 2, type: 'logic', label: 'Aggregate metrics' },
+      { order: 3, type: 'model', label: 'Generate analysis' },
+      { order: 4, type: 'logic', label: 'Format report' },
+    ],
+    createdAt: '2026-03-01T10:00:00Z',
+  },
+  {
+    id: 'skill-hr-onboarding',
+    name: 'HR Onboarding Automation',
+    description: 'Automates new hire onboarding by creating accounts, sending welcome emails, scheduling training, and assigning buddies.',
+    type: 'automation',
+    toolIds: ['tool-kb', 'tool-slack'],
+    modelIds: ['model-gpt4o'],
+    tags: ['hr', 'onboarding', 'automation'],
+    ownerTeam: 'HR Team',
+    visibility: 'team',
+    status: 'active',
+    invocationsToday: 140,
+    steps: [
+      { order: 1, type: 'tool', label: 'Create accounts' },
+      { order: 2, type: 'tool', label: 'Send welcome' },
+      { order: 3, type: 'tool', label: 'Schedule training' },
+      { order: 4, type: 'logic', label: 'Assign buddy' },
+    ],
+    createdAt: '2026-03-02T10:00:00Z',
+  },
+  {
+    id: 'skill-lead-scoring',
+    name: 'Sales Lead Scoring',
+    description: 'Fetches lead data from CRM, analyzes engagement patterns, scores leads, and updates CRM records.',
+    type: 'analysis',
+    toolIds: ['tool-crm'],
+    modelIds: ['model-gpt4o'],
+    tags: ['sales', 'lead-scoring', 'analytics'],
+    ownerTeam: 'Sales Ops',
+    visibility: 'team',
+    status: 'active',
+    invocationsToday: 560,
+    steps: [
+      { order: 1, type: 'tool', label: 'Fetch lead data' },
+      { order: 2, type: 'model', label: 'Analyze engagement' },
+      { order: 3, type: 'model', label: 'Score lead' },
+      { order: 4, type: 'tool', label: 'Update CRM' },
+    ],
+    createdAt: '2026-03-01T10:00:00Z',
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Workloads
+// ---------------------------------------------------------------------------
+
+export interface Workload {
+  id: string;
+  name: string;
+  description: string;
+  namespace: string;
+  environment: 'sandbox' | 'staging' | 'production';
+  status: 'running' | 'stopped' | 'deploying' | 'error';
+  agentIds: string[];
+  toolIds: string[];
+  skillIds: string[];
+  policyIds: string[];
+  routingConfig?: string;
+  tokensBudgetDaily: number;
+  tokensUsedToday: number;
+  requestsToday: number;
+  lastDeployed: string;
+  createdAt: string;
+}
+
+export const workloads: Workload[] = [
+  {
+    id: 'workload-customer-support',
+    name: 'Customer Support Platform',
+    description: 'Production workload powering customer support agents with CRM, billing integrations, and intent analysis.',
+    namespace: 'customer-ops',
+    environment: 'production',
+    status: 'running',
+    agentIds: ['agent-support'],
+    toolIds: ['tool-crm', 'tool-billing'],
+    skillIds: ['skill-intent-analysis'],
+    policyIds: ['policy-token-limit', 'policy-content-safety'],
+    routingConfig: 'round-robin',
+    tokensBudgetDaily: 500_000,
+    tokensUsedToday: 347_200,
+    requestsToday: 8_920,
+    lastDeployed: '2026-03-02T14:30:00Z',
+    createdAt: '2026-02-15T10:00:00Z',
+  },
+  {
+    id: 'workload-devops',
+    name: 'DevOps Automation Suite',
+    description: 'Production workload for engineering automation including incident triage, code review, and deployment workflows.',
+    namespace: 'engineering',
+    environment: 'production',
+    status: 'running',
+    agentIds: ['agent-devops'],
+    toolIds: ['tool-github', 'tool-jira'],
+    skillIds: ['skill-incident-triage', 'skill-code-review'],
+    policyIds: ['policy-tool-acl', 'policy-ip-allowlist'],
+    routingConfig: 'priority',
+    tokensBudgetDaily: 200_000,
+    tokensUsedToday: 124_800,
+    requestsToday: 3_150,
+    lastDeployed: '2026-03-01T09:00:00Z',
+    createdAt: '2026-02-20T10:00:00Z',
+  },
+  {
+    id: 'workload-sales-intel',
+    name: 'Sales Intelligence',
+    description: 'Staging workload for sales lead scoring and competitive intelligence with CRM integration.',
+    namespace: 'sales',
+    environment: 'staging',
+    status: 'running',
+    agentIds: ['agent-sales'],
+    toolIds: ['tool-crm'],
+    skillIds: ['skill-lead-scoring'],
+    policyIds: ['policy-agent-throttle'],
+    tokensBudgetDaily: 100_000,
+    tokensUsedToday: 62_400,
+    requestsToday: 2_410,
+    lastDeployed: '2026-03-03T11:00:00Z',
+    createdAt: '2026-02-25T10:00:00Z',
+  },
+  {
+    id: 'workload-hr-ops',
+    name: 'HR Operations',
+    description: 'Production workload for HR onboarding automation with knowledge base and communication integrations.',
+    namespace: 'hr',
+    environment: 'production',
+    status: 'running',
+    agentIds: ['agent-hr'],
+    toolIds: ['tool-kb', 'tool-slack'],
+    skillIds: ['skill-hr-onboarding'],
+    policyIds: ['policy-content-safety'],
+    tokensBudgetDaily: 50_000,
+    tokensUsedToday: 18_600,
+    requestsToday: 780,
+    lastDeployed: '2026-03-01T16:00:00Z',
+    createdAt: '2026-02-28T10:00:00Z',
+  },
+  {
+    id: 'workload-financial-analytics',
+    name: 'Financial Analytics',
+    description: 'Sandbox workload for financial report generation and data analysis, currently being deployed.',
+    namespace: 'finance',
+    environment: 'sandbox',
+    status: 'deploying',
+    agentIds: [],
+    toolIds: ['tool-billing'],
+    skillIds: ['skill-financial-report'],
+    policyIds: ['policy-schema-validation'],
+    tokensBudgetDaily: 150_000,
+    tokensUsedToday: 0,
+    requestsToday: 0,
+    lastDeployed: '2026-03-03T15:00:00Z',
+    createdAt: '2026-03-01T10:00:00Z',
+  },
+  {
+    id: 'workload-knowledge-bot',
+    name: 'Internal Knowledge Bot',
+    description: 'Sandbox workload for an internal knowledge assistant, currently stopped for maintenance.',
+    namespace: 'knowledge',
+    environment: 'sandbox',
+    status: 'stopped',
+    agentIds: [],
+    toolIds: ['tool-kb'],
+    skillIds: [],
+    policyIds: [],
+    tokensBudgetDaily: 75_000,
+    tokensUsedToday: 0,
+    requestsToday: 0,
+    lastDeployed: '2026-02-28T12:00:00Z',
+    createdAt: '2026-02-25T10:00:00Z',
+  },
 ];

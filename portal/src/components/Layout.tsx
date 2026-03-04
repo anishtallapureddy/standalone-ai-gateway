@@ -37,6 +37,10 @@ import {
   SignOut24Regular,
   ChevronDown24Regular,
   Settings24Regular,
+  Lightbulb24Regular,
+  Lightbulb24Filled,
+  BoxMultiple24Regular,
+  BoxMultiple24Filled,
 } from '@fluentui/react-icons';
 
 const useStyles = makeStyles({
@@ -379,6 +383,19 @@ const navItems: NavItem[] = [
     label: 'Agents',
     icon: <Bot24Regular />,
     activeIcon: <Bot24Filled />,
+  },
+  {
+    path: '/skills',
+    label: 'Skills / Workflows',
+    icon: <Lightbulb24Regular />,
+    activeIcon: <Lightbulb24Filled />,
+  },
+  {
+    path: '/workloads',
+    label: 'Workloads',
+    icon: <BoxMultiple24Regular />,
+    activeIcon: <BoxMultiple24Filled />,
+    section: 'Operations',
   },
   {
     path: '/namespaces',
