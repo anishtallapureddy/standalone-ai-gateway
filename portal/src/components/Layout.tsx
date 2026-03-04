@@ -299,7 +299,7 @@ const useStyles = makeStyles({
   },
   header: {
     backgroundColor: '#1e1e1e',
-    padding: '12px 24px',
+    padding: '10px 20px',
     borderBottom: '1px solid #333',
     display: 'flex',
     alignItems: 'center',
@@ -329,7 +329,7 @@ const useStyles = makeStyles({
     backgroundColor: '#0e9349',
   },
   main: {
-    padding: '24px',
+    padding: '16px 20px',
   },
   sidebarFooter: {
     borderTop: '1px solid #333',

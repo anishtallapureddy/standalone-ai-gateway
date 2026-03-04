@@ -12,6 +12,10 @@ import {
   Warning24Regular,
   Rocket24Regular,
   ArrowRight16Regular,
+  BrainCircuit20Regular,
+  PlugConnected20Regular,
+  Bot20Regular,
+  ArrowTrendingLines20Regular,
 } from '@fluentui/react-icons';
 import StatCard from '../components/StatCard';
 import StatusBadge from '../components/StatusBadge';
@@ -20,15 +24,15 @@ import { dashboardStats, models, agents, recentLogs } from '../data/mockData';
 const useStyles = makeStyles({
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-    gap: '16px',
-    marginBottom: '24px',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+    gap: '10px',
+    marginBottom: '14px',
   },
   section: {
-    marginBottom: '24px',
+    marginBottom: '0',
   },
   sectionTitle: {
-    marginBottom: '12px',
+    marginBottom: '6px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -36,67 +40,68 @@ const useStyles = makeStyles({
   sectionTitleLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '6px',
   },
   twoCol: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '16px',
-    marginBottom: '24px',
+    gap: '12px',
+    marginBottom: '14px',
   },
   quickActionsCard: {
-    padding: '24px',
+    padding: '14px 16px',
     background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
     color: '#fff',
-    marginBottom: '24px',
+    marginBottom: '14px',
   },
   quickActionsTitle: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    marginBottom: '16px',
+    gap: '6px',
+    marginBottom: '10px',
   },
   quickActionsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '12px',
+    gap: '8px',
   },
   quickAction: {
-    padding: '16px',
+    padding: '10px 12px',
     backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: '8px',
+    borderRadius: '6px',
     cursor: 'pointer',
     transition: 'all 0.15s',
-    border: '1px solid rgba(255,255,255,0.1)',
+    border: '1px solid rgba(255,255,255,0.08)',
     display: 'flex',
     flexDirection: 'column' as const,
-    gap: '8px',
+    gap: '4px',
     ':hover': {
-      backgroundColor: 'rgba(255,255,255,0.15)',
-      border: '1px solid rgba(255,255,255,0.2)',
+      backgroundColor: 'rgba(255,255,255,0.14)',
+      border: '1px solid rgba(255,255,255,0.18)',
     },
   },
   quickActionIcon: {
-    fontSize: '20px',
+    fontSize: '18px',
     color: '#60cdff',
   },
   quickActionLabel: {
     color: '#fff',
-    fontSize: '13px',
+    fontSize: '12px',
     fontWeight: 600,
   },
   quickActionDesc: {
-    color: 'rgba(255,255,255,0.6)',
+    color: 'rgba(255,255,255,0.55)',
     fontSize: '11px',
+    lineHeight: '1.3',
   },
-  activityCard: {
-    padding: '16px',
+  compactCard: {
+    padding: '12px',
   },
   activityItem: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '10px 0',
+    padding: '7px 0',
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     ':last-child': {
       borderBottom: 'none',
@@ -105,18 +110,21 @@ const useStyles = makeStyles({
   activityLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
+    gap: '8px',
   },
   modelRow: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '12px 0',
+    padding: '8px 0',
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    ':last-child': {
+      borderBottom: 'none',
+    },
   },
   usageBar: {
-    width: '120px',
-    height: '6px',
+    width: '100px',
+    height: '5px',
     backgroundColor: tokens.colorNeutralStroke2,
     borderRadius: '3px',
     overflow: 'hidden',
@@ -125,53 +133,61 @@ const useStyles = makeStyles({
     height: '100%',
     borderRadius: '3px',
   },
-  costCard: {
-    padding: '20px',
-  },
   costGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '16px',
-    marginTop: '12px',
+    gap: '10px',
   },
   costItem: {
     textAlign: 'center' as const,
-    padding: '12px',
+    padding: '10px 8px',
     backgroundColor: tokens.colorNeutralBackground3,
-    borderRadius: '8px',
+    borderRadius: '6px',
   },
   costValue: {
-    fontSize: '24px',
+    fontSize: '20px',
     fontWeight: 700,
   },
   costLabel: {
-    fontSize: '11px',
+    fontSize: '10px',
     color: tokens.colorNeutralForeground3,
-    marginTop: '4px',
+    marginTop: '2px',
   },
   logRow: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '8px 0',
+    padding: '5px 0',
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    ':last-child': {
+      borderBottom: 'none',
+    },
   },
   logLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '6px',
   },
   statusDot: {
+    width: '5px',
+    height: '5px',
+    borderRadius: '50%',
+    display: 'inline-block',
+    flexShrink: 0,
+  },
+  liveDot: {
+    width: '7px',
+    height: '7px',
+    borderRadius: '50%',
+    backgroundColor: '#10b981',
+    flexShrink: 0,
+  },
+  providerDot: {
     width: '6px',
     height: '6px',
     borderRadius: '50%',
     display: 'inline-block',
-  },
-  liveDot: {
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    backgroundColor: '#10b981',
+    flexShrink: 0,
   },
 });
 
@@ -192,32 +208,32 @@ const Dashboard: React.FC = () => {
 
   return (
     <div>
-      {/* Quick Actions Banner */}
+      {/* Quick Actions */}
       <Card className={styles.quickActionsCard}>
         <div className={styles.quickActionsTitle}>
-          <Rocket24Regular style={{ color: '#60cdff' }} />
-          <Text style={{ color: '#fff', fontSize: '16px', fontWeight: 600 }}>Quick Actions</Text>
+          <Rocket24Regular style={{ color: '#60cdff', fontSize: '18px' }} />
+          <Text style={{ color: '#fff', fontSize: '14px', fontWeight: 600 }}>Quick Actions</Text>
         </div>
         <div className={styles.quickActionsGrid}>
           <div className={styles.quickAction} onClick={() => navigate('/models')}>
-            <BrainCircuit24Regular className={styles.quickActionIcon} />
+            <BrainCircuit20Regular className={styles.quickActionIcon} />
             <span className={styles.quickActionLabel}>Register Model</span>
-            <span className={styles.quickActionDesc}>Connect Azure OpenAI, Anthropic, Gemini, or any model</span>
+            <span className={styles.quickActionDesc}>Connect any model provider</span>
           </div>
           <div className={styles.quickAction} onClick={() => navigate('/tools')}>
-            <PlugConnected24Regular className={styles.quickActionIcon} />
+            <PlugConnected20Regular className={styles.quickActionIcon} />
             <span className={styles.quickActionLabel}>Add Tool</span>
-            <span className={styles.quickActionDesc}>Register an API or convert to MCP endpoint</span>
+            <span className={styles.quickActionDesc}>Register an API or MCP tool</span>
           </div>
           <div className={styles.quickAction} onClick={() => navigate('/agents')}>
-            <Bot24Regular className={styles.quickActionIcon} />
+            <Bot20Regular className={styles.quickActionIcon} />
             <span className={styles.quickActionLabel}>Deploy Agent</span>
-            <span className={styles.quickActionDesc}>Register a RAPI or A2A agent with governance</span>
+            <span className={styles.quickActionDesc}>Register a RAPI or A2A agent</span>
           </div>
           <div className={styles.quickAction} onClick={() => navigate('/playground')}>
-            <ArrowTrendingLines24Regular className={styles.quickActionIcon} />
+            <ArrowTrendingLines20Regular className={styles.quickActionIcon} />
             <span className={styles.quickActionLabel}>Test in Playground</span>
-            <span className={styles.quickActionDesc}>Try models with full gateway policies applied</span>
+            <span className={styles.quickActionDesc}>Try models with policies applied</span>
           </div>
         </div>
       </Card>
@@ -234,63 +250,59 @@ const Dashboard: React.FC = () => {
         <StatCard value={dashboardStats.activeAlerts} label="Active Alerts" icon={<Warning24Regular />} color={dashboardStats.activeAlerts > 0 ? '#ef4444' : '#10b981'} />
       </div>
 
-      {/* Two Column: Cost Analytics + Recent Activity */}
+      {/* Cost Analytics + Recent Activity */}
       <div className={styles.twoCol}>
-        {/* Cost Analytics */}
         <div className={styles.section}>
           <div className={styles.sectionTitle}>
             <div className={styles.sectionTitleLeft}>
-              <DataUsageRegular />
-              <Text size={400} weight="semibold">Cost Analytics (24h)</Text>
+              <DataUsageRegular style={{ fontSize: '18px' }} />
+              <Text size={300} weight="semibold">Cost Analytics (24h)</Text>
             </div>
           </div>
-          <Card className={styles.costCard}>
+          <Card className={styles.compactCard}>
             <div className={styles.costGrid}>
               <div className={styles.costItem}>
-                <div className={styles.costValue} style={{ color: '#6366f1' }}>$127.40</div>
+                <div className={styles.costValue} style={{ color: '#6366f1' }}>$127</div>
                 <div className={styles.costLabel}>Total Spend</div>
               </div>
               <div className={styles.costItem}>
-                <div className={styles.costValue} style={{ color: '#10b981' }}>$34.20</div>
+                <div className={styles.costValue} style={{ color: '#10b981' }}>$34</div>
                 <div className={styles.costLabel}>Saved (Cache)</div>
               </div>
               <div className={styles.costItem}>
                 <div className={styles.costValue} style={{ color: '#f59e0b' }}>$0.26</div>
-                <div className={styles.costLabel}>Avg Cost / 1K Tokens</div>
+                <div className={styles.costLabel}>Avg / 1K Tokens</div>
               </div>
             </div>
-            <Divider style={{ margin: '16px 0' }} />
-            <div>
-              <Text size={200} weight="semibold" style={{ marginBottom: '8px', display: 'block' }}>Spend by Provider</Text>
-              {[
-                { name: 'Azure OpenAI', amount: '$68.50', pct: 53.8, color: '#0078d4' },
-                { name: 'Anthropic', amount: '$32.10', pct: 25.2, color: '#d97706' },
-                { name: 'Google Vertex AI', amount: '$18.90', pct: 14.8, color: '#4285f4' },
-                { name: 'AWS Bedrock', amount: '$7.90', pct: 6.2, color: '#ff9900' },
-              ].map(p => (
-                <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: p.color }} />
-                  <Text size={200} style={{ flex: 1 }}>{p.name}</Text>
-                  <Text size={200} weight="semibold">{p.amount}</Text>
-                  <Text size={200} style={{ color: '#999', width: '45px', textAlign: 'right' }}>{p.pct}%</Text>
-                </div>
-              ))}
-            </div>
+            <Divider style={{ margin: '10px 0' }} />
+            <Text size={200} weight="semibold" style={{ marginBottom: '6px', display: 'block' }}>Spend by Provider</Text>
+            {[
+              { name: 'Azure OpenAI', amount: '$68.50', pct: 53.8, color: '#0078d4' },
+              { name: 'Anthropic', amount: '$32.10', pct: 25.2, color: '#d97706' },
+              { name: 'Google Vertex AI', amount: '$18.90', pct: 14.8, color: '#4285f4' },
+              { name: 'AWS Bedrock', amount: '$7.90', pct: 6.2, color: '#ff9900' },
+            ].map(p => (
+              <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                <span className={styles.providerDot} style={{ backgroundColor: p.color }} />
+                <Text size={200} style={{ flex: 1 }}>{p.name}</Text>
+                <Text size={200} weight="semibold">{p.amount}</Text>
+                <Text size={200} style={{ color: '#666', width: '40px', textAlign: 'right' }}>{p.pct}%</Text>
+              </div>
+            ))}
           </Card>
         </div>
 
-        {/* Recent Activity */}
         <div className={styles.section}>
           <div className={styles.sectionTitle}>
             <div className={styles.sectionTitleLeft}>
               <div className={styles.liveDot} />
-              <Text size={400} weight="semibold">Recent Activity</Text>
+              <Text size={300} weight="semibold">Recent Activity</Text>
             </div>
-            <Button appearance="subtle" size="small" onClick={() => navigate('/logs')}>
+            <Button appearance="subtle" size="small" onClick={() => navigate('/logs')} style={{ minWidth: 0, padding: '2px 8px' }}>
               View all <ArrowRight16Regular />
             </Button>
           </div>
-          <Card className={styles.activityCard}>
+          <Card className={styles.compactCard}>
             {recentLogs.slice(0, 8).map((log) => (
               <div key={log.id} className={styles.logRow}>
                 <div className={styles.logLeft}>
@@ -304,12 +316,13 @@ const Dashboard: React.FC = () => {
                   </Badge>
                   <Text size={200}>{log.assetName}</Text>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <Text size={200} style={{
                     color: log.latencyMs < 500 ? '#10b981' : log.latencyMs < 2000 ? '#f59e0b' : '#ef4444',
                     fontWeight: 600,
+                    fontSize: '11px',
                   }}>{log.latencyMs}ms</Text>
-                  <Text size={200} style={{ color: '#999', fontFamily: 'monospace', fontSize: '11px' }}>
+                  <Text size={100} style={{ color: '#666', fontFamily: 'monospace', fontSize: '10px' }}>
                     {formatTime(log.timestamp)}
                   </Text>
                 </div>
@@ -319,28 +332,28 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Two Column: Model Usage + Active Agents */}
+      {/* Model Usage + Active Agents */}
       <div className={styles.twoCol}>
         <div className={styles.section}>
           <div className={styles.sectionTitle}>
             <div className={styles.sectionTitleLeft}>
-              <BrainCircuit24Regular />
-              <Text size={400} weight="semibold">Model Usage</Text>
+              <BrainCircuit24Regular style={{ fontSize: '18px' }} />
+              <Text size={300} weight="semibold">Model Usage</Text>
             </div>
           </div>
-          <Card className={styles.activityCard}>
+          <Card className={styles.compactCard}>
             {models.filter(m => m.status === 'active').map((model) => {
               const usagePct = Math.min((model.tokensUsedToday / model.tokenLimit) * 100, 100);
               const barColor = usagePct > 80 ? '#ef4444' : usagePct > 60 ? '#f59e0b' : '#10b981';
               return (
                 <div key={model.id} className={styles.modelRow}>
                   <div>
-                    <Text weight="semibold" size={300}>{model.name}</Text>
+                    <Text weight="semibold" size={200}>{model.name}</Text>
                     <br />
-                    <Text size={200} style={{ color: '#999' }}>{model.provider}</Text>
+                    <Text size={100} style={{ color: '#666' }}>{model.provider}</Text>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Text size={200}>{(model.tokensUsedToday / 1000).toFixed(0)}K / {(model.tokenLimit / 1000).toFixed(0)}K</Text>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Text size={200} style={{ fontSize: '11px' }}>{(model.tokensUsedToday / 1000).toFixed(0)}K / {(model.tokenLimit / 1000).toFixed(0)}K</Text>
                     <div className={styles.usageBar}>
                       <div className={styles.usageFill} style={{ width: `${usagePct}%`, backgroundColor: barColor }} />
                     </div>
@@ -354,25 +367,25 @@ const Dashboard: React.FC = () => {
         <div className={styles.section}>
           <div className={styles.sectionTitle}>
             <div className={styles.sectionTitleLeft}>
-              <Bot24Regular />
-              <Text size={400} weight="semibold">Active Agents</Text>
+              <Bot24Regular style={{ fontSize: '18px' }} />
+              <Text size={300} weight="semibold">Active Agents</Text>
             </div>
           </div>
-          <Card className={styles.activityCard}>
+          <Card className={styles.compactCard}>
             {agents.map((agent) => (
               <div key={agent.id} className={styles.activityItem}>
                 <div className={styles.activityLeft}>
                   <StatusBadge status={agent.status} />
                   <div>
-                    <Text weight="semibold" size={300}>{agent.name}</Text>
+                    <Text weight="semibold" size={200}>{agent.name}</Text>
                     <br />
-                    <Text size={200} style={{ color: '#999' }}>{agent.protocol.toUpperCase()} · {agent.modelIds.length} models · {agent.toolIds.length} tools</Text>
+                    <Text size={100} style={{ color: '#666' }}>{agent.protocol.toUpperCase()} · {agent.modelIds.length} models · {agent.toolIds.length} tools</Text>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <Text size={300} weight="semibold">{agent.requestsToday.toLocaleString()}</Text>
+                  <Text size={200} weight="semibold">{agent.requestsToday.toLocaleString()}</Text>
                   <br />
-                  <Text size={200} style={{ color: '#999' }}>requests</Text>
+                  <Text size={100} style={{ color: '#666' }}>requests</Text>
                 </div>
               </div>
             ))}

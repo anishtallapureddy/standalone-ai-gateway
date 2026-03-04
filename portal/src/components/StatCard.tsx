@@ -3,19 +3,19 @@ import { Card, Text, makeStyles, tokens } from '@fluentui/react-components';
 
 const useStyles = makeStyles({
   card: {
-    padding: '20px',
-    minWidth: '180px',
-    flex: '1 1 180px',
+    padding: '14px 16px',
+    minWidth: '140px',
+    flex: '1 1 140px',
   },
   value: {
-    fontSize: '32px',
+    fontSize: '24px',
     fontWeight: 700,
     lineHeight: 1.2,
   },
   label: {
     color: tokens.colorNeutralForeground3,
-    fontSize: '13px',
-    marginTop: '4px',
+    fontSize: '12px',
+    marginTop: '2px',
   },
   iconRow: {
     display: 'flex',
