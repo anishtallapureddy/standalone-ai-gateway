@@ -5,12 +5,6 @@ import {
   makeStyles,
   tokens,
   Badge,
-  Table,
-  TableHeader,
-  TableHeaderCell,
-  TableBody,
-  TableRow,
-  TableCell,
   Button,
   Switch,
   TabList,
@@ -32,6 +26,10 @@ import {
   ArrowSync24Regular,
   Eye24Regular,
   ShieldLock24Regular,
+  Key24Regular,
+  LockClosed24Regular,
+  ArrowRouting24Regular,
+  Bot24Regular,
 } from '@fluentui/react-icons';
 import {
   policies,
@@ -39,6 +37,7 @@ import {
   pendingApprovals,
   raiGuardrails,
 } from '../data/mockData';
+import type { PolicyCategory } from '../data/mockData';
 
 const useStyles = makeStyles({
   stats: {
@@ -171,10 +170,19 @@ const targetColors: Record<string, 'brand' | 'success' | 'informative' | 'warnin
   'mcp-servers': 'danger',
 };
 
+const policyCategoryConfig: Record<PolicyCategory, { icon: React.ReactElement; label: string; color: string; bg: string }> = {
+  authentication: { icon: <Key24Regular />, label: 'Authentication', color: '#60cdff', bg: '#1a2d4d' },
+  credentials: { icon: <LockClosed24Regular />, label: 'Credentials', color: '#c084fc', bg: '#2d1a4d' },
+  'rate-limits': { icon: <Clock24Regular />, label: 'Rate Limits & Quotas', color: '#fbbf24', bg: '#3d2800' },
+  'content-safety': { icon: <Shield24Regular />, label: 'Content Safety', color: '#f87171', bg: '#3d1a1a' },
+  routing: { icon: <ArrowRouting24Regular />, label: 'Routing & Transformation', color: '#4ade80', bg: '#1a3a2a' },
+  'agent-execution': { icon: <Bot24Regular />, label: 'Agent Execution', color: '#38bdf8', bg: '#1a2d3d' },
+};
+
 const severityConfig: Record<string, { icon: React.ReactElement; color: string; bg: string }> = {
-  error: { icon: <ErrorCircle24Regular />, color: '#ef4444', bg: '#fef2f2' },
-  warning: { icon: <Warning24Regular />, color: '#f59e0b', bg: '#fffbeb' },
-  info: { icon: <Info24Regular />, color: '#3b82f6', bg: '#eff6ff' },
+  error: { icon: <ErrorCircle24Regular />, color: '#f87171', bg: '#3d1a1a' },
+  warning: { icon: <Warning24Regular />, color: '#fbbf24', bg: '#3d2800' },
+  info: { icon: <Info24Regular />, color: '#60cdff', bg: '#1a2d4d' },
 };
 
 const categoryLabels: Record<string, string> = {
@@ -201,18 +209,18 @@ const approvalStatusConfig: Record<string, { icon: React.ReactElement; color: st
 };
 
 const raiCategoryConfig: Record<string, { icon: React.ReactElement; color: string; bg: string; label: string }> = {
-  'content-safety': { icon: <Shield24Regular />, color: '#ef4444', bg: '#fef2f2', label: 'Content Safety' },
-  'pii-protection': { icon: <ShieldLock24Regular />, color: '#8b5cf6', bg: '#f5f3ff', label: 'PII Protection' },
-  jailbreak: { icon: <ErrorCircle24Regular />, color: '#f97316', bg: '#fff7ed', label: 'Jailbreak Defense' },
-  hallucination: { icon: <Eye24Regular />, color: '#0ea5e9', bg: '#f0f9ff', label: 'Hallucination' },
-  fairness: { icon: <ArrowSync24Regular />, color: '#10b981', bg: '#ecfdf5', label: 'Fairness' },
-  transparency: { icon: <Info24Regular />, color: '#6366f1', bg: '#eef2ff', label: 'Transparency' },
+  'content-safety': { icon: <Shield24Regular />, color: '#f87171', bg: '#3d1a1a', label: 'Content Safety' },
+  'pii-protection': { icon: <ShieldLock24Regular />, color: '#c084fc', bg: '#2d1a4d', label: 'PII Protection' },
+  jailbreak: { icon: <ErrorCircle24Regular />, color: '#fb923c', bg: '#3d2200', label: 'Jailbreak Defense' },
+  hallucination: { icon: <Eye24Regular />, color: '#38bdf8', bg: '#1a2d3d', label: 'Groundedness' },
+  fairness: { icon: <ArrowSync24Regular />, color: '#4ade80', bg: '#1a3a2a', label: 'Fairness & Bias' },
+  transparency: { icon: <Info24Regular />, color: '#a78bfa', bg: '#1e1a3d', label: 'Transparency' },
 };
 
 const severityActionConfig: Record<string, { color: string; bg: string; label: string }> = {
-  block: { color: '#ef4444', bg: '#fef2f2', label: '🛑 Block' },
-  warn: { color: '#f59e0b', bg: '#fffbeb', label: '⚠️ Warn' },
-  log: { color: '#6366f1', bg: '#eef2ff', label: '📝 Log' },
+  block: { color: '#f87171', bg: '#3d1a1a', label: '🛑 Block' },
+  warn: { color: '#fbbf24', bg: '#3d2800', label: '⚠️ Warn' },
+  log: { color: '#a78bfa', bg: '#1e1a3d', label: '📝 Log' },
 };
 
 const Policies: React.FC = () => {
@@ -258,7 +266,7 @@ const Policies: React.FC = () => {
             Runtime Rules ({runtimePolicies.length})
           </Tab>
           <Tab value="design-time" icon={<ShieldCheckmark24Regular />}>
-            Design-Time Rules ({governanceRules.length})
+            Asset Governance ({governanceRules.length})
           </Tab>
           <Tab value="rai" icon={<HeartPulse24Regular />}>
             RAI Guardrails ({raiGuardrails.length})
@@ -271,48 +279,66 @@ const Policies: React.FC = () => {
         <div>
           <div className={styles.toolbar}>
             <Text size={300} style={{ color: '#999' }}>
-              {runtimePolicies.length} runtime policies · {runtimePolicies.filter(p => p.enabled).length} enabled · applied to {runtimePolicies.reduce((s, p) => s + p.appliedTo, 0)} assets
+              {runtimePolicies.length} runtime policies across 6 categories · {runtimePolicies.filter(p => p.enabled).length} enabled
             </Text>
-            <Button appearance="primary" icon={<Add24Regular />}>Create Runtime Rule</Button>
+            <Button appearance="primary" icon={<Add24Regular />}>Create Runtime Policy</Button>
           </div>
-          <Card className={styles.card}>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHeaderCell>Policy</TableHeaderCell>
-                  <TableHeaderCell>Target</TableHeaderCell>
-                  <TableHeaderCell>Rules</TableHeaderCell>
-                  <TableHeaderCell>Applied To</TableHeaderCell>
-                  <TableHeaderCell>Enabled</TableHeaderCell>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {runtimePolicies.map((policy) => (
-                  <TableRow key={policy.id}>
-                    <TableCell>
-                      <Text weight="semibold">{policy.name}</Text>
-                      <br />
-                      <Text size={200} style={{ color: '#999' }}>{policy.description}</Text>
-                    </TableCell>
-                    <TableCell>
-                      <Badge appearance="tint" color={targetColors[policy.target] || 'informative'}>
-                        {policy.target}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Text>{policy.ruleCount} rule{policy.ruleCount !== 1 ? 's' : ''}</Text>
-                    </TableCell>
-                    <TableCell>
-                      <Text>{policy.appliedTo} asset{policy.appliedTo !== 1 ? 's' : ''}</Text>
-                    </TableCell>
-                    <TableCell>
+
+          {(['authentication', 'credentials', 'rate-limits', 'content-safety', 'routing', 'agent-execution'] as PolicyCategory[]).map(cat => {
+            const catPolicies = runtimePolicies.filter(p => p.category === cat);
+            if (catPolicies.length === 0) return null;
+            const catConfig = policyCategoryConfig[cat];
+
+            return (
+              <div key={cat} style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                  <div style={{
+                    width: '32px', height: '32px', borderRadius: '8px',
+                    backgroundColor: catConfig.bg, color: catConfig.color,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {catConfig.icon}
+                  </div>
+                  <Text weight="semibold" size={400}>{catConfig.label}</Text>
+                  <Badge appearance="outline" size="small">{catPolicies.length}</Badge>
+                </div>
+
+                {catPolicies.map(policy => (
+                  <Card key={policy.id} className={styles.ruleCard}>
+                    <div className={styles.ruleHeader}>
+                      <div className={styles.ruleLeft}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Text weight="semibold" size={300}>{policy.name}</Text>
+                            <Badge appearance="tint" color={targetColors[policy.target] || 'informative'} size="small">
+                              {policy.target}
+                            </Badge>
+                            {policy.namespace !== 'global' && (
+                              <Badge appearance="outline" size="small" style={{ fontFamily: 'monospace' }}>
+                                {policy.namespace}
+                              </Badge>
+                            )}
+                          </div>
+                          <Text size={200} style={{ color: '#999', marginTop: '4px', display: 'block' }}>
+                            {policy.description}
+                          </Text>
+                          <div className={styles.ruleMeta}>
+                            <Text size={200} style={{ color: '#999' }}>
+                              {policy.ruleCount} rule{policy.ruleCount !== 1 ? 's' : ''} · applied to {policy.appliedTo} asset{policy.appliedTo !== 1 ? 's' : ''}
+                            </Text>
+                            <Badge appearance="tint" size="small" color={policy.namespace === 'global' ? 'warning' : 'informative'}>
+                              {policy.namespace === 'global' ? 'All namespaces' : policy.namespace}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
                       <Switch checked={policy.enabled} />
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
-          </Card>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -321,7 +347,7 @@ const Policies: React.FC = () => {
         <div>
           <div className={styles.toolbar}>
             <Text size={300} style={{ color: '#999' }}>
-              Design-time rules enforced when assets are registered, updated, or activated
+              Asset lifecycle rules enforced when assets are registered, updated, published, or deprecated
             </Text>
             <div style={{ display: 'flex', gap: '8px' }}>
               {pendingCount > 0 && (
@@ -488,6 +514,9 @@ const Policies: React.FC = () => {
                         </Badge>
                         <Badge appearance="tint" color="informative" size="small">
                           {guardrail.target === 'both' ? 'input + output' : guardrail.target}
+                        </Badge>
+                        <Badge appearance="outline" size="small" style={{ fontFamily: 'monospace' }}>
+                          {guardrail.namespace === 'global' ? 'all namespaces' : guardrail.namespace}
                         </Badge>
                       </div>
                       <Text size={200} style={{ color: '#999', marginTop: '4px', display: 'block' }}>
