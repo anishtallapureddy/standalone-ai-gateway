@@ -93,7 +93,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     justifyContent: 'space-between',
     flexShrink: 0,
-    paddingBottom: '12px',
+    paddingBottom: '8px',
   },
   headerLeft: {
     display: 'flex',
@@ -120,11 +120,11 @@ const useStyles = makeStyles({
   leftPanel: {
     backgroundColor: '#1a1a1a',
     borderRight: '1px solid #2a2a2a',
-    padding: '14px',
+    padding: '10px 14px',
     overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '8px',
   },
   centerPanel: {
     backgroundColor: '#111',
@@ -293,11 +293,11 @@ const useStyles = makeStyles({
   rightPanel: {
     backgroundColor: '#1a1a1a',
     borderLeft: '1px solid #2a2a2a',
-    padding: '14px',
+    padding: '10px 14px',
     overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '8px',
   },
   panelLabel: {
     display: 'flex',
@@ -324,13 +324,13 @@ const useStyles = makeStyles({
     fontWeight: 600,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
-    marginBottom: '4px',
+    marginBottom: '2px',
     display: 'block',
   },
   fieldGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '3px',
+    gap: '2px',
   },
   toolList: {
     display: 'flex',
@@ -364,8 +364,8 @@ const useStyles = makeStyles({
   emptyTools: {
     fontSize: '11px',
     color: '#555',
-    lineHeight: '1.4',
-    padding: '4px 0',
+    lineHeight: '1.3',
+    padding: '2px 0',
   },
   sliderRow: {
     display: 'flex',
@@ -378,7 +378,7 @@ const useStyles = makeStyles({
   promptArea: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
+    gap: '4px',
     flex: 1,
     minHeight: 0,
   },
@@ -936,7 +936,7 @@ const Playground: React.FC = () => {
             )}
             <Dialog open={addToolOpen} onOpenChange={(_, d) => setAddToolOpen(d.open)}>
               <DialogTrigger disableButtonEnhancement>
-                <Button appearance="subtle" size="small" icon={<Add20Regular />} style={{ alignSelf: 'flex-start', marginTop: '4px' }}>
+                <Button appearance="subtle" size="small" icon={<Add20Regular />} style={{ alignSelf: 'flex-start', marginTop: '2px' }}>
                   Add Tool
                 </Button>
               </DialogTrigger>
@@ -968,8 +968,6 @@ const Playground: React.FC = () => {
               </DialogSurface>
             </Dialog>
           </div>
-
-          <Divider style={{ margin: '4px 0' }} />
 
           {/* Prompt Input */}
           <div className={styles.promptArea}>
