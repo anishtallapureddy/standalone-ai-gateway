@@ -25,19 +25,31 @@ import {
   Money24Regular,
   PlugConnected20Regular,
   CheckmarkCircle20Regular,
+  Copy24Regular,
+  ChevronDown20Regular,
+  ChevronRight20Regular,
+  Clock20Regular,
 } from '@fluentui/react-icons';
 import { models, agents } from '../data/mockData';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+type StepType = 'gateway' | 'auth' | 'model' | 'tool' | 'agent' | 'response';
+type RunStatus = 'idle' | 'running' | 'succeeded' | 'failed';
+
 interface TraceStep {
   icon: string;
   label: string;
-  detail?: string;
-  meta?: string;
+  type: StepType;
+  duration: number;       // ms, filled after done
   color: string;
   done: boolean;
+  summary: string;
+  requestJson: string;
+  responseJson: string;
+  headers: Record<string, string>;
+  policies: string[];
 }
 
 interface RoutingDecision {
@@ -103,11 +115,167 @@ const useStyles = makeStyles({
   },
   centerPanel: {
     backgroundColor: '#111',
-    padding: '14px 16px',
+    padding: '0',
     overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',
+  },
+  runHeader: {
+    padding: '10px 14px',
+    backgroundColor: '#1a1a1a',
+    borderBottom: '1px solid #2a2a2a',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexShrink: 0,
+  },
+  runHeaderLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  runHeaderRight: {
+    display: 'flex',
+    alignItems: 'center',
     gap: '12px',
+  },
+  runMeta: {
+    fontSize: '11px',
+    color: '#666',
+    fontFamily: '"Cascadia Code", monospace',
+  },
+  runMetricPill: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '2px 8px',
+    backgroundColor: '#252525',
+    borderRadius: '4px',
+    fontSize: '11px',
+    color: '#ccc',
+  },
+  tracePane: {
+    display: 'grid',
+    gridTemplateColumns: '220px 1fr',
+    flex: 1,
+    minHeight: 0,
+  },
+  traceList: {
+    borderRight: '1px solid #2a2a2a',
+    overflowY: 'auto',
+    padding: '6px 0',
+  },
+  traceListItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '7px 12px',
+    cursor: 'pointer',
+    borderLeft: '3px solid transparent',
+    transition: 'all 0.1s',
+    ':hover': {
+      backgroundColor: '#1a1a2e',
+    },
+  },
+  traceListItemSelected: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '7px 12px',
+    cursor: 'pointer',
+    backgroundColor: '#1a1a2e',
+    borderLeft: '3px solid #6366f1',
+  },
+  traceListItemDisabled: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '7px 12px',
+    opacity: 0.3,
+    borderLeft: '3px solid transparent',
+  },
+  stepIconSmall: {
+    fontSize: '14px',
+    flexShrink: 0,
+    width: '18px',
+    textAlign: 'center' as const,
+  },
+  stepInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  stepName: {
+    fontSize: '12px',
+    color: '#e0e0e0',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  stepDuration: {
+    fontSize: '10px',
+    color: '#555',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    marginTop: '1px',
+  },
+  traceDetail: {
+    overflowY: 'auto',
+    padding: '12px 14px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  detailHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '4px',
+  },
+  collapsible: {
+    borderRadius: '6px',
+    border: '1px solid #2a2a2a',
+    overflow: 'hidden',
+  },
+  collapsibleHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 10px',
+    backgroundColor: '#1a1a1a',
+    cursor: 'pointer',
+    fontSize: '12px',
+    color: '#aaa',
+    fontWeight: 500,
+    ':hover': {
+      backgroundColor: '#222',
+    },
+  },
+  collapsibleBody: {
+    padding: '8px 10px',
+    backgroundColor: '#0d1117',
+    fontFamily: '"Cascadia Code", monospace',
+    fontSize: '11px',
+    color: '#8b949e',
+    whiteSpace: 'pre-wrap',
+    lineHeight: '1.5',
+    maxHeight: '180px',
+    overflowY: 'auto',
+  },
+  policyChips: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '4px',
+    padding: '8px 10px',
+    backgroundColor: '#141414',
+  },
+  finalResponseCard: {
+    margin: '0 14px 12px',
+    padding: '12px',
+    backgroundColor: '#0d1117',
+    border: '1px solid #30363d',
+    borderRadius: '8px',
+    flexShrink: 0,
   },
   rightPanel: {
     backgroundColor: '#1a1a1a',
@@ -187,77 +355,6 @@ const useStyles = makeStyles({
     gap: '10px',
     color: '#555',
   },
-  traceTimeline: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
-  },
-  stepRow: {
-    display: 'flex',
-    gap: '10px',
-    padding: '8px 10px',
-    borderRadius: '6px',
-    backgroundColor: '#1a1a2e',
-    alignItems: 'flex-start',
-    transition: 'all 0.15s',
-  },
-  stepRowActive: {
-    display: 'flex',
-    gap: '10px',
-    padding: '8px 10px',
-    borderRadius: '6px',
-    backgroundColor: '#1a1a3e',
-    alignItems: 'flex-start',
-    boxShadow: '0 0 10px rgba(99, 102, 241, 0.15)',
-  },
-  stepIcon: {
-    fontSize: '14px',
-    lineHeight: '20px',
-    flexShrink: 0,
-  },
-  stepContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-  stepLabel: {
-    fontSize: '12px',
-    color: '#e0e0e0',
-    lineHeight: '18px',
-  },
-  stepMeta: {
-    fontSize: '11px',
-    color: '#666',
-    marginTop: '1px',
-  },
-  stepDetail: {
-    fontSize: '11px',
-    color: '#6b7280',
-    fontFamily: '"Cascadia Code", monospace',
-    marginTop: '2px',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  responseCard: {
-    padding: '14px',
-    backgroundColor: '#0d1117',
-    border: '1px solid #30363d',
-    borderRadius: '8px',
-  },
-  responseBody: {
-    fontFamily: '"Cascadia Code", "Fira Code", monospace',
-    fontSize: '12px',
-    lineHeight: '1.6',
-    color: '#e6edf3',
-    whiteSpace: 'pre-wrap',
-    maxHeight: '200px',
-    overflowY: 'auto',
-  },
-  responseActions: {
-    display: 'flex',
-    gap: '8px',
-    marginTop: '10px',
-  },
   routingRow: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -312,19 +409,6 @@ const useStyles = makeStyles({
   policyValue: {
     color: '#e0e0e0',
     fontWeight: 500,
-  },
-  logPanel: {
-    backgroundColor: '#0d1117',
-    border: '1px solid #30363d',
-    borderRadius: '6px',
-    padding: '10px',
-    fontFamily: '"Cascadia Code", monospace',
-    fontSize: '11px',
-    color: '#8b949e',
-    maxHeight: '140px',
-    overflowY: 'auto',
-    whiteSpace: 'pre-wrap',
-    lineHeight: '1.5',
   },
 });
 
@@ -471,13 +555,17 @@ const Playground: React.FC = () => {
 
   // Execution
   const [isRunning, setIsRunning] = useState(false);
+  const [runStatus, setRunStatus] = useState<RunStatus>('idle');
+  const [runId, setRunId] = useState('');
+  const [runTimestamp, setRunTimestamp] = useState('');
   const [traceSteps, setTraceSteps] = useState<TraceStep[]>([]);
   const [activeStepIdx, setActiveStepIdx] = useState(-1);
+  const [selectedStepIdx, setSelectedStepIdx] = useState<number>(0);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({ summary: true });
   const [response, setResponse] = useState<string | null>(null);
   const [routing, setRouting] = useState<RoutingDecision | null>(null);
   const [obsMetrics, setObsMetrics] = useState<ObsMetrics | null>(null);
   const [hasRun, setHasRun] = useState(false);
-  const [showLogs, setShowLogs] = useState(false);
   const [logJson, setLogJson] = useState('');
   const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -488,6 +576,10 @@ const Playground: React.FC = () => {
     setEnabledTools((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const toggleSection = (key: string) => {
+    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const reset = useCallback(() => {
     timeouts.current.forEach(clearTimeout);
     timeouts.current = [];
@@ -496,13 +588,17 @@ const Playground: React.FC = () => {
     setEnabledTools(Object.fromEntries(PLAYGROUND_TOOLS.map((t) => [t.id, t.enabled])));
     setPrompt('');
     setIsRunning(false);
+    setRunStatus('idle');
+    setRunId('');
+    setRunTimestamp('');
     setTraceSteps([]);
     setActiveStepIdx(-1);
+    setSelectedStepIdx(0);
+    setExpandedSections({ summary: true });
     setResponse(null);
     setRouting(null);
     setObsMetrics(null);
     setHasRun(false);
-    setShowLogs(false);
     setLogJson('');
   }, []);
 
@@ -513,11 +609,17 @@ const Playground: React.FC = () => {
     timeouts.current = [];
     setTraceSteps([]);
     setActiveStepIdx(-1);
+    setSelectedStepIdx(0);
+    setExpandedSections({ summary: true });
     setResponse(null);
     setObsMetrics(null);
-    setShowLogs(false);
     setIsRunning(true);
+    setRunStatus('running');
     setHasRun(true);
+
+    const rid = `run-${Date.now().toString(36).slice(-6)}`;
+    setRunId(rid);
+    setRunTimestamp(new Date().toLocaleTimeString('en-US', { hour12: false }));
 
     const modelName = selectedModel.name;
     const rd = getRoutingDecision(modelName);
@@ -527,36 +629,88 @@ const Playground: React.FC = () => {
     const promptKey = findPromptKey(prompt);
     const namespace = selectedAgent ? 'retail-support' : 'default';
 
+    const makeStep = (
+      icon: string, label: string, type: StepType, color: string,
+      summary: string, reqJson: string, resJson: string,
+      headers: Record<string, string>, policies: string[]
+    ): TraceStep => ({
+      icon, label, type, color, done: false, duration: 0, summary,
+      requestJson: reqJson, responseJson: resJson, headers, policies,
+    });
+
     const steps: TraceStep[] = [
-      { icon: '🔒', label: 'Gateway received request', meta: `Namespace: ${namespace}`, color: '#60cdff', done: false },
-      { icon: '✅', label: 'Authentication validated', meta: 'JWT token verified', color: '#10b981', done: false },
-      { icon: '🧠', label: 'Model execution', meta: `Model: ${rd.primary}`, color: '#6366f1', done: false },
+      makeStep('🔒', 'Gateway received', 'gateway', '#60cdff',
+        `Request received by gateway. Namespace: ${namespace}. Route resolved.`,
+        JSON.stringify({ method: 'POST', path: '/v1/chat/completions', namespace, model: rd.primary }, null, 2),
+        JSON.stringify({ status: 'accepted', route: rd.primary }, null, 2),
+        { 'x-request-id': rid, 'x-namespace': namespace, 'content-type': 'application/json', 'authorization': 'Bearer ey...redacted' },
+        ['jwt-validation', 'rate-limit-check']
+      ),
+      makeStep('✅', 'Auth validated', 'auth', '#10b981',
+        'JWT token validated. Identity resolved. Namespace membership confirmed.',
+        JSON.stringify({ token_issuer: 'https://login.microsoftonline.com', audience: 'ai-gateway' }, null, 2),
+        JSON.stringify({ authenticated: true, identity: 'jane@contoso.com', role: 'ai-developer' }, null, 2),
+        { 'x-identity': 'jane@contoso.com', 'x-roles': 'ai-developer' },
+        ['entra-token-validation', 'namespace-membership']
+      ),
     ];
 
-    if (activeToolNames.length > 0) {
-      activeToolNames.forEach((name) => {
-        steps.push({
-          icon: '🔧',
-          label: 'Tool invocation',
-          meta: `Tool: ${name} API`,
-          detail: `POST /services/data/v${randBetween(50, 60)}/invoke`,
-          color: '#0ea5e9',
-          done: false,
-        });
-      });
-      steps.push({ icon: '🧠', label: 'Model synthesizing results', color: '#6366f1', done: false });
-    }
-
     if (selectedAgent) {
-      steps.splice(2, 0, { icon: '🤖', label: `Agent: ${selectedAgent.name}`, meta: 'Orchestrating model + tools', color: '#10b981', done: false });
+      steps.push(makeStep('🤖', `Agent: ${selectedAgent.name}`, 'agent', '#10b981',
+        `Agent ${selectedAgent.name} started. Protocol: ${selectedAgent.protocol}. Orchestrating model + tools.`,
+        JSON.stringify({ agent: selectedAgent.name, protocol: selectedAgent.protocol, models: selectedAgent.modelIds.length, tools: selectedAgent.toolIds.length }, null, 2),
+        JSON.stringify({ status: 'orchestrating', plan: 'decompose → execute → synthesize' }, null, 2),
+        { 'x-agent-id': selectedAgent.id, 'x-protocol': selectedAgent.protocol },
+        ['agent-execution-limits']
+      ));
     }
 
-    steps.push({ icon: '✅', label: 'Response returned', meta: `${steps.length * randBetween(80, 160)}ms total`, color: '#10b981', done: false });
+    steps.push(makeStep('🧠', `Model: ${rd.primary}`, 'model', '#6366f1',
+      `Inference request sent to ${rd.primary} (${rd.primaryProvider}). Fallback: ${rd.fallback}.`,
+      JSON.stringify({ model: rd.primary, temperature: 0.7, max_tokens: 4096, messages: [{ role: 'user', content: prompt.slice(0, 80) + '...' }] }, null, 2),
+      JSON.stringify({ id: `chatcmpl-${rid}`, model: rd.primary, usage: { prompt_tokens: randBetween(200, 600), completion_tokens: randBetween(400, 1200) } }, null, 2),
+      { 'x-model-region': 'eastus', 'x-model-deployment': rd.primary.toLowerCase().replace(/\s/g, '-') },
+      ['token-quota', 'content-safety', 'model-routing']
+    ));
+
+    activeToolNames.forEach((name) => {
+      steps.push(makeStep('🔧', `Tool: ${name}`, 'tool', '#0ea5e9',
+        `Invoked ${name} API. Credential: managed identity. Latency within threshold.`,
+        JSON.stringify({ tool: name, method: 'POST', endpoint: `/api/v1/${name.toLowerCase().replace(/\s/g, '-')}/invoke`, payload: { query: 'contextual data' } }, null, 2),
+        JSON.stringify({ status: 200, result: { records: randBetween(1, 5), cached: false } }, null, 2),
+        { 'x-tool-name': name, 'x-credential': 'managed-identity' },
+        ['tool-rate-limit', 'credential-scope']
+      ));
+    });
+
+    if (activeToolNames.length > 0) {
+      steps.push(makeStep('🧠', 'Synthesizing results', 'model', '#6366f1',
+        `Model synthesizing tool results into final response.`,
+        JSON.stringify({ model: rd.primary, tool_results: activeToolNames.length, synthesis: true }, null, 2),
+        JSON.stringify({ status: 'complete', tokens: randBetween(300, 800) }, null, 2),
+        { 'x-synthesis': 'true' },
+        ['content-safety']
+      ));
+    }
+
+    steps.push(makeStep('✅', 'Response returned', 'response', '#10b981',
+      `Request completed successfully. All policies passed.`,
+      JSON.stringify({ status: 200, total_steps: steps.length + 1 }, null, 2),
+      JSON.stringify({ status: 'succeeded', policies_applied: 6, violations: 0 }, null, 2),
+      { 'x-total-latency-ms': String(randBetween(600, 1400)) },
+      ['audit-log']
+    ));
+
+    // Assign mock durations
+    steps.forEach((s, i) => {
+      s.duration = i === 0 ? randBetween(5, 20) : (s.type === 'model' ? randBetween(200, 800) : (s.type === 'tool' ? randBetween(80, 300) : randBetween(10, 50)));
+    });
 
     // Animate
     steps.forEach((_, i) => {
       const t1 = setTimeout(() => {
         setActiveStepIdx(i);
+        setSelectedStepIdx(i);
         setTraceSteps((prev) => {
           const next = [...prev];
           if (i > 0 && next[i - 1]) next[i - 1] = { ...next[i - 1], done: true };
@@ -571,6 +725,7 @@ const Playground: React.FC = () => {
     const tf = setTimeout(() => {
       setTraceSteps((prev) => prev.map((s) => ({ ...s, done: true })));
       setActiveStepIdx(-1);
+      setRunStatus('succeeded');
       setResponse(promptKey && MOCK_RESPONSES[promptKey] ? MOCK_RESPONSES[promptKey] : DEFAULT_RESPONSE);
 
       const cost = (Math.random() * 0.08 + 0.02).toFixed(2);
@@ -579,7 +734,7 @@ const Playground: React.FC = () => {
       setObsMetrics({ cost: `$${cost}`, tokens: `${tokens}k`, latency: `${latency} ms` });
 
       setLogJson(JSON.stringify({
-        request_id: `req-${Date.now().toString(36)}`,
+        request_id: rid,
         timestamp: new Date().toISOString(),
         model: rd.primary,
         namespace,
@@ -587,7 +742,8 @@ const Playground: React.FC = () => {
         tokens_used: Math.round(parseFloat(tokens) * 1000),
         latency_ms: latency,
         tools_invoked: activeToolNames,
-        policies: { rate_limit: 'pass', content_safety: 'pass', auth: 'pass' },
+        steps: steps.map((s) => ({ label: s.label, type: s.type, duration_ms: s.duration })),
+        policies: { rate_limit: 'pass', content_safety: 'pass', auth: 'pass', token_quota: 'pass' },
       }, null, 2));
 
       setIsRunning(false);
@@ -725,14 +881,8 @@ const Playground: React.FC = () => {
           </Button>
         </div>
 
-        {/* ===== CENTER: Execution Trace + Response ===== */}
+        {/* ===== CENTER: Execution Tracker ===== */}
         <div className={styles.centerPanel}>
-          <div className={styles.panelLabel}>
-            <BrainCircuit24Regular style={{ fontSize: '16px', color: '#6366f1' }} />
-            <Text size={300} weight="semibold" style={{ color: '#fff' }}>Execution Trace</Text>
-            {isRunning && <Spinner size="tiny" style={{ marginLeft: '4px' }} />}
-          </div>
-
           {!hasRun && !isRunning ? (
             <div className={styles.emptyState}>
               <BrainCircuit24Regular style={{ fontSize: '40px' }} />
@@ -740,63 +890,199 @@ const Playground: React.FC = () => {
             </div>
           ) : (
             <>
-              {/* Trace Steps */}
-              <div className={styles.traceTimeline}>
-                {traceSteps.map((step, i) => (
-                  <div
-                    key={i}
-                    className={i === activeStepIdx ? styles.stepRowActive : styles.stepRow}
-                    style={{ borderLeft: `3px solid ${step.color}`, opacity: step.done || i === activeStepIdx ? 1 : 0.4 }}
+              {/* Run Header */}
+              <div className={styles.runHeader}>
+                <div className={styles.runHeaderLeft}>
+                  <Badge
+                    appearance="filled"
+                    color={runStatus === 'running' ? 'warning' : runStatus === 'succeeded' ? 'success' : 'danger'}
+                    size="small"
                   >
-                    <span className={styles.stepIcon}>{step.icon}</span>
-                    <div className={styles.stepContent}>
-                      <div className={styles.stepLabel}>{step.label}</div>
-                      {step.meta && <div className={styles.stepMeta}>{step.meta}</div>}
-                      {step.detail && <div className={styles.stepDetail}>{step.detail}</div>}
-                    </div>
-                    {i === activeStepIdx && <Spinner size="tiny" />}
-                    {step.done && <CheckmarkCircle20Regular style={{ color: '#10b981', fontSize: '16px', flexShrink: 0 }} />}
-                  </div>
-                ))}
+                    {runStatus === 'running' ? '● Running' : runStatus === 'succeeded' ? '✓ Succeeded' : '✕ Failed'}
+                  </Badge>
+                  <span className={styles.runMeta}>{runId}</span>
+                  <span className={styles.runMeta}>{runTimestamp}</span>
+                  <Badge appearance="outline" size="small" color="informative">
+                    {selectedAgent ? selectedAgent.name : selectedModel?.name || 'model'}
+                  </Badge>
+                  <Badge appearance="outline" size="small">
+                    ns:{selectedAgent ? 'retail-support' : 'default'}
+                  </Badge>
+                </div>
+                <div className={styles.runHeaderRight}>
+                  {obsMetrics && (
+                    <>
+                      <span className={styles.runMetricPill}>
+                        <Timer24Regular style={{ fontSize: '12px' }} /> {obsMetrics.latency}
+                      </span>
+                      <span className={styles.runMetricPill}>
+                        <DataUsageRegular style={{ fontSize: '12px' }} /> {obsMetrics.tokens}
+                      </span>
+                      <span className={styles.runMetricPill}>
+                        <Money24Regular style={{ fontSize: '12px' }} /> {obsMetrics.cost}
+                      </span>
+                    </>
+                  )}
+                  {isRunning && <Spinner size="tiny" />}
+                </div>
               </div>
 
-              {/* View Logs */}
-              {hasRun && !isRunning && (
-                <Button
-                  appearance="subtle"
-                  size="small"
-                  icon={<Code24Regular />}
-                  onClick={() => setShowLogs((p) => !p)}
-                  style={{ alignSelf: 'flex-start', padding: '2px 8px' }}
-                >
-                  {showLogs ? 'Hide Logs' : 'View Logs'}
-                </Button>
-              )}
-              {showLogs && logJson && (
-                <div className={styles.logPanel}>{logJson}</div>
-              )}
-
-              {/* Response */}
-              {response && (
-                <>
-                  <div className={styles.panelLabel} style={{ marginTop: '4px' }}>
-                    <Send24Regular style={{ fontSize: '16px', color: '#10b981' }} />
-                    <Text size={300} weight="semibold" style={{ color: '#fff' }}>Response</Text>
-                  </div>
-                  <div className={styles.responseCard}>
-                    <div className={styles.responseBody}>{response}</div>
-                    <div className={styles.responseActions}>
-                      <Button
-                        appearance="subtle"
-                        size="small"
-                        icon={<ArrowRepeatAll24Regular />}
-                        onClick={runExecution}
+              {/* 2-Pane Trace */}
+              <div className={styles.tracePane}>
+                {/* Left: Step list */}
+                <div className={styles.traceList}>
+                  {traceSteps.map((step, i) => {
+                    const isActive = i === activeStepIdx;
+                    const isFuture = !step.done && !isActive;
+                    const isSelected = i === selectedStepIdx;
+                    return (
+                      <div
+                        key={i}
+                        className={
+                          isFuture ? styles.traceListItemDisabled
+                          : isSelected ? styles.traceListItemSelected
+                          : styles.traceListItem
+                        }
+                        onClick={() => !isFuture && setSelectedStepIdx(i)}
                       >
-                        Replay Request
-                      </Button>
-                    </div>
+                        <span className={styles.stepIconSmall}>
+                          {isActive ? <Spinner size="extra-tiny" /> : step.done ? <CheckmarkCircle20Regular style={{ color: '#10b981', fontSize: '14px' }} /> : '○'}
+                        </span>
+                        <div className={styles.stepInfo}>
+                          <div className={styles.stepName}>{step.label}</div>
+                          <div className={styles.stepDuration}>
+                            <Badge appearance="tint" size="small" color={
+                              step.type === 'model' ? 'brand' : step.type === 'tool' ? 'informative' : step.type === 'agent' ? 'warning' : 'success'
+                            }>{step.type}</Badge>
+                            {step.done && <><Clock20Regular style={{ fontSize: '10px' }} /> {step.duration}ms</>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Right: Step detail */}
+                <div className={styles.traceDetail}>
+                  {traceSteps[selectedStepIdx] ? (() => {
+                    const step = traceSteps[selectedStepIdx];
+                    return (
+                      <>
+                        <div className={styles.detailHeader}>
+                          <span style={{ fontSize: '16px' }}>{step.icon}</span>
+                          <Text size={400} weight="semibold" style={{ color: '#fff' }}>{step.label}</Text>
+                          <Badge appearance="tint" size="small" color={
+                            step.type === 'model' ? 'brand' : step.type === 'tool' ? 'informative' : step.type === 'agent' ? 'warning' : 'success'
+                          }>{step.type}</Badge>
+                          {step.done && <Text size={200} style={{ color: '#666', marginLeft: 'auto' }}>{step.duration}ms</Text>}
+                        </div>
+
+                        {/* Summary — always open */}
+                        <div className={styles.collapsible}>
+                          <div className={styles.collapsibleHeader} onClick={() => toggleSection('summary')}>
+                            {expandedSections.summary ? <ChevronDown20Regular style={{ fontSize: '14px' }} /> : <ChevronRight20Regular style={{ fontSize: '14px' }} />}
+                            Summary
+                          </div>
+                          {expandedSections.summary && (
+                            <div style={{ padding: '8px 10px', fontSize: '12px', color: '#bbb', lineHeight: '1.5' }}>
+                              {step.summary}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Request */}
+                        <div className={styles.collapsible}>
+                          <div className={styles.collapsibleHeader} onClick={() => toggleSection('request')}>
+                            {expandedSections.request ? <ChevronDown20Regular style={{ fontSize: '14px' }} /> : <ChevronRight20Regular style={{ fontSize: '14px' }} />}
+                            Request
+                          </div>
+                          {expandedSections.request && (
+                            <div className={styles.collapsibleBody}>{step.requestJson}</div>
+                          )}
+                        </div>
+
+                        {/* Response */}
+                        <div className={styles.collapsible}>
+                          <div className={styles.collapsibleHeader} onClick={() => toggleSection('response')}>
+                            {expandedSections.response ? <ChevronDown20Regular style={{ fontSize: '14px' }} /> : <ChevronRight20Regular style={{ fontSize: '14px' }} />}
+                            Response
+                          </div>
+                          {expandedSections.response && (
+                            <div className={styles.collapsibleBody}>{step.responseJson}</div>
+                          )}
+                        </div>
+
+                        {/* Headers */}
+                        <div className={styles.collapsible}>
+                          <div className={styles.collapsibleHeader} onClick={() => toggleSection('headers')}>
+                            {expandedSections.headers ? <ChevronDown20Regular style={{ fontSize: '14px' }} /> : <ChevronRight20Regular style={{ fontSize: '14px' }} />}
+                            Headers
+                          </div>
+                          {expandedSections.headers && (
+                            <div className={styles.collapsibleBody}>
+                              {Object.entries(step.headers).map(([k, v]) => `${k}: ${v}`).join('\n')}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Policies */}
+                        <div className={styles.collapsible}>
+                          <div className={styles.collapsibleHeader} onClick={() => toggleSection('policies')}>
+                            {expandedSections.policies ? <ChevronDown20Regular style={{ fontSize: '14px' }} /> : <ChevronRight20Regular style={{ fontSize: '14px' }} />}
+                            Policies Applied ({step.policies.length})
+                          </div>
+                          {expandedSections.policies && (
+                            <div className={styles.policyChips}>
+                              {step.policies.map((p) => (
+                                <Badge key={p} appearance="tint" color="success" size="small">{p}</Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })() : (
+                    <Text size={200} style={{ color: '#555' }}>Select a step to view details</Text>
+                  )}
+                </div>
+              </div>
+
+              {/* Final Response */}
+              {response && (
+                <div className={styles.finalResponseCard}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                    <Send24Regular style={{ fontSize: '16px', color: '#10b981' }} />
+                    <Text size={300} weight="semibold" style={{ color: '#fff' }}>Final Response</Text>
                   </div>
-                </>
+                  <div style={{
+                    fontFamily: '"Cascadia Code", monospace', fontSize: '12px', lineHeight: '1.6',
+                    color: '#e6edf3', whiteSpace: 'pre-wrap', maxHeight: '160px', overflowY: 'auto',
+                  }}>
+                    {response}
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+                    <Button appearance="subtle" size="small" icon={<ArrowRepeatAll24Regular />} onClick={runExecution}>
+                      Replay
+                    </Button>
+                    <Button appearance="subtle" size="small" icon={<Copy24Regular />}
+                      onClick={() => navigator.clipboard.writeText(logJson)}>
+                      Copy Trace JSON
+                    </Button>
+                    <Button appearance="subtle" size="small" icon={<Code24Regular />}
+                      onClick={() => { setExpandedSections((p) => ({ ...p, rawLogs: !p.rawLogs })); }}>
+                      {expandedSections.rawLogs ? 'Hide Raw Logs' : 'View Raw Logs'}
+                    </Button>
+                  </div>
+                  {expandedSections.rawLogs && logJson && (
+                    <div style={{
+                      marginTop: '8px', padding: '8px', backgroundColor: '#0a0e14', border: '1px solid #252525',
+                      borderRadius: '6px', fontFamily: '"Cascadia Code", monospace', fontSize: '11px',
+                      color: '#8b949e', whiteSpace: 'pre-wrap', maxHeight: '200px', overflowY: 'auto', lineHeight: '1.4',
+                    }}>
+                      {logJson}
+                    </div>
+                  )}
+                </div>
               )}
             </>
           )}
