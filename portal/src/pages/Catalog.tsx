@@ -15,14 +15,16 @@ import {
   Search24Regular,
   BrainCircuit24Regular,
   PlugConnected24Regular,
-  Server24Regular,
   Bot24Regular,
   LightbulbFilament24Regular,
   Grid24Regular,
   ArrowRight16Regular,
+  Flow24Regular,
+  BoxMultiple24Regular,
 } from '@fluentui/react-icons';
 import StatusBadge from '../components/StatusBadge';
 import { catalogItems, namespaces } from '../data/mockData';
+import { useNavigate } from 'react-router-dom';
 
 const useStyles = makeStyles({
   header: {
@@ -127,20 +129,40 @@ const useStyles = makeStyles({
 const assetTypeConfig: Record<string, { icon: React.ReactElement; color: string; bg: string; label: string }> = {
   model: { icon: <BrainCircuit24Regular />, color: '#6366f1', bg: '#eef2ff', label: 'Model' },
   tool: { icon: <PlugConnected24Regular />, color: '#0ea5e9', bg: '#e0f2fe', label: 'Tool' },
-  'mcp-server': { icon: <Server24Regular />, color: '#8b5cf6', bg: '#f3e8ff', label: 'MCP Server' },
+  'mcp-server': { icon: <PlugConnected24Regular />, color: '#8b5cf6', bg: '#f3e8ff', label: 'MCP Server' },
   agent: { icon: <Bot24Regular />, color: '#10b981', bg: '#d1fae5', label: 'Agent' },
   skill: { icon: <LightbulbFilament24Regular />, color: '#f59e0b', bg: '#fef3c7', label: 'Skill' },
+  workflow: { icon: <Flow24Regular />, color: '#60a5fa', bg: '#dbeafe', label: 'Workflow' },
+  workload: { icon: <BoxMultiple24Regular />, color: '#f472b6', bg: '#fce7f3', label: 'Workload' },
+};
+
+// Maps Browse tabs to sidebar routes for navigation
+const tabRoutes: Record<string, string> = {
+  model: '/models',
+  tool: '/tools',
+  agent: '/agents',
+  skill: '/skills',
+  workflow: '/workflows',
+  workload: '/workloads',
 };
 
 const Catalog: React.FC = () => {
   const styles = useStyles();
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [nsFilter, setNsFilter] = useState<string>('all');
   const [visFilter, setVisFilter] = useState<string>('all');
 
   const filtered = catalogItems.filter((item) => {
-    if (typeFilter !== 'all' && item.assetType !== typeFilter) return false;
+    if (typeFilter !== 'all') {
+      // "tool" tab includes both tools and mcp-servers
+      if (typeFilter === 'tool') {
+        if (item.assetType !== 'tool' && item.assetType !== 'mcp-server') return false;
+      } else {
+        if (item.assetType !== typeFilter) return false;
+      }
+    }
     if (nsFilter !== 'all' && item.namespace !== nsFilter) return false;
     if (visFilter !== 'all' && item.visibility !== visFilter) return false;
     if (search) {
@@ -158,17 +180,28 @@ const Catalog: React.FC = () => {
   const typeCounts = {
     all: catalogItems.length,
     model: catalogItems.filter(i => i.assetType === 'model').length,
-    tool: catalogItems.filter(i => i.assetType === 'tool').length,
-    'mcp-server': catalogItems.filter(i => i.assetType === 'mcp-server').length,
+    tool: catalogItems.filter(i => i.assetType === 'tool' || i.assetType === 'mcp-server').length,
     agent: catalogItems.filter(i => i.assetType === 'agent').length,
     skill: catalogItems.filter(i => i.assetType === 'skill').length,
+    workflow: catalogItems.filter(i => i.assetType === 'workflow').length,
+    workload: catalogItems.filter(i => i.assetType === 'workload').length,
+  };
+
+  const handleTabSelect = (_: unknown, data: { value: unknown }) => {
+    const val = data.value as string;
+    setTypeFilter(val);
+  };
+
+  const handleCardClick = (assetType: string) => {
+    const route = tabRoutes[assetType];
+    if (route) navigate(route);
   };
 
   return (
     <div>
       <div className={styles.header}>
         <Text size={200} className={styles.subtitle}>
-          Discover and explore AI assets across your organization — models, tools, MCP servers, agents, and skills.
+          Discover and explore AI assets across your organization — models, tools, agents, skills, and workflows.
         </Text>
       </div>
 
@@ -176,14 +209,15 @@ const Catalog: React.FC = () => {
       <div className={styles.tabs}>
         <TabList
           selectedValue={typeFilter}
-          onTabSelect={(_, data) => setTypeFilter(data.value as string)}
+          onTabSelect={handleTabSelect}
         >
           <Tab value="all" icon={<Grid24Regular />}>All ({typeCounts.all})</Tab>
           <Tab value="model" icon={<BrainCircuit24Regular />}>Models ({typeCounts.model})</Tab>
           <Tab value="tool" icon={<PlugConnected24Regular />}>Tools ({typeCounts.tool})</Tab>
-          <Tab value="mcp-server" icon={<Server24Regular />}>MCP Servers ({typeCounts['mcp-server']})</Tab>
           <Tab value="agent" icon={<Bot24Regular />}>Agents ({typeCounts.agent})</Tab>
           <Tab value="skill" icon={<LightbulbFilament24Regular />}>Skills ({typeCounts.skill})</Tab>
+          <Tab value="workflow" icon={<Flow24Regular />}>Workflows ({typeCounts.workflow})</Tab>
+          <Tab value="workload" icon={<BoxMultiple24Regular />}>Workloads ({typeCounts.workload})</Tab>
         </TabList>
       </div>
 
@@ -233,7 +267,7 @@ const Catalog: React.FC = () => {
         {filtered.map((item) => {
           const config = assetTypeConfig[item.assetType] || assetTypeConfig.tool;
           return (
-            <Card key={item.id} className={styles.card}>
+            <Card key={item.id} className={styles.card} onClick={() => handleCardClick(item.assetType === 'mcp-server' ? 'tool' : item.assetType)}>
               <div className={styles.cardHeader}>
                 <div className={styles.cardTitleRow}>
                   <div className={styles.assetIcon} style={{ backgroundColor: config.bg, color: config.color }}>

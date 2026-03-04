@@ -515,7 +515,7 @@ export const recentLogs: LogEntry[] = [
 
 // --- Catalog: unified view across all asset types ---
 
-export type AssetType = 'model' | 'tool' | 'mcp-server' | 'skill' | 'agent' | 'workload';
+export type AssetType = 'model' | 'tool' | 'mcp-server' | 'skill' | 'workflow' | 'agent' | 'workload';
 
 export interface CatalogItem {
   id: string;
@@ -569,6 +569,10 @@ export const catalogItems: CatalogItem[] = [
   // Workloads
   { id: 'workload-1', name: 'Customer Support Platform', description: 'Production workload for customer support agents with CRM and billing integrations', assetType: 'workload', namespace: 'customer-ops', tags: ['production', 'customer-support', 'platform'], status: 'active', owner: 'Support Team', visibility: 'public', createdAt: '2026-02-15T10:00:00Z', updatedAt: '2026-03-03T10:00:00Z', usageLast24h: 12450 },
   { id: 'workload-2', name: 'DevOps Automation Suite', description: 'Production workload for DevOps automation including incident triage and code review', assetType: 'workload', namespace: 'engineering', tags: ['production', 'devops', 'automation'], status: 'active', owner: 'DevOps', visibility: 'team', createdAt: '2026-02-20T10:00:00Z', updatedAt: '2026-03-03T10:00:00Z', usageLast24h: 5630 },
+
+  // Workflows
+  { id: 'wf-1', name: 'Incident Triage', description: 'Parses alerts, checks incident history, assesses severity, creates tickets, and notifies teams', assetType: 'workflow', namespace: 'engineering', tags: ['incident', 'triage', 'automation'], status: 'active', owner: 'DevOps', visibility: 'team', createdAt: '2026-02-18T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 890 },
+  { id: 'wf-2', name: 'Travel Planning', description: 'End-to-end travel workflow — searches flights, checks weather, generates itineraries', assetType: 'workflow', namespace: 'operations', tags: ['travel', 'planning', 'multi-step'], status: 'active', owner: 'Travel Team', visibility: 'public', createdAt: '2026-02-22T10:00:00Z', updatedAt: '2026-03-01T10:00:00Z', usageLast24h: 560 },
 ];
 
 // --- Namespaces ---
