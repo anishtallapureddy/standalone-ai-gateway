@@ -493,7 +493,7 @@ const Layout: React.FC<LayoutProps> = ({ onSignOut }) => {
     '/skills': 'Reusable AI automation patterns — prompt chains, analysis, and automations',
     '/workflows': 'Multi-step orchestration patterns combining models, tools, and logic',
     '/namespaces': 'Organize assets into team and project boundaries',
-    '/access': 'Users, service identities, API keys, access requests, and audit log',
+    '/access': 'Manage who can access the gateway and its assets',
     '/policies': 'Runtime policies, asset access rules, and safety guardrails',
     '/analytics': 'Token consumption, cost attribution, and usage analytics across workloads',
     '/logs': 'Real-time request tracing and observability across all gateway traffic',
