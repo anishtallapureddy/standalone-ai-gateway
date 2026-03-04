@@ -22,8 +22,11 @@ import {
   Clock24Regular,
   Warning24Regular,
   LockClosed24Regular,
+  Checkmark24Regular,
+  DocumentBulletList24Regular,
+  ShieldCheckmark24Regular,
 } from '@fluentui/react-icons';
-import { consumers, enforcementEvents } from '../data/mockData';
+import { consumers, enforcementEvents, accessRequests, auditLog } from '../data/mockData';
 
 const useStyles = makeStyles({
   stats: {
@@ -157,7 +160,7 @@ const useStyles = makeStyles({
     display: 'flex',
     gap: '8px',
   },
-  // Enforcement log
+  // Enforcement / Audit
   eventCard: {
     padding: '16px 20px',
     marginBottom: '12px',
@@ -189,6 +192,54 @@ const useStyles = makeStyles({
   metaLabel: {
     fontSize: '12px',
     color: tokens.colorNeutralForeground3,
+  },
+  // Access Requests
+  requestCard: {
+    padding: '16px 20px',
+    marginBottom: '12px',
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  requestRow: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: '16px',
+  },
+  requestInfo: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '6px',
+  },
+  requestActions: {
+    display: 'flex',
+    gap: '8px',
+    flexShrink: 0,
+    alignItems: 'center',
+  },
+  // Audit log
+  auditCard: {
+    padding: '14px 20px',
+    marginBottom: '10px',
+    borderLeft: '4px solid transparent',
+  },
+  auditRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '16px',
+  },
+  auditInfo: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '4px',
+  },
+  auditMeta: {
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+    flexWrap: 'wrap' as const,
   },
 });
 
@@ -241,10 +292,10 @@ const typeIconColors: Record<string, string> = {
 };
 
 const authMethodColors: Record<string, { bg: string; fg: string; label: string }> = {
-  'api-key': { bg: '#FFF4CE', fg: '#9D5D00', label: 'API Key' },
-  'entra-id': { bg: '#D0E7FF', fg: '#0050A0', label: 'Entra ID' },
-  oauth2: { bg: '#D4EDDA', fg: '#155724', label: 'OAuth 2.0' },
-  'managed-identity': { bg: '#E8D4F0', fg: '#5B2D8E', label: 'Managed Identity' },
+  'api-key': { bg: '#3d3200', fg: '#F7C948', label: 'API Key' },
+  'entra-id': { bg: '#1a2d4d', fg: '#60cdff', label: 'Entra ID' },
+  oauth2: { bg: '#1a3a2a', fg: '#4ade80', label: 'OAuth 2.0' },
+  'managed-identity': { bg: '#2d1a4d', fg: '#c084fc', label: 'Managed Identity' },
 };
 
 const statusAppearance: Record<string, { color: 'success' | 'danger' | 'warning'; label: string }> = {
@@ -274,31 +325,55 @@ const actionIcons: Record<string, React.ReactElement> = {
   'quota-exceeded': <LockClosed24Regular style={{ color: '#CA5010' }} />,
 };
 
+const requestTypeLabels: Record<string, { label: string; bg: string; fg: string }> = {
+  'namespace-access': { label: 'Namespace Access', bg: '#1e293b', fg: '#93c5fd' },
+  'model-access': { label: 'Model Access', bg: '#1a2d1a', fg: '#86efac' },
+  'tool-access': { label: 'Tool Access', bg: '#2d1a4d', fg: '#c084fc' },
+  'role-change': { label: 'Role Change', bg: '#3d2800', fg: '#fbbf24' },
+};
+
+const auditOutcomeColors: Record<string, string> = {
+  success: '#0E9349',
+  failure: '#D13438',
+  denied: '#CA5010',
+};
+
 const Consumers: React.FC = () => {
   const styles = useStyles();
-  const [selectedTab, setSelectedTab] = useState<string>('all');
+  const [selectedTab, setSelectedTab] = useState<string>('users');
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [requestFilter, setRequestFilter] = useState('all');
 
-  const activeCount = consumers.filter((c) => c.status === 'active').length;
-  const userCount = consumers.filter((c) => c.type === 'user').length;
-  const appCount = consumers.filter((c) => c.type === 'application' || c.type === 'service-principal').length;
+  const users = consumers.filter(c => c.type === 'user');
+  const serviceIdentities = consumers.filter(c => c.type === 'application' || c.type === 'service-principal');
+  const pendingRequests = accessRequests.filter(r => r.status === 'pending');
 
-  const filtered = consumers.filter((c) => {
-    const matchSearch =
-      !search ||
-      c.displayName.toLowerCase().includes(search.toLowerCase()) ||
-      (c.email && c.email.toLowerCase().includes(search.toLowerCase()));
-    const matchType =
-      typeFilter === 'all' ||
-      (typeFilter === 'user' && c.type === 'user') ||
-      (typeFilter === 'application' && (c.type === 'application' || c.type === 'service-principal'));
-    const matchStatus = statusFilter === 'all' || c.status === statusFilter;
-    return matchSearch && matchType && matchStatus;
-  });
+  // Filter identities based on current tab and filters
+  const getFilteredIdentities = (list: typeof consumers) => {
+    return list.filter(c => {
+      const matchSearch = !search ||
+        c.displayName.toLowerCase().includes(search.toLowerCase()) ||
+        (c.email && c.email.toLowerCase().includes(search.toLowerCase()));
+      const matchStatus = statusFilter === 'all' || c.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+  };
 
   const apiKeyConsumers = consumers.filter((c) => c.authMethod === 'api-key');
+
+  const filteredRequests = accessRequests.filter(r => {
+    if (requestFilter !== 'all' && r.status !== requestFilter) return false;
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return r.requesterName.toLowerCase().includes(q) || r.targetName.toLowerCase().includes(q);
+  });
+
+  const filteredAudit = auditLog.filter(a => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return a.actor.toLowerCase().includes(q) || a.resource.toLowerCase().includes(q) || a.action.toLowerCase().includes(q);
+  });
 
   function getQuotaPct(c: (typeof consumers)[0]): number {
     if (!c.quotas.tokensPerDay) return 0;
@@ -311,58 +386,161 @@ const Consumers: React.FC = () => {
     return '#0E9349';
   }
 
+  const renderIdentityCard = (c: (typeof consumers)[0]) => {
+    const quotaPct = getQuotaPct(c);
+    const quotaColor = getQuotaColor(quotaPct);
+    const authInfo = authMethodColors[c.authMethod] || authMethodColors['api-key'];
+    const statusInfo = statusAppearance[c.status] || statusAppearance.active;
+
+    return (
+      <Card key={c.id} className={styles.consumerCard}>
+        <div className={styles.consumerRow}>
+          <div className={styles.consumerLeft}>
+            <div
+              className={styles.consumerIcon}
+              style={{ backgroundColor: `${typeIconColors[c.type]}18`, color: typeIconColors[c.type] }}
+            >
+              {typeIcons[c.type]}
+            </div>
+            <div>
+              <Text weight="semibold" style={{ display: 'block' }}>
+                {c.displayName}
+              </Text>
+              {c.email && (
+                <Text size={200} style={{ color: '#999', fontFamily: 'monospace' }}>{c.email}</Text>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.consumerMiddle}>
+            <div className={styles.middleRow}>
+              <span
+                style={{
+                  backgroundColor: authInfo.bg,
+                  color: authInfo.fg,
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                }}
+              >
+                {authInfo.label}
+              </span>
+              <Text size={200} style={{ color: '#999' }}>
+                Namespace: <strong>{c.namespace}</strong>
+              </Text>
+              <Text size={200} style={{ color: '#999' }}>
+                Team: {c.team}
+              </Text>
+            </div>
+            {c.apiKeyPrefix && (
+              <div className={styles.middleRow}>
+                <Text size={200} style={{ color: '#999', fontFamily: 'monospace' }}>
+                  Key: {c.apiKeyPrefix}...
+                </Text>
+                {c.apiKeyExpiresAt && (
+                  <Text size={200} style={{ color: '#999' }}>
+                    Expires: {formatDate(c.apiKeyExpiresAt)}
+                  </Text>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.consumerRight}>
+            <div className={styles.usageStats}>
+              <Text size={200}>
+                <strong>{formatTokens(c.usage24h.totalTokens)}</strong> tokens
+              </Text>
+              <Text size={200} style={{ color: '#999' }}>
+                ${c.usage24h.totalCost.toFixed(2)} · {c.usage24h.totalRequests.toLocaleString()} req
+              </Text>
+            </div>
+            <div>
+              <div className={styles.quotaBarContainer}>
+                <div
+                  className={styles.quotaBar}
+                  style={{ width: `${quotaPct}%`, backgroundColor: quotaColor }}
+                />
+              </div>
+              <Text
+                size={100}
+                style={{ color: '#999', display: 'block', textAlign: 'center' }}
+              >
+                {quotaPct.toFixed(0)}%
+              </Text>
+            </div>
+            <div className={styles.statusGroup}>
+              <Badge color={statusInfo.color} size="small">
+                {statusInfo.label}
+              </Badge>
+              <Text size={100} style={{ color: '#999' }}>
+                {relativeTime(c.lastActive)}
+              </Text>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
   return (
     <div>
       {/* Header stats */}
       <div className={styles.stats}>
         <Card className={styles.statCard}>
-          <Text className={styles.statValue}>{consumers.length}</Text>
-          <Text className={styles.statLabel}>Total Consumers</Text>
-        </Card>
-        <Card className={styles.statCard}>
-          <Text className={styles.statValue}>{activeCount}</Text>
-          <Text className={styles.statLabel}>Active</Text>
-        </Card>
-        <Card className={styles.statCard}>
-          <Text className={styles.statValue}>{userCount}</Text>
+          <Text className={styles.statValue}>{users.length}</Text>
           <Text className={styles.statLabel}>Users</Text>
         </Card>
         <Card className={styles.statCard}>
-          <Text className={styles.statValue}>{appCount}</Text>
-          <Text className={styles.statLabel}>Applications</Text>
+          <Text className={styles.statValue}>{serviceIdentities.length}</Text>
+          <Text className={styles.statLabel}>Service Identities</Text>
+        </Card>
+        <Card className={styles.statCard}>
+          <Text className={styles.statValue}>{apiKeyConsumers.length}</Text>
+          <Text className={styles.statLabel}>API Keys</Text>
+        </Card>
+        <Card className={styles.statCard}>
+          <Text className={styles.statValue} style={{ color: pendingRequests.length > 0 ? '#F7C948' : undefined }}>
+            {pendingRequests.length}
+          </Text>
+          <Text className={styles.statLabel}>Pending Requests</Text>
         </Card>
         <Button appearance="primary" icon={<Add24Regular />}>
-          Create Consumer
+          Invite User
         </Button>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — aligned to governance spec */}
       <TabList
         className={styles.tabs}
         selectedValue={selectedTab}
         onTabSelect={(_, d) => setSelectedTab(d.value as string)}
       >
-        <Tab value="all">All Consumers</Tab>
-        <Tab value="keys">API Keys</Tab>
-        <Tab value="enforcement">Enforcement Log</Tab>
+        <Tab value="users" icon={<Person24Regular />}>Users ({users.length})</Tab>
+        <Tab value="services" icon={<Apps24Regular />}>Service Identities ({serviceIdentities.length})</Tab>
+        <Tab value="keys" icon={<Key24Regular />}>API Keys ({apiKeyConsumers.length})</Tab>
+        <Tab value="requests" icon={<ShieldCheckmark24Regular />}>
+          Access Requests {pendingRequests.length > 0 && (
+            <Badge appearance="filled" size="small" color="warning" style={{ marginLeft: '6px' }}>
+              {pendingRequests.length}
+            </Badge>
+          )}
+        </Tab>
+        <Tab value="audit" icon={<DocumentBulletList24Regular />}>Audit Log</Tab>
       </TabList>
 
-      {/* Tab: All Consumers */}
-      {selectedTab === 'all' && (
+      {/* Tab: Users */}
+      {selectedTab === 'users' && (
         <div>
           <div className={styles.filters}>
             <Input
               className={styles.searchInput}
               contentBefore={<Search24Regular />}
-              placeholder="Search by name or email..."
+              placeholder="Search users by name or email..."
               value={search}
               onChange={(_, d) => setSearch(d.value)}
             />
-            <Select value={typeFilter} onChange={(_, d) => setTypeFilter(d.value)}>
-              <option value="all">All Types</option>
-              <option value="user">Users</option>
-              <option value="application">Applications</option>
-            </Select>
             <Select value={statusFilter} onChange={(_, d) => setStatusFilter(d.value)}>
               <option value="all">All Statuses</option>
               <option value="active">Active</option>
@@ -370,117 +548,39 @@ const Consumers: React.FC = () => {
               <option value="pending">Pending</option>
             </Select>
           </div>
-
-          {filtered.map((c) => {
-            const quotaPct = getQuotaPct(c);
-            const quotaColor = getQuotaColor(quotaPct);
-            const authInfo = authMethodColors[c.authMethod] || authMethodColors['api-key'];
-            const statusInfo = statusAppearance[c.status] || statusAppearance.active;
-
-            return (
-              <Card key={c.id} className={styles.consumerCard}>
-                <div className={styles.consumerRow}>
-                  {/* Left: icon + name + type */}
-                  <div className={styles.consumerLeft}>
-                    <div
-                      className={styles.consumerIcon}
-                      style={{ backgroundColor: `${typeIconColors[c.type]}18`, color: typeIconColors[c.type] }}
-                    >
-                      {typeIcons[c.type]}
-                    </div>
-                    <div>
-                      <Text weight="semibold" style={{ display: 'block' }}>
-                        {c.displayName}
-                      </Text>
-                      <Badge appearance="outline" size="small" style={{ marginTop: '4px' }}>
-                        {c.type}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  {/* Middle: auth, team, namespace, key info */}
-                  <div className={styles.consumerMiddle}>
-                    <div className={styles.middleRow}>
-                      <span
-                        style={{
-                          backgroundColor: authInfo.bg,
-                          color: authInfo.fg,
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {authInfo.label}
-                      </span>
-                      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                        Team: {c.team}
-                      </Text>
-                      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                        Namespace: {c.namespace}
-                      </Text>
-                    </div>
-                    {c.apiKeyPrefix && (
-                      <div className={styles.middleRow}>
-                        <Text size={200} style={{ color: tokens.colorNeutralForeground3, fontFamily: 'monospace' }}>
-                          Key: {c.apiKeyPrefix}...
-                        </Text>
-                        {c.apiKeyCreatedAt && (
-                          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                            Created: {formatDate(c.apiKeyCreatedAt)}
-                          </Text>
-                        )}
-                        {c.apiKeyExpiresAt && (
-                          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                            Expires: {formatDate(c.apiKeyExpiresAt)}
-                          </Text>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right: usage, quota bar, status */}
-                  <div className={styles.consumerRight}>
-                    <div className={styles.usageStats}>
-                      <Text size={200}>
-                        <strong>{formatTokens(c.usage24h.totalTokens)}</strong> tokens
-                      </Text>
-                      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                        ${c.usage24h.totalCost.toFixed(2)} · {c.usage24h.totalRequests.toLocaleString()} req
-                      </Text>
-                    </div>
-                    <div>
-                      <div className={styles.quotaBarContainer}>
-                        <div
-                          className={styles.quotaBar}
-                          style={{ width: `${quotaPct}%`, backgroundColor: quotaColor }}
-                        />
-                      </div>
-                      <Text
-                        size={100}
-                        style={{ color: tokens.colorNeutralForeground3, display: 'block', textAlign: 'center' }}
-                      >
-                        {quotaPct.toFixed(0)}%
-                      </Text>
-                    </div>
-                    <div className={styles.statusGroup}>
-                      <Badge color={statusInfo.color} size="small">
-                        {statusInfo.label}
-                      </Badge>
-                      <Text size={100} style={{ color: tokens.colorNeutralForeground3 }}>
-                        {relativeTime(c.lastActive)}
-                      </Text>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
-
-          {filtered.length === 0 && (
+          {getFilteredIdentities(users).map(renderIdentityCard)}
+          {getFilteredIdentities(users).length === 0 && (
             <Card className={styles.consumerCard}>
-              <Text style={{ padding: '20px', display: 'block', textAlign: 'center', color: tokens.colorNeutralForeground3 }}>
-                No consumers match the current filters.
+              <Text style={{ padding: '20px', display: 'block', textAlign: 'center', color: '#999' }}>
+                No users match the current filters.
+              </Text>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Tab: Service Identities */}
+      {selectedTab === 'services' && (
+        <div>
+          <div className={styles.filters}>
+            <Input
+              className={styles.searchInput}
+              contentBefore={<Search24Regular />}
+              placeholder="Search service identities..."
+              value={search}
+              onChange={(_, d) => setSearch(d.value)}
+            />
+            <Select value={statusFilter} onChange={(_, d) => setStatusFilter(d.value)}>
+              <option value="all">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="suspended">Suspended</option>
+            </Select>
+          </div>
+          {getFilteredIdentities(serviceIdentities).map(renderIdentityCard)}
+          {getFilteredIdentities(serviceIdentities).length === 0 && (
+            <Card className={styles.consumerCard}>
+              <Text style={{ padding: '20px', display: 'block', textAlign: 'center', color: '#999' }}>
+                No service identities match the current filters.
               </Text>
             </Card>
           )}
@@ -502,7 +602,7 @@ const Consumers: React.FC = () => {
                       <Text weight="semibold" style={{ display: 'block' }}>
                         {c.displayName}
                       </Text>
-                      <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                      <Text size={200} style={{ color: '#999' }}>
                         {c.apiKeyCreatedAt ? `Created: ${formatDate(c.apiKeyCreatedAt)}` : ''}
                         {c.apiKeyExpiresAt ? ` · Expires: ${formatDate(c.apiKeyExpiresAt)}` : ''}
                       </Text>
@@ -516,7 +616,7 @@ const Consumers: React.FC = () => {
                       Copy Endpoint
                     </Button>
                     <Button appearance="outline" size="small" icon={<ArrowSync24Regular />}>
-                      Rotate Key
+                      Rotate
                     </Button>
                     <Button appearance="outline" size="small" icon={<Dismiss24Regular />}>
                       Revoke
@@ -529,7 +629,7 @@ const Consumers: React.FC = () => {
 
           {apiKeyConsumers.length === 0 && (
             <Card className={styles.keyCard}>
-              <Text style={{ padding: '20px', display: 'block', textAlign: 'center', color: tokens.colorNeutralForeground3 }}>
+              <Text style={{ padding: '20px', display: 'block', textAlign: 'center', color: '#999' }}>
                 No API key consumers found.
               </Text>
             </Card>
@@ -537,63 +637,199 @@ const Consumers: React.FC = () => {
         </div>
       )}
 
-      {/* Tab: Enforcement Log */}
-      {selectedTab === 'enforcement' && (
+      {/* Tab: Access Requests */}
+      {selectedTab === 'requests' && (
         <div>
-          {enforcementEvents.map((e) => {
-            const borderColor = actionBorderColors[e.action] || tokens.colorNeutralStroke2;
-            const actionInfo = actionAppearance[e.action] || actionAppearance.warned;
+          <div className={styles.filters}>
+            <Input
+              className={styles.searchInput}
+              contentBefore={<Search24Regular />}
+              placeholder="Search requests..."
+              value={search}
+              onChange={(_, d) => setSearch(d.value)}
+            />
+            <Select value={requestFilter} onChange={(_, d) => setRequestFilter(d.value)}>
+              <option value="all">All Requests</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="denied">Denied</option>
+            </Select>
+          </div>
+
+          {filteredRequests.map(r => {
+            const typeInfo = requestTypeLabels[r.type] || requestTypeLabels['namespace-access'];
+            const statusColor = r.status === 'approved' ? 'success' : r.status === 'denied' ? 'danger' : 'warning';
+
             return (
-              <Card
-                key={e.id}
-                className={styles.eventCard}
-                style={{ borderLeftColor: borderColor }}
-              >
-                <div className={styles.eventHeader}>
-                  <div className={styles.eventLeft}>
-                    {actionIcons[e.action] || <Warning24Regular />}
-                    <div>
-                      <Text weight="semibold">{e.consumerName}</Text>
-                      <Badge
-                        color={actionInfo.color}
-                        size="small"
-                        style={{ marginLeft: '8px' }}
+              <Card key={r.id} className={styles.requestCard}>
+                <div className={styles.requestRow}>
+                  <div className={styles.requestInfo}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Text weight="semibold">{r.requesterName}</Text>
+                      <span
+                        style={{
+                          backgroundColor: typeInfo.bg,
+                          color: typeInfo.fg,
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                        }}
                       >
-                        {actionInfo.label}
-                      </Badge>
+                        {typeInfo.label}
+                      </span>
+                      <Badge color={statusColor} size="small">{r.status}</Badge>
+                    </div>
+                    <Text size={200} style={{ color: '#999' }}>
+                      Requesting <strong>{r.requestedRole}</strong> access to <strong>{r.targetName}</strong> in namespace <strong>{r.targetNamespace}</strong>
+                    </Text>
+                    <Text size={200} style={{ color: '#bbb', fontStyle: 'italic', marginTop: '2px' }}>
+                      "{r.justification}"
+                    </Text>
+                    <div className={styles.auditMeta}>
+                      <Text size={200} style={{ color: '#999' }}>
+                        Requested {relativeTime(r.createdAt)}
+                      </Text>
+                      {r.reviewedBy && (
+                        <Text size={200} style={{ color: '#999' }}>
+                          Reviewed by <strong>{r.reviewedBy}</strong>
+                        </Text>
+                      )}
                     </div>
                   </div>
-                  <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
-                    {formatTimestamp(e.timestamp)}
-                  </Text>
+                  {r.status === 'pending' && (
+                    <div className={styles.requestActions}>
+                      <Button appearance="primary" size="small" icon={<Checkmark24Regular />}>
+                        Approve
+                      </Button>
+                      <Button appearance="outline" size="small" icon={<Dismiss24Regular />}>
+                        Deny
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <div className={styles.eventMeta}>
-                  <Text size={200}>
-                    <span className={styles.metaLabel}>Policy:</span>{' '}
-                    <strong>{e.policyName}</strong>
-                  </Text>
-                  <Text size={200}>
-                    <span className={styles.metaLabel}>Asset:</span>{' '}
-                    <strong>{e.assetName}</strong>
-                  </Text>
-                  <Text size={200}>
-                    <span className={styles.metaLabel}>Reason:</span> {e.reason}
-                  </Text>
-                </div>
-                {e.details && (
-                  <Text className={styles.eventDetails}>{e.details}</Text>
-                )}
               </Card>
             );
           })}
 
-          {enforcementEvents.length === 0 && (
-            <Card className={styles.eventCard}>
-              <Text style={{ padding: '20px', display: 'block', textAlign: 'center', color: tokens.colorNeutralForeground3 }}>
-                No enforcement events recorded.
+          {filteredRequests.length === 0 && (
+            <Card className={styles.requestCard}>
+              <Text style={{ padding: '20px', display: 'block', textAlign: 'center', color: '#999' }}>
+                No access requests match the current filters.
               </Text>
             </Card>
           )}
+        </div>
+      )}
+
+      {/* Tab: Audit Log */}
+      {selectedTab === 'audit' && (
+        <div>
+          <div className={styles.filters}>
+            <Input
+              className={styles.searchInput}
+              contentBefore={<Search24Regular />}
+              placeholder="Search audit log..."
+              value={search}
+              onChange={(_, d) => setSearch(d.value)}
+            />
+          </div>
+
+          {filteredAudit.map(a => {
+            const borderColor = auditOutcomeColors[a.outcome] || '#555';
+            return (
+              <Card key={a.id} className={styles.auditCard} style={{ borderLeftColor: borderColor }}>
+                <div className={styles.auditRow}>
+                  <div className={styles.auditInfo}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Text weight="semibold">{a.action}</Text>
+                      <Badge
+                        appearance="filled"
+                        size="small"
+                        style={{
+                          backgroundColor: a.outcome === 'success' ? '#1a3a2a' : a.outcome === 'denied' ? '#3d1a1a' : '#3d2800',
+                          color: a.outcome === 'success' ? '#4ade80' : a.outcome === 'denied' ? '#f87171' : '#fbbf24',
+                        }}
+                      >
+                        {a.outcome}
+                      </Badge>
+                      <Badge appearance="outline" size="small">{a.resourceType}</Badge>
+                    </div>
+                    <div className={styles.auditMeta}>
+                      <Text size={200} style={{ color: '#999' }}>
+                        Actor: <strong>{a.actor}</strong>
+                      </Text>
+                      <Text size={200} style={{ color: '#999' }}>
+                        Resource: <strong>{a.resource}</strong>
+                      </Text>
+                      <Text size={200} style={{ color: '#999' }}>
+                        Namespace: <strong>{a.namespace}</strong>
+                      </Text>
+                    </div>
+                    <Text size={200} style={{ color: '#bbb', marginTop: '2px' }}>
+                      {a.details}
+                    </Text>
+                  </div>
+                  <Text size={200} style={{ color: '#999', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                    {formatTimestamp(a.timestamp)}
+                  </Text>
+                </div>
+              </Card>
+            );
+          })}
+
+          {/* Enforcement events inline under audit */}
+          <div style={{ marginTop: '24px', borderTop: '1px solid #333', paddingTop: '16px' }}>
+            <Text weight="semibold" size={400} style={{ display: 'block', marginBottom: '12px' }}>
+              Policy Enforcement Events
+            </Text>
+            {enforcementEvents.map((e) => {
+              const borderColor = actionBorderColors[e.action] || '#555';
+              const actionInfo = actionAppearance[e.action] || actionAppearance.warned;
+              return (
+                <Card
+                  key={e.id}
+                  className={styles.eventCard}
+                  style={{ borderLeftColor: borderColor }}
+                >
+                  <div className={styles.eventHeader}>
+                    <div className={styles.eventLeft}>
+                      {actionIcons[e.action] || <Warning24Regular />}
+                      <div>
+                        <Text weight="semibold">{e.consumerName}</Text>
+                        <Badge
+                          color={actionInfo.color}
+                          size="small"
+                          style={{ marginLeft: '8px' }}
+                        >
+                          {actionInfo.label}
+                        </Badge>
+                      </div>
+                    </div>
+                    <Text size={200} style={{ color: '#999' }}>
+                      {formatTimestamp(e.timestamp)}
+                    </Text>
+                  </div>
+                  <div className={styles.eventMeta}>
+                    <Text size={200}>
+                      <span className={styles.metaLabel}>Policy:</span>{' '}
+                      <strong>{e.policyName}</strong>
+                    </Text>
+                    <Text size={200}>
+                      <span className={styles.metaLabel}>Asset:</span>{' '}
+                      <strong>{e.assetName}</strong>
+                    </Text>
+                    <Text size={200}>
+                      <span className={styles.metaLabel}>Reason:</span> {e.reason}
+                    </Text>
+                  </div>
+                  {e.details && (
+                    <Text className={styles.eventDetails}>{e.details}</Text>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

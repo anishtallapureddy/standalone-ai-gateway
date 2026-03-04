@@ -1220,6 +1220,143 @@ export const enforcementEvents: EnforcementEvent[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Access Requests
+// ---------------------------------------------------------------------------
+
+export interface AccessRequest {
+  id: string;
+  requesterId: string;
+  requesterName: string;
+  requesterEmail: string;
+  type: 'namespace-access' | 'model-access' | 'tool-access' | 'role-change';
+  targetName: string;
+  targetNamespace: string;
+  requestedRole: 'AI Developer' | 'Viewer' | 'Namespace Admin';
+  justification: string;
+  status: 'pending' | 'approved' | 'denied';
+  createdAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+}
+
+export const accessRequests: AccessRequest[] = [
+  {
+    id: 'ar-1',
+    requesterId: 'consumer-sarah',
+    requesterName: 'Sarah Chen',
+    requesterEmail: 'dev-sarah@contoso.com',
+    type: 'namespace-access',
+    targetName: 'fraud-detection',
+    targetNamespace: 'fraud-detection',
+    requestedRole: 'AI Developer',
+    justification: 'Need access to fraud detection models for the new real-time scoring pipeline in the payments team.',
+    status: 'pending',
+    createdAt: '2026-03-03T14:30:00Z',
+  },
+  {
+    id: 'ar-2',
+    requesterId: 'consumer-alex',
+    requesterName: 'Alex Rivera',
+    requesterEmail: 'dev-alex@contoso.com',
+    type: 'model-access',
+    targetName: 'Llama 3.1 70B',
+    targetNamespace: 'ai-research',
+    requestedRole: 'AI Developer',
+    justification: 'Evaluating open-source models for cost optimization on summarization tasks.',
+    status: 'pending',
+    createdAt: '2026-03-03T11:15:00Z',
+  },
+  {
+    id: 'ar-3',
+    requesterId: 'consumer-mike',
+    requesterName: 'Mike Thompson',
+    requesterEmail: 'dev-mike@contoso.com',
+    type: 'tool-access',
+    targetName: 'Salesforce CRM API',
+    targetNamespace: 'customer-ops',
+    requestedRole: 'AI Developer',
+    justification: 'Building a lead scoring agent that needs CRM data access.',
+    status: 'pending',
+    createdAt: '2026-03-02T16:45:00Z',
+  },
+  {
+    id: 'ar-4',
+    requesterId: 'consumer-helpdesk',
+    requesterName: 'Helpdesk App',
+    requesterEmail: 'svc-helpdesk@contoso.com',
+    type: 'namespace-access',
+    targetName: 'customer-ops',
+    targetNamespace: 'customer-ops',
+    requestedRole: 'Viewer',
+    justification: 'Service needs read access to customer-ops namespace for ticket classification.',
+    status: 'approved',
+    createdAt: '2026-03-01T09:00:00Z',
+    reviewedBy: 'admin@contoso.com',
+    reviewedAt: '2026-03-01T11:30:00Z',
+  },
+  {
+    id: 'ar-5',
+    requesterId: 'consumer-batch-processor',
+    requesterName: 'Batch Processor',
+    requesterEmail: 'svc-batch@contoso.com',
+    type: 'role-change',
+    targetName: 'ai-research',
+    targetNamespace: 'ai-research',
+    requestedRole: 'Namespace Admin',
+    justification: 'Need admin role to manage model deployments in the research namespace.',
+    status: 'denied',
+    createdAt: '2026-02-28T13:20:00Z',
+    reviewedBy: 'admin@contoso.com',
+    reviewedAt: '2026-03-01T08:00:00Z',
+  },
+  {
+    id: 'ar-6',
+    requesterId: 'consumer-sarah',
+    requesterName: 'Sarah Chen',
+    requesterEmail: 'dev-sarah@contoso.com',
+    type: 'model-access',
+    targetName: 'GPT-4o (PTU)',
+    targetNamespace: 'customer-ops',
+    requestedRole: 'AI Developer',
+    justification: 'Need PTU deployment access for production support agent with guaranteed latency.',
+    status: 'approved',
+    createdAt: '2026-02-27T10:00:00Z',
+    reviewedBy: 'admin@contoso.com',
+    reviewedAt: '2026-02-27T14:00:00Z',
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Audit Log
+// ---------------------------------------------------------------------------
+
+export interface AuditEntry {
+  id: string;
+  timestamp: string;
+  actor: string;
+  actorType: 'user' | 'service' | 'system';
+  action: string;
+  resource: string;
+  resourceType: 'namespace' | 'model' | 'tool' | 'agent' | 'policy' | 'user' | 'credential';
+  namespace: string;
+  details: string;
+  outcome: 'success' | 'failure' | 'denied';
+}
+
+export const auditLog: AuditEntry[] = [
+  { id: 'audit-1', timestamp: '2026-03-03T23:55:00Z', actor: 'admin@contoso.com', actorType: 'user', action: 'Updated policy', resource: 'Token Rate Limit', resourceType: 'policy', namespace: 'customer-ops', details: 'Increased TPM limit from 150K to 200K for customer-ops namespace.', outcome: 'success' },
+  { id: 'audit-2', timestamp: '2026-03-03T22:30:00Z', actor: 'svc-batch@contoso.com', actorType: 'service', action: 'Registered model', resource: 'Mistral Large 2', resourceType: 'model', namespace: 'ai-research', details: 'New model deployment registered via API. Provider: Mistral, Region: westeurope.', outcome: 'success' },
+  { id: 'audit-3', timestamp: '2026-03-03T21:00:00Z', actor: 'dev-alex@contoso.com', actorType: 'user', action: 'Access denied', resource: 'fraud-detection', resourceType: 'namespace', namespace: 'fraud-detection', details: 'User attempted to list assets in fraud-detection namespace without membership.', outcome: 'denied' },
+  { id: 'audit-4', timestamp: '2026-03-03T19:15:00Z', actor: 'system', actorType: 'system', action: 'Credential rotated', resource: 'retail-salesforce-prod', resourceType: 'credential', namespace: 'customer-ops', details: 'Managed identity credential automatically rotated. Previous credential revoked.', outcome: 'success' },
+  { id: 'audit-5', timestamp: '2026-03-03T17:40:00Z', actor: 'admin@contoso.com', actorType: 'user', action: 'Created namespace', resource: 'payments-ai', resourceType: 'namespace', namespace: 'payments-ai', details: 'New managed namespace created for payments team. Inherited org-level safety policies.', outcome: 'success' },
+  { id: 'audit-6', timestamp: '2026-03-03T16:20:00Z', actor: 'admin@contoso.com', actorType: 'user', action: 'Approved access', resource: 'dev-sarah@contoso.com', resourceType: 'user', namespace: 'customer-ops', details: 'Approved Sarah Chen\'s request for AI Developer role in customer-ops namespace.', outcome: 'success' },
+  { id: 'audit-7', timestamp: '2026-03-03T14:00:00Z', actor: 'dev-mike@contoso.com', actorType: 'user', action: 'Deployed agent', resource: 'support-agent-v2', resourceType: 'agent', namespace: 'customer-ops', details: 'Agent deployed to production environment. 3 tools attached, content safety enabled.', outcome: 'success' },
+  { id: 'audit-8', timestamp: '2026-03-03T11:30:00Z', actor: 'system', actorType: 'system', action: 'Quota enforced', resource: 'svc-batch-processor', resourceType: 'user', namespace: 'ai-research', details: 'Daily token quota exceeded (30M). All requests blocked until midnight UTC reset.', outcome: 'success' },
+  { id: 'audit-9', timestamp: '2026-03-03T09:00:00Z', actor: 'dev-sarah@contoso.com', actorType: 'user', action: 'Registered tool', resource: 'Stripe Payments API', resourceType: 'tool', namespace: 'customer-ops', details: 'New API tool registered. Authentication: OAuth 2.0, Rate limit: 100 RPM.', outcome: 'success' },
+  { id: 'audit-10', timestamp: '2026-03-03T07:30:00Z', actor: 'admin@contoso.com', actorType: 'user', action: 'Enabled guardrail', resource: 'PII Detection', resourceType: 'policy', namespace: 'global', details: 'PII detection guardrail enabled at org level. Applies to all namespaces.', outcome: 'success' },
+];
+
+// ---------------------------------------------------------------------------
 // Skills
 // ---------------------------------------------------------------------------
 
