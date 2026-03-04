@@ -26,12 +26,15 @@ import { catalogItems, namespaces } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
 
 const useStyles = makeStyles({
-  header: {
-    marginBottom: '20px',
-  },
-  subtitle: {
-    color: tokens.colorNeutralForeground3,
-    marginTop: '4px',
+  scopeBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '16px',
+    padding: '12px 16px',
+    backgroundColor: tokens.colorNeutralBackground3,
+    borderRadius: '8px',
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
   },
   toolbar: {
     display: 'flex',
@@ -143,24 +146,36 @@ const tabRoutes: Record<string, string> = {
   workflow: '/workflows',
 };
 
+// Simulate current user's namespace access
+// In production this comes from RBAC / identity
+const myNamespaces = ['anishta-sandbox', 'engineering', 'ai-platform', 'customer-ops'];
+const isAdmin = true; // Toggle to simulate admin vs developer view
+
 const Catalog: React.FC = () => {
   const styles = useStyles();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [nsFilter, setNsFilter] = useState<string>('all');
+  const [scope, setScope] = useState<string>(isAdmin ? 'all' : 'my');
   const [visFilter, setVisFilter] = useState<string>('all');
 
-  const filtered = catalogItems.filter((item) => {
+  // Namespace scoping: "my" = only user's granted namespaces, "all" = admin view
+  const accessibleNamespaces = scope === 'all'
+    ? namespaces.map(n => n.name)
+    : myNamespaces;
+
+  const scopedItems = catalogItems.filter(item =>
+    accessibleNamespaces.includes(item.namespace)
+  );
+
+  const filtered = scopedItems.filter((item) => {
     if (typeFilter !== 'all') {
-      // "tool" tab includes both tools and mcp-servers
       if (typeFilter === 'tool') {
         if (item.assetType !== 'tool' && item.assetType !== 'mcp-server') return false;
       } else {
         if (item.assetType !== typeFilter) return false;
       }
     }
-    if (nsFilter !== 'all' && item.namespace !== nsFilter) return false;
     if (visFilter !== 'all' && item.visibility !== visFilter) return false;
     if (search) {
       const q = search.toLowerCase();
@@ -175,12 +190,12 @@ const Catalog: React.FC = () => {
   });
 
   const typeCounts = {
-    all: catalogItems.length,
-    model: catalogItems.filter(i => i.assetType === 'model').length,
-    tool: catalogItems.filter(i => i.assetType === 'tool' || i.assetType === 'mcp-server').length,
-    agent: catalogItems.filter(i => i.assetType === 'agent').length,
-    skill: catalogItems.filter(i => i.assetType === 'skill').length,
-    workflow: catalogItems.filter(i => i.assetType === 'workflow').length,
+    all: scopedItems.length,
+    model: scopedItems.filter(i => i.assetType === 'model').length,
+    tool: scopedItems.filter(i => i.assetType === 'tool' || i.assetType === 'mcp-server').length,
+    agent: scopedItems.filter(i => i.assetType === 'agent').length,
+    skill: scopedItems.filter(i => i.assetType === 'skill').length,
+    workflow: scopedItems.filter(i => i.assetType === 'workflow').length,
   };
 
   const handleTabSelect = (_: unknown, data: { value: unknown }) => {
@@ -195,7 +210,32 @@ const Catalog: React.FC = () => {
 
   return (
     <div>
-      <div className={styles.header}>
+      {/* Namespace scope selector */}
+      <div className={styles.scopeBar}>
+        <Text size={200} weight="semibold" style={{ color: '#999', marginRight: '4px' }}>Scope:</Text>
+        <Dropdown
+          value={scope === 'all' ? 'All namespaces (Admin)' : `My namespaces (${myNamespaces.length})`}
+          onOptionSelect={(_, data) => setScope(data.optionValue || 'my')}
+          style={{ minWidth: '220px' }}
+        >
+          <Option value="my" text={`My namespaces (${myNamespaces.length})`}>My namespaces ({myNamespaces.length})</Option>
+          {isAdmin && <Option value="all" text="All namespaces (Admin)">All namespaces (Admin)</Option>}
+        </Dropdown>
+        {scope === 'my' && (
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginLeft: '8px' }}>
+            {myNamespaces.map(ns => {
+              const nsObj = namespaces.find(n => n.name === ns);
+              return (
+                <Badge key={ns} appearance="tint" size="small" color="informative">
+                  {nsObj?.displayName || ns}
+                </Badge>
+              );
+            })}
+          </div>
+        )}
+        <Text size={200} style={{ color: '#999', marginLeft: 'auto' }}>
+          {scopedItems.length} assets visible
+        </Text>
       </div>
 
       {/* Type tabs */}
@@ -224,17 +264,6 @@ const Catalog: React.FC = () => {
             style={{ minWidth: '300px' }}
           />
           <Dropdown
-            placeholder="All namespaces"
-            value={nsFilter === 'all' ? 'All namespaces' : namespaces.find(n => n.name === nsFilter)?.displayName || nsFilter}
-            onOptionSelect={(_, data) => setNsFilter(data.optionValue || 'all')}
-            style={{ minWidth: '180px' }}
-          >
-            <Option value="all">All namespaces</Option>
-            {namespaces.map(ns => (
-              <Option key={ns.name} value={ns.name}>{ns.displayName}</Option>
-            ))}
-          </Dropdown>
-          <Dropdown
             placeholder="All visibility"
             value={visFilter === 'all' ? 'All visibility' : visFilter}
             onOptionSelect={(_, data) => setVisFilter(data.optionValue || 'all')}
@@ -250,7 +279,7 @@ const Catalog: React.FC = () => {
 
       <div className={styles.resultsInfo}>
         <Text size={200} style={{ color: '#999' }}>
-          Showing {filtered.length} of {catalogItems.length} assets
+          Showing {filtered.length} of {scopedItems.length} assets
         </Text>
       </div>
 
