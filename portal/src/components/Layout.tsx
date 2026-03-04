@@ -65,28 +65,6 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '6px',
   },
-  topBarCenter: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-  },
-  topBarTab: {
-    color: '#999',
-    fontSize: '13px',
-    padding: '8px 12px',
-    cursor: 'pointer',
-    borderBottom: '2px solid transparent',
-    transition: 'all 0.15s',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    backgroundColor: 'transparent',
-    border: 'none',
-    fontFamily: 'inherit',
-    '&:hover': {
-      color: '#fff',
-    },
-  },
   topBarRight: {
     display: 'flex',
     alignItems: 'center',
@@ -322,6 +300,31 @@ const useStyles = makeStyles({
   main: {
     padding: '24px',
   },
+  sidebarFooter: {
+    borderTop: '1px solid #333',
+    padding: '8px 0',
+    flexShrink: 0,
+  },
+  sidebarFooterItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '7px 20px',
+    color: '#888',
+    cursor: 'pointer',
+    fontSize: '12px',
+    textDecoration: 'none',
+    transition: 'all 0.15s',
+    backgroundColor: 'transparent',
+    border: 'none',
+    width: '100%',
+    textAlign: 'left',
+    fontFamily: 'inherit',
+    '&:hover': {
+      backgroundColor: '#2d2c2b',
+      color: '#ccc',
+    },
+  },
 });
 
 interface NavItem {
@@ -448,20 +451,7 @@ const Layout: React.FC<LayoutProps> = ({ onSignOut }) => {
         <div className={styles.topBarBrand}>
           <span style={{ color: '#60cdff' }}>⚡</span> Azure AI Gateway
         </div>
-        <div className={styles.topBarCenter}>
-          <button className={styles.topBarTab}>
-            <DocumentText24Regular style={{ fontSize: 16 }} /> Docs
-          </button>
-          <button className={styles.topBarTab}>
-            <PlugConnected24Regular style={{ fontSize: 16 }} /> Integration
-          </button>
-          <button className={styles.topBarTab}>
-            <QuestionCircle24Regular style={{ fontSize: 16 }} /> Support
-          </button>
-          <button className={styles.topBarTab}>
-            <CommentMultiple24Regular style={{ fontSize: 16 }} /> Feedback
-          </button>
-        </div>
+        <div />  {/* spacer */}
         <div className={styles.topBarRight} ref={profileRef}>
           <button className={styles.topBarIconBtn} title="Notifications">
             <Alert24Regular style={{ fontSize: 18 }} />
@@ -532,6 +522,20 @@ const Layout: React.FC<LayoutProps> = ({ onSignOut }) => {
               );
             })}
           </nav>
+          <div className={styles.sidebarFooter}>
+            <button className={styles.sidebarFooterItem}>
+              <DocumentText24Regular style={{ fontSize: 16 }} /> Docs
+            </button>
+            <button className={styles.sidebarFooterItem}>
+              <PlugConnected24Regular style={{ fontSize: 16 }} /> Integration
+            </button>
+            <button className={styles.sidebarFooterItem}>
+              <QuestionCircle24Regular style={{ fontSize: 16 }} /> Support
+            </button>
+            <button className={styles.sidebarFooterItem}>
+              <CommentMultiple24Regular style={{ fontSize: 16 }} /> Feedback
+            </button>
+          </div>
         </div>
         <div className={styles.content}>
           <div className={styles.header}>
