@@ -248,176 +248,154 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
       <div
         style={{
           ...glassCard,
-          marginTop: 72,
-          padding: '40px 48px',
-          maxWidth: 780,
+          marginTop: 64,
+          padding: '48px 56px',
+          maxWidth: 820,
           width: '100%',
-          boxShadow: `0 0 48px ${C.blue}1a, inset 0 1px 0 rgba(255,255,255,0.06)`,
+          boxShadow: `0 0 80px ${C.blue}12, 0 0 160px ${C.purple}08, inset 0 1px 0 rgba(255,255,255,0.08)`,
           position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        {/* consumers row — who's calling */}
-        <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font, textAlign: 'center' }}>
-          Consumers
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
-          {['Agents', 'Applications', 'Workflows'].map((c) => (
-            <span
-              key={c}
-              style={{
-                padding: '8px 24px',
-                fontSize: 13,
-                fontWeight: 600,
-                color: C.purple,
-                border: `1px solid ${C.purple}44`,
-                borderRadius: 8,
-                fontFamily: C.font,
-                background: `${C.purple}0a`,
-              }}
-            >
-              {c}
-            </span>
-          ))}
+        {/* subtle inner glow */}
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 500, height: 300, background: `radial-gradient(ellipse, ${C.blue}0c 0%, transparent 70%)`, pointerEvents: 'none' }} />
+
+        {/* consumers row */}
+        <div style={{ position: 'relative', textAlign: 'center', marginBottom: 10 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#666', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '2px', fontFamily: C.font }}>
+            Consumers
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 14 }}>
+            {[
+              { label: 'Agents', icon: '🤖' },
+              { label: 'Applications', icon: '📱' },
+              { label: 'Workflows', icon: '⚡' },
+            ].map((c) => (
+              <div
+                key={c.label}
+                style={{
+                  padding: '10px 28px',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: C.purple,
+                  border: `1px solid ${C.purple}33`,
+                  borderRadius: 10,
+                  fontFamily: C.font,
+                  background: `linear-gradient(135deg, ${C.purple}0a 0%, ${C.purple}04 100%)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <span style={{ fontSize: 14 }}>{c.icon}</span>
+                {c.label}
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* arrows down */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: 80,
-            margin: '14px 0',
-            color: `${C.purple}66`,
-            fontSize: 18,
-            fontFamily: C.mono,
-          }}
-        >
-          {'↓ ↓ ↓'.split(' ').map((a, i) => (
-            <span key={i}>{a}</span>
-          ))}
+        {/* connector line down */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0' }}>
+          <div style={{ width: 2, height: 32, background: `linear-gradient(180deg, ${C.purple}44 0%, ${C.blue}66 100%)`, borderRadius: 1 }} />
         </div>
 
         {/* gateway box */}
         <div
           style={{
-            border: `2px solid ${C.blue}`,
-            borderRadius: 12,
-            padding: '18px 0',
+            border: `1.5px solid ${C.blue}88`,
+            borderRadius: 14,
+            padding: '22px 32px',
             textAlign: 'center',
-            background: `linear-gradient(180deg, ${C.blue}12 0%, transparent 100%)`,
-            boxShadow: `0 0 32px ${C.blue}33`,
+            background: `linear-gradient(180deg, ${C.blue}14 0%, ${C.blue}06 100%)`,
+            boxShadow: `0 0 40px ${C.blue}22, 0 0 80px ${C.blue}0a`,
+            position: 'relative',
           }}
         >
-          <div style={{ fontSize: 18, fontWeight: 700, color: C.white, fontFamily: C.font }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: C.blue, textTransform: 'uppercase', letterSpacing: '2px', fontFamily: C.font, marginBottom: 4 }}>
+            ⬡ Control Plane
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: C.white, fontFamily: C.font, letterSpacing: '-0.3px' }}>
             Azure AI Gateway
           </div>
-          <div style={{ fontSize: 12, color: C.gray, marginTop: 2, fontFamily: C.font, letterSpacing: '0.5px' }}>
-            Control Plane for AI Workloads
-          </div>
-          <div style={{ fontSize: 13, color: C.gray, marginTop: 6, fontFamily: C.font }}>
-            Route&nbsp; · &nbsp;Govern&nbsp; · &nbsp;Observe
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 12 }}>
+            {['Route', 'Govern', 'Observe'].map((action) => (
+              <span
+                key={action}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: C.cyan,
+                  padding: '4px 16px',
+                  borderRadius: 20,
+                  background: `${C.cyan}10`,
+                  border: `1px solid ${C.cyan}22`,
+                  fontFamily: C.font,
+                }}
+              >
+                {action}
+              </span>
+            ))}
           </div>
         </div>
 
-        {/* arrows down */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: 60,
-            margin: '14px 0',
-            color: `${C.blue}88`,
-            fontSize: 18,
-            fontFamily: C.mono,
-          }}
-        >
-          {'↓ ↓ ↓ ↓'.split(' ').map((a, i) => (
-            <span key={i}>{a}</span>
+        {/* connector line down — splits into 3 */}
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0' }}>
+          <div style={{ width: 2, height: 20, background: `linear-gradient(180deg, ${C.blue}66 0%, ${C.cyan}44 100%)`, borderRadius: 1 }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
+          <div style={{ width: '70%', height: 1, background: `linear-gradient(90deg, transparent 0%, ${C.cyan}33 20%, ${C.cyan}33 80%, transparent 100%)` }} />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', marginBottom: 8 }}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'center' }}>
+              <div style={{ width: 2, height: 16, background: `${C.cyan}33`, borderRadius: 1 }} />
+            </div>
           ))}
         </div>
 
         {/* downstream assets — 3 columns */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
-          {/* Models */}
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font }}>
-              Models
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, position: 'relative' }}>
+          {[
+            { title: 'Models', icon: '🧠', items: ['Azure OpenAI', 'Anthropic', 'Gemini', 'Bedrock'], color: C.cyan },
+            { title: 'Tools', icon: '🔧', items: ['APIs', 'Databases', 'MCP Servers', 'SaaS'], color: '#34d399' },
+            { title: 'Agents', icon: '🤖', items: ['Support Agent', 'Finance Agent', 'Custom Agents'], color: '#f59e0b' },
+          ].map((col) => (
+            <div
+              key={col.title}
+              style={{
+                background: `rgba(255,255,255,0.02)`,
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: 12,
+                padding: '16px 12px',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: 18, marginBottom: 4 }}>{col.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: col.color, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '1.5px', fontFamily: C.font }}>
+                {col.title}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
+                {col.items.map((item) => (
+                  <span
+                    key={item}
+                    style={{
+                      padding: '5px 14px',
+                      fontSize: 11.5,
+                      fontWeight: 500,
+                      color: '#ccc',
+                      borderRadius: 6,
+                      fontFamily: C.font,
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      width: 'fit-content',
+                    }}
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
-              {['Azure OpenAI', 'Anthropic', 'Gemini', 'Bedrock'].map((m) => (
-                <span
-                  key={m}
-                  style={{
-                    padding: '6px 14px',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: C.cyan,
-                    border: `1px solid ${C.cyan}44`,
-                    borderRadius: 8,
-                    fontFamily: C.font,
-                    background: `${C.cyan}0a`,
-                    width: 'fit-content',
-                  }}
-                >
-                  {m}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Tools */}
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font }}>
-              Tools
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
-              {['APIs', 'Databases', 'MCP Servers', 'SaaS'].map((t) => (
-                <span
-                  key={t}
-                  style={{
-                    padding: '6px 14px',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: C.cyan,
-                    border: `1px solid ${C.cyan}44`,
-                    borderRadius: 8,
-                    fontFamily: C.font,
-                    background: `${C.cyan}0a`,
-                    width: 'fit-content',
-                  }}
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Agents */}
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font }}>
-              Agents
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
-              {['Support Agent', 'Finance Agent', 'Custom Agents'].map((a) => (
-                <span
-                  key={a}
-                  style={{
-                    padding: '6px 14px',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: C.cyan,
-                    border: `1px solid ${C.cyan}44`,
-                    borderRadius: 8,
-                    fontFamily: C.font,
-                    background: `${C.cyan}0a`,
-                    width: 'fit-content',
-                  }}
-                >
-                  {a}
-                </span>
-              ))}
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
