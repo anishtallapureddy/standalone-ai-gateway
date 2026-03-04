@@ -170,7 +170,6 @@ const useStyles = makeStyles({
   tracePane: {
     display: 'grid',
     gridTemplateColumns: '220px 1fr',
-    flex: 1,
     minHeight: 0,
   },
   traceList: {
