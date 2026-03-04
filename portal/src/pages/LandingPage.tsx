@@ -250,56 +250,32 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
           ...glassCard,
           marginTop: 72,
           padding: '40px 48px',
-          maxWidth: 680,
+          maxWidth: 780,
           width: '100%',
           boxShadow: `0 0 48px ${C.blue}1a, inset 0 1px 0 rgba(255,255,255,0.06)`,
           position: 'relative',
         }}
       >
-        {/* providers row — Models */}
-        <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font }}>
-          Models
+        {/* consumers row — who's calling */}
+        <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font, textAlign: 'center' }}>
+          Consumers
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
-          {['Azure OpenAI', 'Anthropic', 'Gemini', 'Bedrock'].map((m) => (
+          {['Agents', 'Applications', 'Workflows'].map((c) => (
             <span
-              key={m}
+              key={c}
               style={{
-                padding: '8px 18px',
+                padding: '8px 24px',
                 fontSize: 13,
                 fontWeight: 600,
-                color: C.cyan,
-                border: `1px solid ${C.cyan}44`,
+                color: C.purple,
+                border: `1px solid ${C.purple}44`,
                 borderRadius: 8,
                 fontFamily: C.font,
-                background: `${C.cyan}0a`,
+                background: `${C.purple}0a`,
               }}
             >
-              {m}
-            </span>
-          ))}
-        </div>
-
-        {/* Tools row */}
-        <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginTop: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font }}>
-          Tools
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
-          {['APIs', 'Databases', 'MCP Servers', 'SaaS'].map((t) => (
-            <span
-              key={t}
-              style={{
-                padding: '8px 18px',
-                fontSize: 13,
-                fontWeight: 600,
-                color: C.cyan,
-                border: `1px solid ${C.cyan}44`,
-                borderRadius: 8,
-                fontFamily: C.font,
-                background: `${C.cyan}0a`,
-              }}
-            >
-              {t}
+              {c}
             </span>
           ))}
         </div>
@@ -311,12 +287,12 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
             justifyContent: 'center',
             gap: 80,
             margin: '14px 0',
-            color: `${C.blue}88`,
+            color: `${C.purple}66`,
             fontSize: 18,
             fontFamily: C.mono,
           }}
         >
-          {'↓ ↓ ↓ ↓'.split(' ').map((a, i) => (
+          {'↓ ↓ ↓'.split(' ').map((a, i) => (
             <span key={i}>{a}</span>
           ))}
         </div>
@@ -348,37 +324,100 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: 100,
+            gap: 60,
             margin: '14px 0',
             color: `${C.blue}88`,
             fontSize: 18,
             fontFamily: C.mono,
           }}
         >
-          {'↓ ↓ ↓'.split(' ').map((a, i) => (
+          {'↓ ↓ ↓ ↓'.split(' ').map((a, i) => (
             <span key={i}>{a}</span>
           ))}
         </div>
 
-        {/* consumers row */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
-          {['Agents', 'Applications', 'Workflows'].map((c) => (
-            <span
-              key={c}
-              style={{
-                padding: '8px 24px',
-                fontSize: 13,
-                fontWeight: 600,
-                color: C.purple,
-                border: `1px solid ${C.purple}44`,
-                borderRadius: 8,
-                fontFamily: C.font,
-                background: `${C.purple}0a`,
-              }}
-            >
-              {c}
-            </span>
-          ))}
+        {/* downstream assets — 3 columns */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+          {/* Models */}
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font }}>
+              Models
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
+              {['Azure OpenAI', 'Anthropic', 'Gemini', 'Bedrock'].map((m) => (
+                <span
+                  key={m}
+                  style={{
+                    padding: '6px 14px',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.cyan,
+                    border: `1px solid ${C.cyan}44`,
+                    borderRadius: 8,
+                    fontFamily: C.font,
+                    background: `${C.cyan}0a`,
+                    width: 'fit-content',
+                  }}
+                >
+                  {m}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Tools */}
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font }}>
+              Tools
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
+              {['APIs', 'Databases', 'MCP Servers', 'SaaS'].map((t) => (
+                <span
+                  key={t}
+                  style={{
+                    padding: '6px 14px',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.cyan,
+                    border: `1px solid ${C.cyan}44`,
+                    borderRadius: 8,
+                    fontFamily: C.font,
+                    background: `${C.cyan}0a`,
+                    width: 'fit-content',
+                  }}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Agents */}
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font }}>
+              Agents
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}>
+              {['Support Agent', 'Finance Agent', 'Custom Agents'].map((a) => (
+                <span
+                  key={a}
+                  style={{
+                    padding: '6px 14px',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: C.cyan,
+                    border: `1px solid ${C.cyan}44`,
+                    borderRadius: 8,
+                    fontFamily: C.font,
+                    background: `${C.cyan}0a`,
+                    width: 'fit-content',
+                  }}
+                >
+                  {a}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
