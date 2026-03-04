@@ -357,14 +357,13 @@ const navItems: NavItem[] = [
     label: 'Catalog',
     icon: <Search24Regular />,
     activeIcon: <Search24Filled />,
-    section: 'Discovery',
+    section: 'AI Assets',
   },
   {
     path: '/models',
     label: 'Models',
     icon: <BrainCircuit24Regular />,
     activeIcon: <BrainCircuit24Filled />,
-    section: 'AI Assets',
   },
   {
     path: '/tools',
