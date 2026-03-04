@@ -40,7 +40,7 @@ function App() {
         <Route path="skills" element={<Skills />} />
         <Route path="workflows" element={<Workflows />} />
         <Route path="namespaces" element={<Namespaces />} />
-        <Route path="consumers" element={<Consumers />} />
+        <Route path="access" element={<Consumers />} />
         <Route path="policies" element={<Policies />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="logs" element={<Logs />} />
