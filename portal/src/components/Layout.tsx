@@ -458,14 +458,17 @@ const Layout: React.FC<LayoutProps> = ({ onSignOut }) => {
           <button className={styles.topBarTab}>
             <QuestionCircle24Regular style={{ fontSize: 16 }} /> Support
           </button>
+          <button className={styles.topBarTab}>
+            <CommentMultiple24Regular style={{ fontSize: 16 }} /> Feedback
+          </button>
         </div>
         <div className={styles.topBarRight} ref={profileRef}>
-          <button className={styles.topBarIconBtn}>
+          <button className={styles.topBarIconBtn} title="Notifications">
             <Alert24Regular style={{ fontSize: 18 }} />
             <span className={styles.notifBadge}>3</span>
           </button>
-          <button className={styles.topBarIconBtn}>
-            <CommentMultiple24Regular style={{ fontSize: 18 }} />
+          <button className={styles.topBarIconBtn} title="Settings">
+            <Settings24Regular style={{ fontSize: 18 }} />
           </button>
           <button
             className={styles.profileBtn}
