@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type FC } from 'react';
+import { useState, useEffect, type CSSProperties, type FC } from 'react';
 
 interface LandingPageProps {
   onLogin: () => void;
@@ -53,6 +53,34 @@ const btnOutline: CSSProperties = {
 /* ─── component ─── */
 const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
+
+  /* inject keyframe animation once */
+  useEffect(() => {
+    if (document.getElementById('landing-keyframes')) return;
+    const style = document.createElement('style');
+    style.id = 'landing-keyframes';
+    style.textContent = `
+      @keyframes orbFloat {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); }
+        33% { transform: translate(-45%, -55%) scale(1.05); }
+        66% { transform: translate(-55%, -48%) scale(0.97); }
+      }
+      @keyframes orbFloat2 {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); }
+        33% { transform: translate(-55%, -45%) scale(1.08); }
+        66% { transform: translate(-42%, -52%) scale(0.95); }
+      }
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
 
   /* ── nav ── */
   const nav = (
@@ -170,31 +198,69 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
         overflow: 'hidden',
       }}
     >
-      {/* radial glow */}
+      {/* animated gradient orbs */}
       <div
         style={{
           position: 'absolute',
-          top: '15%',
+          top: '20%',
           left: '50%',
-          transform: 'translateX(-50%)',
-          width: 800,
-          height: 800,
-          background: `radial-gradient(circle, ${C.blue}18 0%, transparent 70%)`,
+          transform: 'translate(-50%, -50%)',
+          width: 700,
+          height: 700,
+          background: `radial-gradient(circle, ${C.blue}22 0%, ${C.purple}08 40%, transparent 70%)`,
           pointerEvents: 'none',
+          animation: 'orbFloat 8s ease-in-out infinite',
+          filter: 'blur(40px)',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          top: '30%',
+          left: '45%',
+          transform: 'translate(-50%, -50%)',
+          width: 500,
+          height: 500,
+          background: `radial-gradient(circle, ${C.purple}18 0%, ${C.cyan}08 40%, transparent 70%)`,
+          pointerEvents: 'none',
+          animation: 'orbFloat2 10s ease-in-out infinite',
+          filter: 'blur(60px)',
         }}
       />
 
+      {/* badge */}
+      <div
+        style={{
+          padding: '6px 18px',
+          fontSize: 11,
+          fontWeight: 700,
+          color: C.cyan,
+          border: `1px solid ${C.cyan}33`,
+          borderRadius: 20,
+          fontFamily: C.font,
+          textTransform: 'uppercase',
+          letterSpacing: '2px',
+          background: `${C.cyan}08`,
+          marginBottom: 24,
+          animation: 'fadeInUp 0.6s ease-out',
+        }}
+      >
+        ✦ Now in Preview
+      </div>
+
       <h1
         style={{
-          fontSize: 56,
+          fontSize: 60,
           fontWeight: 800,
-          lineHeight: 1.15,
+          lineHeight: 1.1,
           margin: 0,
           fontFamily: C.font,
-          background: `linear-gradient(135deg, ${C.white} 30%, ${C.cyan})`,
+          background: `linear-gradient(135deg, ${C.white} 0%, ${C.cyan} 50%, ${C.purple} 100%)`,
+          backgroundSize: '200% auto',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          maxWidth: 800,
+          maxWidth: 820,
+          animation: 'fadeInUp 0.8s ease-out, shimmer 6s ease-in-out infinite',
         }}
       >
         The Intelligent Gateway for Enterprise&nbsp;AI
@@ -202,12 +268,13 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
 
       <p
         style={{
-          fontSize: 20,
+          fontSize: 19,
           color: C.gray,
-          maxWidth: 700,
-          margin: '28px auto 0',
-          lineHeight: 1.65,
+          maxWidth: 680,
+          margin: '24px auto 0',
+          lineHeight: 1.7,
           fontFamily: C.font,
+          animation: 'fadeInUp 1s ease-out',
         }}
       >
         Build, route, govern, and observe AI workloads across models, tools, and agents from a
@@ -398,26 +465,31 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
 
   /* ── trusted strip ── */
   const trusted = (
-    <section style={{ padding: '40px 24px 56px', textAlign: 'center' }}>
-      <p style={{ fontSize: 13, color: C.gray, opacity: 0.5, marginBottom: 28, fontFamily: C.font }}>
-        TRUSTED BY ENTERPRISE
-      </p>
+    <section style={{ padding: '48px 24px 64px', textAlign: 'center' }}>
       <div
         style={{
           display: 'flex',
           justifyContent: 'center',
-          gap: 56,
+          gap: 64,
           flexWrap: 'wrap',
-          opacity: 0.3,
+          maxWidth: 900,
+          margin: '0 auto',
         }}
       >
-        {['Fortune 500', 'Global Bank', 'Tech Corp', 'Healthcare Co', 'Retail Giant'].map((c) => (
-          <span
-            key={c}
-            style={{ fontSize: 16, fontWeight: 600, color: C.gray, fontFamily: C.font, letterSpacing: 1 }}
-          >
-            {c}
-          </span>
+        {[
+          { value: '10B+', label: 'Tokens Routed' },
+          { value: '500+', label: 'Enterprise Teams' },
+          { value: '99.99%', label: 'Uptime SLA' },
+          { value: '<50ms', label: 'Gateway Latency' },
+        ].map((stat) => (
+          <div key={stat.label} style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 36, fontWeight: 800, fontFamily: C.font, background: `linear-gradient(135deg, ${C.white}, ${C.cyan})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              {stat.value}
+            </div>
+            <div style={{ fontSize: 13, color: '#666', marginTop: 4, fontFamily: C.font, letterSpacing: '0.5px' }}>
+              {stat.label}
+            </div>
+          </div>
         ))}
       </div>
     </section>
@@ -429,31 +501,37 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
       icon: '🌐',
       title: 'Multi-Cloud Model Access',
       desc: 'Route to Azure OpenAI, Anthropic, Google Gemini, AWS Bedrock, and custom models through a unified API.',
+      accent: C.blue,
     },
     {
       icon: '🛡️',
       title: 'Enterprise Governance',
-      desc: 'Runtime policies, design-time rules, and RAI guardrails. Approve, audit, and enforce at scale.',
+      desc: 'Runtime policies, design-time rules, and safety guardrails. Approve, audit, and enforce at scale.',
+      accent: C.purple,
     },
     {
       icon: '📊',
       title: 'Token Observability',
       desc: 'Real-time analytics on token consumption by user, app, model, and namespace. FinOps built in.',
+      accent: C.cyan,
     },
     {
       icon: '🔀',
       title: 'Intelligent Routing',
       desc: 'Load balance across regions, auto-failover from PTU to PAYGO, latency-based routing with health checks.',
+      accent: '#34d399',
     },
     {
       icon: '🧩',
       title: 'MCP & Tool Catalog',
       desc: 'Convert OpenAPI specs to MCP servers with zero code. Discover tools through a governed enterprise catalog.',
+      accent: '#f59e0b',
     },
     {
       icon: '🔑',
       title: 'Per-Consumer Quotas',
       desc: 'Authenticate users and apps, issue API keys, enforce per-consumer rate limits and token budgets.',
+      accent: '#f472b6',
     },
   ];
 
@@ -489,19 +567,39 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
               onMouseLeave={() => setHoveredFeature(null)}
               style={{
                 ...glassCard,
-                padding: '36px 28px',
+                padding: '32px 28px',
                 transition: 'transform .2s, border-color .2s, box-shadow .2s',
                 transform: isHov ? 'translateY(-4px)' : 'none',
-                borderColor: isHov ? `${C.blue}55` : C.cardBorder,
-                boxShadow: isHov ? `0 8px 32px ${C.blue}1a` : 'none',
+                borderColor: isHov ? `${f.accent}55` : C.cardBorder,
+                boxShadow: isHov ? `0 8px 32px ${f.accent}1a` : 'none',
                 cursor: 'default',
+                borderTop: `2px solid ${f.accent}44`,
+                position: 'relative',
+                overflow: 'hidden',
               }}
             >
-              <div style={{ fontSize: 32, marginBottom: 16 }}>{f.icon}</div>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: C.white, margin: '0 0 10px', fontFamily: C.font }}>
+              {/* accent glow */}
+              <div style={{ position: 'absolute', top: -40, left: '50%', transform: 'translateX(-50%)', width: 120, height: 80, background: `radial-gradient(ellipse, ${f.accent}15 0%, transparent 70%)`, pointerEvents: 'none' }} />
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  background: `linear-gradient(135deg, ${f.accent}20 0%, ${f.accent}08 100%)`,
+                  border: `1px solid ${f.accent}22`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 24,
+                  marginBottom: 16,
+                }}
+              >
+                {f.icon}
+              </div>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: C.white, margin: '0 0 8px', fontFamily: C.font }}>
                 {f.title}
               </h3>
-              <p style={{ fontSize: 14, color: C.gray, lineHeight: 1.7, margin: 0, fontFamily: C.font }}>
+              <p style={{ fontSize: 13.5, color: '#999', lineHeight: 1.7, margin: 0, fontFamily: C.font }}>
                 {f.desc}
               </p>
             </div>
