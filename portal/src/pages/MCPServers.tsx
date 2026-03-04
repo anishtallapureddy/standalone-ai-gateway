@@ -67,7 +67,7 @@ const MCPServers: React.FC = () => {
   return (
     <div>
       <div className={styles.toolbar}>
-        <Text size={300} style={{ color: '#666' }}>
+        <Text size={300} style={{ color: '#999' }}>
           {mcpServers.length} MCP servers · {mcpServers.filter(s => s.hostingType === 'managed').length} managed · {mcpServers.filter(s => s.hostingType === 'external').length} external
         </Text>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -84,7 +84,7 @@ const MCPServers: React.FC = () => {
                 <div>
                   <Text weight="semibold" size={400}>{server.name}</Text>
                   <br />
-                  <Text size={200} style={{ color: '#666' }}>{server.description}</Text>
+                  <Text size={200} style={{ color: '#999' }}>{server.description}</Text>
                 </div>
               </div>
               <StatusBadge status={server.status} />
@@ -107,15 +107,15 @@ const MCPServers: React.FC = () => {
 
             <div className={styles.cardMeta}>
               <div className={styles.metaItem}>
-                <Text size={200} style={{ color: '#666' }}>Tools</Text>
+                <Text size={200} style={{ color: '#999' }}>Tools</Text>
                 <Text weight="semibold">{server.toolCount}</Text>
               </div>
               <div className={styles.metaItem}>
-                <Text size={200} style={{ color: '#666' }}>Requests (24h)</Text>
+                <Text size={200} style={{ color: '#999' }}>Requests (24h)</Text>
                 <Text weight="semibold">{server.requestsToday.toLocaleString()}</Text>
               </div>
               <div className={styles.metaItem}>
-                <Text size={200} style={{ color: '#666' }}>Endpoint</Text>
+                <Text size={200} style={{ color: '#999' }}>Endpoint</Text>
                 <Text size={200} style={{ fontFamily: 'monospace' }}>{server.endpoint}</Text>
               </div>
             </div>

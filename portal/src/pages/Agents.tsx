@@ -76,7 +76,7 @@ const Agents: React.FC = () => {
   return (
     <div>
       <div className={styles.toolbar}>
-        <Text size={300} style={{ color: '#666' }}>
+        <Text size={300} style={{ color: '#999' }}>
           {agents.length} agents registered · {agents.filter(a => a.status === 'active').length} active
         </Text>
         <Button appearance="primary" icon={<Add24Regular />}>Register Agent</Button>
@@ -90,7 +90,7 @@ const Agents: React.FC = () => {
                 <div>
                   <Text weight="semibold" size={400}>{agent.name}</Text>
                   <br />
-                  <Text size={200} style={{ color: '#666' }}>{agent.description}</Text>
+                  <Text size={200} style={{ color: '#999' }}>{agent.description}</Text>
                 </div>
               </div>
               <StatusBadge status={agent.status} />
@@ -121,11 +121,11 @@ const Agents: React.FC = () => {
 
             <div className={styles.stats}>
               <div className={styles.stat}>
-                <Text size={200} style={{ color: '#666' }}>Requests (24h)</Text>
+                <Text size={200} style={{ color: '#999' }}>Requests (24h)</Text>
                 <Text weight="semibold">{agent.requestsToday.toLocaleString()}</Text>
               </div>
               <div className={styles.stat}>
-                <Text size={200} style={{ color: '#666' }}>Endpoint</Text>
+                <Text size={200} style={{ color: '#999' }}>Endpoint</Text>
                 <Text size={200} style={{ fontFamily: 'monospace' }}>{agent.endpoint}</Text>
               </div>
             </div>

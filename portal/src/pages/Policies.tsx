@@ -270,7 +270,7 @@ const Policies: React.FC = () => {
       {tab === 'runtime' && (
         <div>
           <div className={styles.toolbar}>
-            <Text size={300} style={{ color: '#666' }}>
+            <Text size={300} style={{ color: '#999' }}>
               {runtimePolicies.length} runtime policies · {runtimePolicies.filter(p => p.enabled).length} enabled · applied to {runtimePolicies.reduce((s, p) => s + p.appliedTo, 0)} assets
             </Text>
             <Button appearance="primary" icon={<Add24Regular />}>Create Runtime Rule</Button>
@@ -292,7 +292,7 @@ const Policies: React.FC = () => {
                     <TableCell>
                       <Text weight="semibold">{policy.name}</Text>
                       <br />
-                      <Text size={200} style={{ color: '#666' }}>{policy.description}</Text>
+                      <Text size={200} style={{ color: '#999' }}>{policy.description}</Text>
                     </TableCell>
                     <TableCell>
                       <Badge appearance="tint" color={targetColors[policy.target] || 'informative'}>
@@ -320,7 +320,7 @@ const Policies: React.FC = () => {
       {tab === 'design-time' && (
         <div>
           <div className={styles.toolbar}>
-            <Text size={300} style={{ color: '#666' }}>
+            <Text size={300} style={{ color: '#999' }}>
               Design-time rules enforced when assets are registered, updated, or activated
             </Text>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -357,19 +357,19 @@ const Policies: React.FC = () => {
                           <Badge appearance="tint" color="brand" size="small">auto-enforce</Badge>
                         )}
                       </div>
-                      <Text size={200} style={{ color: '#666', marginTop: '4px', display: 'block' }}>
+                      <Text size={200} style={{ color: '#999', marginTop: '4px', display: 'block' }}>
                         {rule.description}
                       </Text>
                       <div className={styles.ruleMeta}>
                         <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                          <Text size={200} style={{ color: '#666' }}>Applies to:</Text>
+                          <Text size={200} style={{ color: '#999' }}>Applies to:</Text>
                           {rule.appliesTo.map(t => (
                             <Badge key={t} appearance="tint" color={assetTypeColors[t]} size="small">{t}</Badge>
                           ))}
                         </div>
                         {rule.namespaces.length > 0 && (
                           <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                            <Text size={200} style={{ color: '#666' }}>Namespaces:</Text>
+                            <Text size={200} style={{ color: '#999' }}>Namespaces:</Text>
                             {rule.namespaces.map(ns => (
                               <Badge key={ns} appearance="outline" size="small">{ns}</Badge>
                             ))}
@@ -406,7 +406,7 @@ const Policies: React.FC = () => {
               >
                 ← Back to Rules
               </Button>
-              <Text size={300} style={{ color: '#666' }}>
+              <Text size={300} style={{ color: '#999' }}>
                 Review and approve asset changes that triggered governance rules
               </Text>
             </div>
@@ -426,7 +426,7 @@ const Policies: React.FC = () => {
                         </Badge>
                         <Badge appearance="outline" size="small">{approval.action}</Badge>
                       </div>
-                      <Text size={200} style={{ color: '#666', display: 'block', marginTop: '2px' }}>
+                      <Text size={200} style={{ color: '#999', display: 'block', marginTop: '2px' }}>
                         in <b>{approval.namespace}</b> · requested by {approval.requestedBy} · rule: {approval.ruleTriggered}
                       </Text>
                     </div>
@@ -459,7 +459,7 @@ const Policies: React.FC = () => {
       {tab === 'rai' && (
         <div>
           <div className={styles.toolbar}>
-            <Text size={300} style={{ color: '#666' }}>
+            <Text size={300} style={{ color: '#999' }}>
               {raiGuardrails.length} guardrails · {raiTriggersToday.toLocaleString()} triggers today · {raiBlockedToday} blocked
             </Text>
             <Button appearance="primary" icon={<Add24Regular />}>Create Guardrail</Button>
@@ -490,18 +490,18 @@ const Policies: React.FC = () => {
                           {guardrail.target === 'both' ? 'input + output' : guardrail.target}
                         </Badge>
                       </div>
-                      <Text size={200} style={{ color: '#666', marginTop: '4px', display: 'block' }}>
+                      <Text size={200} style={{ color: '#999', marginTop: '4px', display: 'block' }}>
                         {guardrail.description}
                       </Text>
                       <div className={styles.guardrailStats}>
                         <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                          <Text size={200} style={{ color: '#666' }}>Applies to:</Text>
+                          <Text size={200} style={{ color: '#999' }}>Applies to:</Text>
                           {guardrail.appliesTo.map(t => (
                             <Badge key={t} appearance="tint" color={targetColors[t] || 'informative'} size="small">{t}</Badge>
                           ))}
                         </div>
                         <div className={styles.guardrailStat}>
-                          <Text size={200} style={{ color: '#666' }}>Triggers today:</Text>
+                          <Text size={200} style={{ color: '#999' }}>Triggers today:</Text>
                           <Text size={200} weight="semibold">{guardrail.triggersToday.toLocaleString()}</Text>
                         </div>
                         {guardrail.blockedToday > 0 && (

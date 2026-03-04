@@ -140,7 +140,7 @@ const Logs: React.FC = () => {
           </Dropdown>
         </div>
         <Button appearance="subtle" icon={<ArrowClockwise24Regular />}>Refresh</Button>
-        <Text size={200} style={{ color: '#666' }}>
+        <Text size={200} style={{ color: '#999' }}>
           {filteredLogs.length} requests
         </Text>
       </div>

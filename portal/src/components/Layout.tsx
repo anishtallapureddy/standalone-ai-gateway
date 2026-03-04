@@ -264,12 +264,12 @@ const useStyles = makeStyles({
   content: {
     flex: 1,
     overflow: 'auto',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#141414',
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1e1e1e',
     padding: '12px 24px',
-    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderBottom: '1px solid #333',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -289,7 +289,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '6px',
     fontSize: '13px',
-    color: '#666',
+    color: '#aaa',
   },
   envDot: {
     width: '8px',
@@ -549,7 +549,7 @@ const Layout: React.FC<LayoutProps> = ({ onSignOut }) => {
                 <div className={styles.envDot} />
                 Production
               </div>
-              <Text size={200} style={{ color: '#666' }}>
+              <Text size={200} style={{ color: '#999' }}>
                 Contoso Corp
               </Text>
             </div>

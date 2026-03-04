@@ -703,7 +703,7 @@ const Models: React.FC = () => {
   return (
     <div>
       <div className={styles.toolbar}>
-        <Text size={300} style={{ color: '#666' }}>
+        <Text size={300} style={{ color: '#999' }}>
           {models.length} models registered across{' '}
           {new Set(models.map((m) => m.provider)).size} providers
         </Text>

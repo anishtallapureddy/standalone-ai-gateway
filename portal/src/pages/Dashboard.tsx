@@ -272,7 +272,7 @@ const Dashboard: React.FC = () => {
                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: p.color }} />
                   <Text size={200} style={{ flex: 1 }}>{p.name}</Text>
                   <Text size={200} weight="semibold">{p.amount}</Text>
-                  <Text size={200} style={{ color: '#666', width: '45px', textAlign: 'right' }}>{p.pct}%</Text>
+                  <Text size={200} style={{ color: '#999', width: '45px', textAlign: 'right' }}>{p.pct}%</Text>
                 </div>
               ))}
             </div>
@@ -337,7 +337,7 @@ const Dashboard: React.FC = () => {
                   <div>
                     <Text weight="semibold" size={300}>{model.name}</Text>
                     <br />
-                    <Text size={200} style={{ color: '#666' }}>{model.provider}</Text>
+                    <Text size={200} style={{ color: '#999' }}>{model.provider}</Text>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <Text size={200}>{(model.tokensUsedToday / 1000).toFixed(0)}K / {(model.tokenLimit / 1000).toFixed(0)}K</Text>
@@ -366,13 +366,13 @@ const Dashboard: React.FC = () => {
                   <div>
                     <Text weight="semibold" size={300}>{agent.name}</Text>
                     <br />
-                    <Text size={200} style={{ color: '#666' }}>{agent.protocol.toUpperCase()} · {agent.modelIds.length} models · {agent.toolIds.length} tools</Text>
+                    <Text size={200} style={{ color: '#999' }}>{agent.protocol.toUpperCase()} · {agent.modelIds.length} models · {agent.toolIds.length} tools</Text>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <Text size={300} weight="semibold">{agent.requestsToday.toLocaleString()}</Text>
                   <br />
-                  <Text size={200} style={{ color: '#666' }}>requests</Text>
+                  <Text size={200} style={{ color: '#999' }}>requests</Text>
                 </div>
               </div>
             ))}

@@ -139,7 +139,7 @@ const Tools: React.FC = () => {
             <Option value="team">Team</Option>
             <Option value="private">Private</Option>
           </Dropdown>
-          <Text size={200} style={{ color: '#666' }}>{filtered.length} tools</Text>
+          <Text size={200} style={{ color: '#999' }}>{filtered.length} tools</Text>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <Button appearance="secondary">Convert API → MCP</Button>
@@ -185,15 +185,15 @@ const Tools: React.FC = () => {
               <div className={styles.cardFooter}>
                 <div className={styles.footerLeft}>
                   <div className={styles.footerStat}>
-                    <Text size={200} style={{ color: '#666' }}>Owner</Text>
+                    <Text size={200} style={{ color: '#999' }}>Owner</Text>
                     <Text size={200} weight="semibold">{tool.ownerTeam}</Text>
                   </div>
                   <div className={styles.footerStat}>
-                    <Text size={200} style={{ color: '#666' }}>Invocations</Text>
+                    <Text size={200} style={{ color: '#999' }}>Invocations</Text>
                     <Text size={200} weight="semibold">{tool.invocationsToday.toLocaleString()}</Text>
                   </div>
                 </div>
-                <ArrowRight16Regular style={{ color: '#666' }} />
+                <ArrowRight16Regular style={{ color: '#999' }} />
               </div>
             </Card>
           );

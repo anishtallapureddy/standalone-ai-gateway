@@ -125,7 +125,7 @@ const Namespaces: React.FC = () => {
             onChange={(_, data) => setSearch(data.value)}
             style={{ minWidth: '280px' }}
           />
-          <Text size={200} style={{ color: '#666' }}>{filtered.length} namespaces</Text>
+          <Text size={200} style={{ color: '#999' }}>{filtered.length} namespaces</Text>
         </div>
         <Button appearance="primary" icon={<Add24Regular />}>Create Namespace</Button>
       </div>
@@ -141,7 +141,7 @@ const Namespaces: React.FC = () => {
                 <div>
                   <Text weight="semibold" size={400}>{ns.displayName}</Text>
                   <div>
-                    <Text size={200} style={{ fontFamily: 'monospace', color: '#666' }}>{ns.name}</Text>
+                    <Text size={200} style={{ fontFamily: 'monospace', color: '#999' }}>{ns.name}</Text>
                   </div>
                 </div>
               </div>
@@ -155,42 +155,42 @@ const Namespaces: React.FC = () => {
                 <div className={styles.assetCount}>
                   <BrainCircuit20Regular style={{ color: '#6366f1' }} />
                   <Text size={200} weight="semibold">{ns.assetCount.models}</Text>
-                  <Text size={200} style={{ color: '#666' }}>models</Text>
+                  <Text size={200} style={{ color: '#999' }}>models</Text>
                 </div>
               )}
               {ns.assetCount.tools > 0 && (
                 <div className={styles.assetCount}>
                   <PlugConnected20Regular style={{ color: '#0ea5e9' }} />
                   <Text size={200} weight="semibold">{ns.assetCount.tools}</Text>
-                  <Text size={200} style={{ color: '#666' }}>tools</Text>
+                  <Text size={200} style={{ color: '#999' }}>tools</Text>
                 </div>
               )}
               {ns.assetCount.mcpServers > 0 && (
                 <div className={styles.assetCount}>
                   <Server20Regular style={{ color: '#8b5cf6' }} />
                   <Text size={200} weight="semibold">{ns.assetCount.mcpServers}</Text>
-                  <Text size={200} style={{ color: '#666' }}>MCP</Text>
+                  <Text size={200} style={{ color: '#999' }}>MCP</Text>
                 </div>
               )}
               {ns.assetCount.agents > 0 && (
                 <div className={styles.assetCount}>
                   <Bot20Regular style={{ color: '#10b981' }} />
                   <Text size={200} weight="semibold">{ns.assetCount.agents}</Text>
-                  <Text size={200} style={{ color: '#666' }}>agents</Text>
+                  <Text size={200} style={{ color: '#999' }}>agents</Text>
                 </div>
               )}
               {ns.assetCount.skills > 0 && (
                 <div className={styles.assetCount}>
                   <LightbulbFilament20Regular style={{ color: '#f59e0b' }} />
                   <Text size={200} weight="semibold">{ns.assetCount.skills}</Text>
-                  <Text size={200} style={{ color: '#666' }}>skills</Text>
+                  <Text size={200} style={{ color: '#999' }}>skills</Text>
                 </div>
               )}
             </div>
 
             {ns.policies.length > 0 && (
               <div className={styles.policies}>
-                <Shield20Regular style={{ color: '#666' }} />
+                <Shield20Regular style={{ color: '#999' }} />
                 {ns.policies.map(p => (
                   <Badge key={p} appearance="outline" size="small">{p}</Badge>
                 ))}
@@ -198,7 +198,7 @@ const Namespaces: React.FC = () => {
             )}
 
             <div className={styles.footer}>
-              <Text size={200} style={{ color: '#666' }}>Owner: <b>{ns.owner}</b></Text>
+              <Text size={200} style={{ color: '#999' }}>Owner: <b>{ns.owner}</b></Text>
               <Text size={200} style={{ color: '#999' }}>
                 Created {new Date(ns.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </Text>

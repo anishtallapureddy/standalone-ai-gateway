@@ -223,7 +223,7 @@ const Catalog: React.FC = () => {
       </div>
 
       <div className={styles.resultsInfo}>
-        <Text size={200} style={{ color: '#666' }}>
+        <Text size={200} style={{ color: '#999' }}>
           Showing {filtered.length} of {catalogItems.length} assets
         </Text>
       </div>
@@ -269,19 +269,19 @@ const Catalog: React.FC = () => {
               <div className={styles.cardFooter}>
                 <div className={styles.footerMeta}>
                   <div className={styles.metaItem}>
-                    <Text size={200} style={{ color: '#666' }}>Namespace</Text>
+                    <Text size={200} style={{ color: '#999' }}>Namespace</Text>
                     <Text size={200} weight="semibold">{item.namespace}</Text>
                   </div>
                   <div className={styles.metaItem}>
-                    <Text size={200} style={{ color: '#666' }}>Owner</Text>
+                    <Text size={200} style={{ color: '#999' }}>Owner</Text>
                     <Text size={200} weight="semibold">{item.owner}</Text>
                   </div>
                   <div className={styles.metaItem}>
-                    <Text size={200} style={{ color: '#666' }}>Usage (24h)</Text>
+                    <Text size={200} style={{ color: '#999' }}>Usage (24h)</Text>
                     <Text size={200} weight="semibold">{item.usageLast24h.toLocaleString()}</Text>
                   </div>
                 </div>
-                <ArrowRight16Regular style={{ color: '#666' }} />
+                <ArrowRight16Regular style={{ color: '#999' }} />
               </div>
             </Card>
           );

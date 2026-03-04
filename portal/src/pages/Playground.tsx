@@ -157,7 +157,7 @@ const Playground: React.FC = () => {
                   <Option key={m.id} value={m.id} text={m.name}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Text>{m.name}</Text>
-                      <Text size={200} style={{ color: '#666' }}>{m.provider}</Text>
+                      <Text size={200} style={{ color: '#999' }}>{m.provider}</Text>
                     </div>
                   </Option>
                 ))}
@@ -245,19 +245,19 @@ const Playground: React.FC = () => {
           {lastStats && (
             <div className={styles.statsRow}>
               <div className={styles.stat}>
-                <Text size={200} style={{ color: '#666' }}>Latency</Text>
+                <Text size={200} style={{ color: '#999' }}>Latency</Text>
                 <Text weight="semibold" size={200}>{lastStats.latency}ms</Text>
               </div>
               <div className={styles.stat}>
-                <Text size={200} style={{ color: '#666' }}>Tokens In</Text>
+                <Text size={200} style={{ color: '#999' }}>Tokens In</Text>
                 <Text weight="semibold" size={200}>{lastStats.tokensIn}</Text>
               </div>
               <div className={styles.stat}>
-                <Text size={200} style={{ color: '#666' }}>Tokens Out</Text>
+                <Text size={200} style={{ color: '#999' }}>Tokens Out</Text>
                 <Text weight="semibold" size={200}>{lastStats.tokensOut}</Text>
               </div>
               <div className={styles.stat}>
-                <Text size={200} style={{ color: '#666' }}>Model</Text>
+                <Text size={200} style={{ color: '#999' }}>Model</Text>
                 <Text weight="semibold" size={200}>{selectedModelData?.name}</Text>
               </div>
             </div>
