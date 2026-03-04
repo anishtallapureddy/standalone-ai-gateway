@@ -671,3 +671,536 @@ export const raiGuardrails: RAIGuardrail[] = [
   { id: 'rai-9', name: 'Bias & Fairness Monitor', description: 'Logs outputs that exhibit demographic bias patterns. Sends alerts but does not block responses.', category: 'fairness', target: 'output', severity: 'log', enabled: true, appliesTo: ['models', 'agents'], triggersToday: 6, blockedToday: 0, lastTriggered: '2026-03-03T17:15:00Z' },
   { id: 'rai-10', name: 'AI Disclosure Watermark', description: 'Appends AI-generated disclosure metadata to all model outputs for transparency compliance.', category: 'transparency', target: 'output', severity: 'log', enabled: true, appliesTo: ['models', 'agents', 'tools'], triggersToday: 1240, blockedToday: 0, lastTriggered: '2026-03-03T23:50:00Z' },
 ];
+
+// ---------------------------------------------------------------------------
+// Consumers (Users & Apps)
+// ---------------------------------------------------------------------------
+
+export interface Consumer {
+  id: string;
+  name: string;
+  displayName: string;
+  type: 'user' | 'application' | 'service-principal';
+  authMethod: 'api-key' | 'entra-id' | 'oauth2' | 'managed-identity';
+  email?: string;
+  team: string;
+  namespace: string;
+  apiKeyPrefix?: string;
+  apiKeyCreatedAt?: string;
+  apiKeyExpiresAt?: string;
+  quotas: {
+    tokensPerMinute: number;
+    tokensPerDay: number;
+    requestsPerMinute: number;
+  };
+  usage24h: {
+    totalTokens: number;
+    totalRequests: number;
+    totalCost: number;
+    modelsUsed: string[];
+  };
+  status: 'active' | 'suspended' | 'pending';
+  lastActive: string;
+  createdAt: string;
+}
+
+export const consumers: Consumer[] = [
+  {
+    id: 'consumer-sarah',
+    name: 'dev-sarah@contoso.com',
+    displayName: 'Sarah Chen',
+    type: 'user',
+    authMethod: 'entra-id',
+    email: 'dev-sarah@contoso.com',
+    team: 'Customer Operations',
+    namespace: 'customer-ops',
+    quotas: { tokensPerMinute: 80_000, tokensPerDay: 5_000_000, requestsPerMinute: 60 },
+    usage24h: { totalTokens: 2_100_000, totalRequests: 4_320, totalCost: 4.20, modelsUsed: ['GPT-4o', 'GPT-4o-mini'] },
+    status: 'active',
+    lastActive: '2026-03-03T23:42:00Z',
+    createdAt: '2026-01-15T09:00:00Z',
+  },
+  {
+    id: 'consumer-mike',
+    name: 'dev-mike@contoso.com',
+    displayName: 'Mike Johnson',
+    type: 'user',
+    authMethod: 'entra-id',
+    email: 'dev-mike@contoso.com',
+    team: 'AI Research',
+    namespace: 'ai-research',
+    quotas: { tokensPerMinute: 100_000, tokensPerDay: 8_000_000, requestsPerMinute: 80 },
+    usage24h: { totalTokens: 1_500_000, totalRequests: 3_150, totalCost: 3.10, modelsUsed: ['GPT-4o', 'Claude 3.5 Sonnet', 'Gemini 1.5 Pro'] },
+    status: 'active',
+    lastActive: '2026-03-03T22:58:00Z',
+    createdAt: '2026-01-18T10:30:00Z',
+  },
+  {
+    id: 'consumer-alex',
+    name: 'dev-alex@contoso.com',
+    displayName: 'Alex Rivera',
+    type: 'user',
+    authMethod: 'api-key',
+    email: 'dev-alex@contoso.com',
+    team: 'Engineering',
+    namespace: 'engineering',
+    apiKeyPrefix: 'sk-...xR7q',
+    apiKeyCreatedAt: '2026-02-10T08:00:00Z',
+    apiKeyExpiresAt: '2026-05-10T08:00:00Z',
+    quotas: { tokensPerMinute: 40_000, tokensPerDay: 2_000_000, requestsPerMinute: 30 },
+    usage24h: { totalTokens: 620_000, totalRequests: 1_280, totalCost: 1.05, modelsUsed: ['GPT-4o-mini', 'Llama 3.1 70B'] },
+    status: 'active',
+    lastActive: '2026-03-03T21:15:00Z',
+    createdAt: '2026-02-01T14:00:00Z',
+  },
+  {
+    id: 'consumer-jane',
+    name: 'dev-jane@contoso.com',
+    displayName: 'Jane Park',
+    type: 'user',
+    authMethod: 'entra-id',
+    email: 'dev-jane@contoso.com',
+    team: 'Finance Engineering',
+    namespace: 'finance',
+    quotas: { tokensPerMinute: 30_000, tokensPerDay: 1_500_000, requestsPerMinute: 20 },
+    usage24h: { totalTokens: 180_000, totalRequests: 410, totalCost: 0.32, modelsUsed: ['GPT-4o-mini'] },
+    status: 'active',
+    lastActive: '2026-03-03T18:45:00Z',
+    createdAt: '2026-02-05T11:00:00Z',
+  },
+  {
+    id: 'consumer-customer-support',
+    name: 'agent-customer-support',
+    displayName: 'Customer Support Agent',
+    type: 'application',
+    authMethod: 'managed-identity',
+    team: 'Customer Operations',
+    namespace: 'customer-ops',
+    quotas: { tokensPerMinute: 200_000, tokensPerDay: 20_000_000, requestsPerMinute: 200 },
+    usage24h: { totalTokens: 5_200_000, totalRequests: 11_400, totalCost: 12.80, modelsUsed: ['GPT-4o', 'GPT-4o-mini', 'Claude 3.5 Sonnet'] },
+    status: 'active',
+    lastActive: '2026-03-03T23:59:00Z',
+    createdAt: '2026-01-20T08:00:00Z',
+  },
+  {
+    id: 'consumer-devops-assist',
+    name: 'agent-devops-assist',
+    displayName: 'DevOps Assistant',
+    type: 'application',
+    authMethod: 'managed-identity',
+    team: 'DevOps',
+    namespace: 'engineering',
+    quotas: { tokensPerMinute: 120_000, tokensPerDay: 10_000_000, requestsPerMinute: 100 },
+    usage24h: { totalTokens: 1_800_000, totalRequests: 3_920, totalCost: 3.60, modelsUsed: ['GPT-4o', 'GPT-4o-mini'] },
+    status: 'active',
+    lastActive: '2026-03-03T23:55:00Z',
+    createdAt: '2026-01-25T09:00:00Z',
+  },
+  {
+    id: 'consumer-sales-intel',
+    name: 'agent-sales-intel',
+    displayName: 'Sales Intelligence Agent',
+    type: 'application',
+    authMethod: 'managed-identity',
+    team: 'Sales Ops',
+    namespace: 'sales',
+    quotas: { tokensPerMinute: 80_000, tokensPerDay: 5_000_000, requestsPerMinute: 60 },
+    usage24h: { totalTokens: 900_000, totalRequests: 1_950, totalCost: 1.85, modelsUsed: ['GPT-4o', 'Gemini 1.5 Pro'] },
+    status: 'active',
+    lastActive: '2026-03-03T23:30:00Z',
+    createdAt: '2026-02-05T10:00:00Z',
+  },
+  {
+    id: 'consumer-hr-onboarding',
+    name: 'agent-hr-onboarding',
+    displayName: 'HR Onboarding Agent',
+    type: 'application',
+    authMethod: 'managed-identity',
+    team: 'HR Team',
+    namespace: 'hr',
+    quotas: { tokensPerMinute: 40_000, tokensPerDay: 2_000_000, requestsPerMinute: 30 },
+    usage24h: { totalTokens: 400_000, totalRequests: 870, totalCost: 0.72, modelsUsed: ['GPT-4o-mini'] },
+    status: 'active',
+    lastActive: '2026-03-03T19:20:00Z',
+    createdAt: '2026-02-10T08:30:00Z',
+  },
+  {
+    id: 'consumer-helpdesk',
+    name: 'app-helpdesk',
+    displayName: 'IT Helpdesk App',
+    type: 'application',
+    authMethod: 'api-key',
+    team: 'IT Team',
+    namespace: 'knowledge',
+    apiKeyPrefix: 'sk-...hD4m',
+    apiKeyCreatedAt: '2026-02-15T10:00:00Z',
+    apiKeyExpiresAt: '2026-08-15T10:00:00Z',
+    quotas: { tokensPerMinute: 60_000, tokensPerDay: 3_000_000, requestsPerMinute: 50 },
+    usage24h: { totalTokens: 800_000, totalRequests: 1_740, totalCost: 1.45, modelsUsed: ['GPT-4o-mini', 'Claude 3.5 Sonnet'] },
+    status: 'active',
+    lastActive: '2026-03-03T23:10:00Z',
+    createdAt: '2026-02-15T10:00:00Z',
+  },
+  {
+    id: 'consumer-knowledge-index',
+    name: 'app-knowledge-index',
+    displayName: 'Knowledge Indexer',
+    type: 'application',
+    authMethod: 'api-key',
+    team: 'Data Team',
+    namespace: 'knowledge',
+    apiKeyPrefix: 'sk-...kI9z',
+    apiKeyCreatedAt: '2026-02-20T14:00:00Z',
+    apiKeyExpiresAt: '2026-06-20T14:00:00Z',
+    quotas: { tokensPerMinute: 50_000, tokensPerDay: 2_500_000, requestsPerMinute: 40 },
+    usage24h: { totalTokens: 600_000, totalRequests: 1_320, totalCost: 0.90, modelsUsed: ['GPT-4o-mini'] },
+    status: 'active',
+    lastActive: '2026-03-03T22:00:00Z',
+    createdAt: '2026-02-20T14:00:00Z',
+  },
+  {
+    id: 'consumer-batch-processor',
+    name: 'svc-batch-processor',
+    displayName: 'Batch Processing Service',
+    type: 'service-principal',
+    authMethod: 'managed-identity',
+    team: 'Platform Team',
+    namespace: 'ai-platform',
+    quotas: { tokensPerMinute: 300_000, tokensPerDay: 30_000_000, requestsPerMinute: 250 },
+    usage24h: { totalTokens: 3_100_000, totalRequests: 6_800, totalCost: 7.50, modelsUsed: ['GPT-4o', 'GPT-4o-mini', 'Llama 3.1 70B'] },
+    status: 'active',
+    lastActive: '2026-03-03T23:58:00Z',
+    createdAt: '2026-01-12T07:00:00Z',
+  },
+  {
+    id: 'consumer-monitoring',
+    name: 'svc-monitoring',
+    displayName: 'Monitoring Service',
+    type: 'service-principal',
+    authMethod: 'api-key',
+    team: 'Platform Team',
+    namespace: 'ai-platform',
+    apiKeyPrefix: 'sk-...mN2p',
+    apiKeyCreatedAt: '2026-01-10T08:00:00Z',
+    apiKeyExpiresAt: '2026-07-10T08:00:00Z',
+    quotas: { tokensPerMinute: 10_000, tokensPerDay: 500_000, requestsPerMinute: 20 },
+    usage24h: { totalTokens: 50_000, totalRequests: 120, totalCost: 0.08, modelsUsed: ['GPT-4o-mini'] },
+    status: 'active',
+    lastActive: '2026-03-03T23:50:00Z',
+    createdAt: '2026-01-10T08:00:00Z',
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Token Analytics
+// ---------------------------------------------------------------------------
+
+export interface TokenUsageByModel {
+  modelId: string;
+  modelName: string;
+  provider: string;
+  tokensIn: number;
+  tokensOut: number;
+  totalTokens: number;
+  requests: number;
+  cost: number;
+  avgLatencyMs: number;
+}
+
+export interface TokenUsageTimeSeries {
+  timestamp: string;
+  tokensIn: number;
+  tokensOut: number;
+  requests: number;
+  cost: number;
+}
+
+export interface ConsumerUsageDetail {
+  consumerId: string;
+  consumerName: string;
+  byModel: TokenUsageByModel[];
+  timeSeries24h: TokenUsageTimeSeries[];
+}
+
+export const tokenUsageByModel: TokenUsageByModel[] = [
+  { modelId: 'model-gpt4o', modelName: 'GPT-4o', provider: 'Azure OpenAI', tokensIn: 5_800_000, tokensOut: 2_940_000, totalTokens: 8_740_000, requests: 18_432, cost: 21.85, avgLatencyMs: 320 },
+  { modelId: 'model-gpt4o-mini', modelName: 'GPT-4o-mini', provider: 'Azure OpenAI', tokensIn: 1_420_000, tokensOut: 730_000, totalTokens: 2_150_000, requests: 12_870, cost: 3.22, avgLatencyMs: 180 },
+  { modelId: 'model-claude35', modelName: 'Claude 3.5 Sonnet', provider: 'Anthropic', tokensIn: 680_000, tokensOut: 340_000, totalTokens: 1_020_000, requests: 6_540, cost: 4.59, avgLatencyMs: 410 },
+  { modelId: 'model-gemini15', modelName: 'Gemini 1.5 Pro', provider: 'Google Vertex AI', tokensIn: 220_000, tokensOut: 120_000, totalTokens: 340_000, requests: 4_210, cost: 1.19, avgLatencyMs: 290 },
+  { modelId: 'model-llama31', modelName: 'Llama 3.1 70B', provider: 'AWS Bedrock', tokensIn: 130_000, tokensOut: 60_000, totalTokens: 190_000, requests: 3_820, cost: 0.57, avgLatencyMs: 250 },
+];
+
+export const enterpriseTimeSeries24h: TokenUsageTimeSeries[] = [
+  { timestamp: '2026-03-03T00:00:00Z', tokensIn: 42_000, tokensOut: 18_000, requests: 140, cost: 0.15 },
+  { timestamp: '2026-03-03T01:00:00Z', tokensIn: 35_000, tokensOut: 15_000, requests: 110, cost: 0.12 },
+  { timestamp: '2026-03-03T02:00:00Z', tokensIn: 28_000, tokensOut: 12_000, requests: 85, cost: 0.10 },
+  { timestamp: '2026-03-03T03:00:00Z', tokensIn: 22_000, tokensOut: 10_000, requests: 70, cost: 0.08 },
+  { timestamp: '2026-03-03T04:00:00Z', tokensIn: 25_000, tokensOut: 11_000, requests: 75, cost: 0.09 },
+  { timestamp: '2026-03-03T05:00:00Z', tokensIn: 38_000, tokensOut: 16_000, requests: 120, cost: 0.13 },
+  { timestamp: '2026-03-03T06:00:00Z', tokensIn: 85_000, tokensOut: 38_000, requests: 290, cost: 0.30 },
+  { timestamp: '2026-03-03T07:00:00Z', tokensIn: 180_000, tokensOut: 82_000, requests: 620, cost: 0.65 },
+  { timestamp: '2026-03-03T08:00:00Z', tokensIn: 320_000, tokensOut: 148_000, requests: 1_100, cost: 1.15 },
+  { timestamp: '2026-03-03T09:00:00Z', tokensIn: 520_000, tokensOut: 240_000, requests: 1_800, cost: 1.88 },
+  { timestamp: '2026-03-03T10:00:00Z', tokensIn: 610_000, tokensOut: 285_000, requests: 2_100, cost: 2.21 },
+  { timestamp: '2026-03-03T11:00:00Z', tokensIn: 680_000, tokensOut: 310_000, requests: 2_350, cost: 2.45 },
+  { timestamp: '2026-03-03T12:00:00Z', tokensIn: 550_000, tokensOut: 250_000, requests: 1_900, cost: 1.98 },
+  { timestamp: '2026-03-03T13:00:00Z', tokensIn: 640_000, tokensOut: 295_000, requests: 2_200, cost: 2.31 },
+  { timestamp: '2026-03-03T14:00:00Z', tokensIn: 700_000, tokensOut: 320_000, requests: 2_420, cost: 2.52 },
+  { timestamp: '2026-03-03T15:00:00Z', tokensIn: 670_000, tokensOut: 305_000, requests: 2_310, cost: 2.41 },
+  { timestamp: '2026-03-03T16:00:00Z', tokensIn: 580_000, tokensOut: 265_000, requests: 2_000, cost: 2.09 },
+  { timestamp: '2026-03-03T17:00:00Z', tokensIn: 450_000, tokensOut: 205_000, requests: 1_550, cost: 1.62 },
+  { timestamp: '2026-03-03T18:00:00Z', tokensIn: 280_000, tokensOut: 128_000, requests: 960, cost: 1.01 },
+  { timestamp: '2026-03-03T19:00:00Z', tokensIn: 190_000, tokensOut: 86_000, requests: 650, cost: 0.68 },
+  { timestamp: '2026-03-03T20:00:00Z', tokensIn: 140_000, tokensOut: 64_000, requests: 480, cost: 0.50 },
+  { timestamp: '2026-03-03T21:00:00Z', tokensIn: 105_000, tokensOut: 48_000, requests: 360, cost: 0.38 },
+  { timestamp: '2026-03-03T22:00:00Z', tokensIn: 78_000, tokensOut: 35_000, requests: 265, cost: 0.28 },
+  { timestamp: '2026-03-03T23:00:00Z', tokensIn: 58_000, tokensOut: 26_000, requests: 195, cost: 0.21 },
+];
+
+export const consumerUsageDetails: ConsumerUsageDetail[] = [
+  {
+    consumerId: 'consumer-sarah',
+    consumerName: 'dev-sarah@contoso.com',
+    byModel: [
+      { modelId: 'model-gpt4o', modelName: 'GPT-4o', provider: 'Azure OpenAI', tokensIn: 1_120_000, tokensOut: 560_000, totalTokens: 1_680_000, requests: 3_450, cost: 3.36, avgLatencyMs: 315 },
+      { modelId: 'model-gpt4o-mini', modelName: 'GPT-4o-mini', provider: 'Azure OpenAI', tokensIn: 280_000, tokensOut: 140_000, totalTokens: 420_000, requests: 870, cost: 0.84, avgLatencyMs: 175 },
+    ],
+    timeSeries24h: [
+      { timestamp: '2026-03-03T00:00:00Z', tokensIn: 5_000, tokensOut: 2_500, requests: 12, cost: 0.02 },
+      { timestamp: '2026-03-03T01:00:00Z', tokensIn: 3_000, tokensOut: 1_500, requests: 7, cost: 0.01 },
+      { timestamp: '2026-03-03T02:00:00Z', tokensIn: 1_000, tokensOut: 500, requests: 3, cost: 0.00 },
+      { timestamp: '2026-03-03T03:00:00Z', tokensIn: 0, tokensOut: 0, requests: 0, cost: 0.00 },
+      { timestamp: '2026-03-03T04:00:00Z', tokensIn: 0, tokensOut: 0, requests: 0, cost: 0.00 },
+      { timestamp: '2026-03-03T05:00:00Z', tokensIn: 0, tokensOut: 0, requests: 0, cost: 0.00 },
+      { timestamp: '2026-03-03T06:00:00Z', tokensIn: 2_000, tokensOut: 1_000, requests: 5, cost: 0.01 },
+      { timestamp: '2026-03-03T07:00:00Z', tokensIn: 15_000, tokensOut: 7_500, requests: 35, cost: 0.04 },
+      { timestamp: '2026-03-03T08:00:00Z', tokensIn: 45_000, tokensOut: 22_000, requests: 95, cost: 0.13 },
+      { timestamp: '2026-03-03T09:00:00Z', tokensIn: 95_000, tokensOut: 47_000, requests: 200, cost: 0.28 },
+      { timestamp: '2026-03-03T10:00:00Z', tokensIn: 120_000, tokensOut: 60_000, requests: 250, cost: 0.36 },
+      { timestamp: '2026-03-03T11:00:00Z', tokensIn: 130_000, tokensOut: 65_000, requests: 270, cost: 0.39 },
+      { timestamp: '2026-03-03T12:00:00Z', tokensIn: 85_000, tokensOut: 42_000, requests: 178, cost: 0.25 },
+      { timestamp: '2026-03-03T13:00:00Z', tokensIn: 110_000, tokensOut: 55_000, requests: 230, cost: 0.33 },
+      { timestamp: '2026-03-03T14:00:00Z', tokensIn: 125_000, tokensOut: 62_000, requests: 260, cost: 0.37 },
+      { timestamp: '2026-03-03T15:00:00Z', tokensIn: 115_000, tokensOut: 57_000, requests: 240, cost: 0.34 },
+      { timestamp: '2026-03-03T16:00:00Z', tokensIn: 100_000, tokensOut: 50_000, requests: 210, cost: 0.30 },
+      { timestamp: '2026-03-03T17:00:00Z', tokensIn: 70_000, tokensOut: 35_000, requests: 148, cost: 0.21 },
+      { timestamp: '2026-03-03T18:00:00Z', tokensIn: 40_000, tokensOut: 20_000, requests: 85, cost: 0.12 },
+      { timestamp: '2026-03-03T19:00:00Z', tokensIn: 25_000, tokensOut: 12_000, requests: 52, cost: 0.07 },
+      { timestamp: '2026-03-03T20:00:00Z', tokensIn: 18_000, tokensOut: 9_000, requests: 38, cost: 0.05 },
+      { timestamp: '2026-03-03T21:00:00Z', tokensIn: 12_000, tokensOut: 6_000, requests: 25, cost: 0.04 },
+      { timestamp: '2026-03-03T22:00:00Z', tokensIn: 8_000, tokensOut: 4_000, requests: 17, cost: 0.02 },
+      { timestamp: '2026-03-03T23:00:00Z', tokensIn: 6_000, tokensOut: 3_000, requests: 12, cost: 0.02 },
+    ],
+  },
+  {
+    consumerId: 'consumer-customer-support',
+    consumerName: 'agent-customer-support',
+    byModel: [
+      { modelId: 'model-gpt4o', modelName: 'GPT-4o', provider: 'Azure OpenAI', tokensIn: 2_080_000, tokensOut: 1_040_000, totalTokens: 3_120_000, requests: 6_840, cost: 7.80, avgLatencyMs: 330 },
+      { modelId: 'model-gpt4o-mini', modelName: 'GPT-4o-mini', provider: 'Azure OpenAI', tokensIn: 720_000, tokensOut: 360_000, totalTokens: 1_080_000, requests: 2_280, cost: 2.16, avgLatencyMs: 185 },
+      { modelId: 'model-claude35', modelName: 'Claude 3.5 Sonnet', provider: 'Anthropic', tokensIn: 660_000, tokensOut: 340_000, totalTokens: 1_000_000, requests: 2_280, cost: 2.84, avgLatencyMs: 420 },
+    ],
+    timeSeries24h: [
+      { timestamp: '2026-03-03T00:00:00Z', tokensIn: 28_000, tokensOut: 14_000, requests: 62, cost: 0.10 },
+      { timestamp: '2026-03-03T01:00:00Z', tokensIn: 22_000, tokensOut: 11_000, requests: 48, cost: 0.08 },
+      { timestamp: '2026-03-03T02:00:00Z', tokensIn: 18_000, tokensOut: 9_000, requests: 40, cost: 0.07 },
+      { timestamp: '2026-03-03T03:00:00Z', tokensIn: 15_000, tokensOut: 7_500, requests: 33, cost: 0.06 },
+      { timestamp: '2026-03-03T04:00:00Z', tokensIn: 16_000, tokensOut: 8_000, requests: 35, cost: 0.06 },
+      { timestamp: '2026-03-03T05:00:00Z', tokensIn: 22_000, tokensOut: 11_000, requests: 48, cost: 0.08 },
+      { timestamp: '2026-03-03T06:00:00Z', tokensIn: 50_000, tokensOut: 25_000, requests: 110, cost: 0.19 },
+      { timestamp: '2026-03-03T07:00:00Z', tokensIn: 110_000, tokensOut: 55_000, requests: 240, cost: 0.41 },
+      { timestamp: '2026-03-03T08:00:00Z', tokensIn: 195_000, tokensOut: 97_000, requests: 428, cost: 0.72 },
+      { timestamp: '2026-03-03T09:00:00Z', tokensIn: 280_000, tokensOut: 140_000, requests: 615, cost: 1.04 },
+      { timestamp: '2026-03-03T10:00:00Z', tokensIn: 320_000, tokensOut: 160_000, requests: 702, cost: 1.19 },
+      { timestamp: '2026-03-03T11:00:00Z', tokensIn: 340_000, tokensOut: 170_000, requests: 746, cost: 1.26 },
+      { timestamp: '2026-03-03T12:00:00Z', tokensIn: 260_000, tokensOut: 130_000, requests: 572, cost: 0.96 },
+      { timestamp: '2026-03-03T13:00:00Z', tokensIn: 310_000, tokensOut: 155_000, requests: 680, cost: 1.15 },
+      { timestamp: '2026-03-03T14:00:00Z', tokensIn: 350_000, tokensOut: 175_000, requests: 768, cost: 1.30 },
+      { timestamp: '2026-03-03T15:00:00Z', tokensIn: 330_000, tokensOut: 165_000, requests: 724, cost: 1.22 },
+      { timestamp: '2026-03-03T16:00:00Z', tokensIn: 290_000, tokensOut: 145_000, requests: 636, cost: 1.08 },
+      { timestamp: '2026-03-03T17:00:00Z', tokensIn: 220_000, tokensOut: 110_000, requests: 484, cost: 0.82 },
+      { timestamp: '2026-03-03T18:00:00Z', tokensIn: 140_000, tokensOut: 70_000, requests: 308, cost: 0.52 },
+      { timestamp: '2026-03-03T19:00:00Z', tokensIn: 95_000, tokensOut: 47_000, requests: 208, cost: 0.35 },
+      { timestamp: '2026-03-03T20:00:00Z', tokensIn: 70_000, tokensOut: 35_000, requests: 154, cost: 0.26 },
+      { timestamp: '2026-03-03T21:00:00Z', tokensIn: 52_000, tokensOut: 26_000, requests: 114, cost: 0.19 },
+      { timestamp: '2026-03-03T22:00:00Z', tokensIn: 40_000, tokensOut: 20_000, requests: 88, cost: 0.15 },
+      { timestamp: '2026-03-03T23:00:00Z', tokensIn: 32_000, tokensOut: 16_000, requests: 70, cost: 0.12 },
+    ],
+  },
+  {
+    consumerId: 'consumer-devops-assist',
+    consumerName: 'agent-devops-assist',
+    byModel: [
+      { modelId: 'model-gpt4o', modelName: 'GPT-4o', provider: 'Azure OpenAI', tokensIn: 840_000, tokensOut: 420_000, totalTokens: 1_260_000, requests: 2_744, cost: 2.52, avgLatencyMs: 310 },
+      { modelId: 'model-gpt4o-mini', modelName: 'GPT-4o-mini', provider: 'Azure OpenAI', tokensIn: 360_000, tokensOut: 180_000, totalTokens: 540_000, requests: 1_176, cost: 1.08, avgLatencyMs: 170 },
+    ],
+    timeSeries24h: [
+      { timestamp: '2026-03-03T00:00:00Z', tokensIn: 8_000, tokensOut: 4_000, requests: 18, cost: 0.03 },
+      { timestamp: '2026-03-03T01:00:00Z', tokensIn: 6_000, tokensOut: 3_000, requests: 13, cost: 0.02 },
+      { timestamp: '2026-03-03T02:00:00Z', tokensIn: 5_000, tokensOut: 2_500, requests: 11, cost: 0.02 },
+      { timestamp: '2026-03-03T03:00:00Z', tokensIn: 4_000, tokensOut: 2_000, requests: 9, cost: 0.01 },
+      { timestamp: '2026-03-03T04:00:00Z', tokensIn: 5_000, tokensOut: 2_500, requests: 11, cost: 0.02 },
+      { timestamp: '2026-03-03T05:00:00Z', tokensIn: 8_000, tokensOut: 4_000, requests: 18, cost: 0.03 },
+      { timestamp: '2026-03-03T06:00:00Z', tokensIn: 18_000, tokensOut: 9_000, requests: 40, cost: 0.07 },
+      { timestamp: '2026-03-03T07:00:00Z', tokensIn: 42_000, tokensOut: 21_000, requests: 92, cost: 0.16 },
+      { timestamp: '2026-03-03T08:00:00Z', tokensIn: 75_000, tokensOut: 37_000, requests: 163, cost: 0.28 },
+      { timestamp: '2026-03-03T09:00:00Z', tokensIn: 110_000, tokensOut: 55_000, requests: 240, cost: 0.41 },
+      { timestamp: '2026-03-03T10:00:00Z', tokensIn: 125_000, tokensOut: 62_000, requests: 272, cost: 0.46 },
+      { timestamp: '2026-03-03T11:00:00Z', tokensIn: 130_000, tokensOut: 65_000, requests: 284, cost: 0.48 },
+      { timestamp: '2026-03-03T12:00:00Z', tokensIn: 95_000, tokensOut: 47_000, requests: 207, cost: 0.35 },
+      { timestamp: '2026-03-03T13:00:00Z', tokensIn: 120_000, tokensOut: 60_000, requests: 262, cost: 0.44 },
+      { timestamp: '2026-03-03T14:00:00Z', tokensIn: 128_000, tokensOut: 64_000, requests: 280, cost: 0.47 },
+      { timestamp: '2026-03-03T15:00:00Z', tokensIn: 118_000, tokensOut: 59_000, requests: 258, cost: 0.44 },
+      { timestamp: '2026-03-03T16:00:00Z', tokensIn: 100_000, tokensOut: 50_000, requests: 218, cost: 0.37 },
+      { timestamp: '2026-03-03T17:00:00Z', tokensIn: 68_000, tokensOut: 34_000, requests: 148, cost: 0.25 },
+      { timestamp: '2026-03-03T18:00:00Z', tokensIn: 35_000, tokensOut: 17_000, requests: 76, cost: 0.13 },
+      { timestamp: '2026-03-03T19:00:00Z', tokensIn: 22_000, tokensOut: 11_000, requests: 48, cost: 0.08 },
+      { timestamp: '2026-03-03T20:00:00Z', tokensIn: 16_000, tokensOut: 8_000, requests: 35, cost: 0.06 },
+      { timestamp: '2026-03-03T21:00:00Z', tokensIn: 12_000, tokensOut: 6_000, requests: 26, cost: 0.04 },
+      { timestamp: '2026-03-03T22:00:00Z', tokensIn: 9_000, tokensOut: 4_500, requests: 20, cost: 0.03 },
+      { timestamp: '2026-03-03T23:00:00Z', tokensIn: 7_000, tokensOut: 3_500, requests: 15, cost: 0.03 },
+    ],
+  },
+  {
+    consumerId: 'consumer-batch-processor',
+    consumerName: 'svc-batch-processor',
+    byModel: [
+      { modelId: 'model-gpt4o', modelName: 'GPT-4o', provider: 'Azure OpenAI', tokensIn: 1_200_000, tokensOut: 600_000, totalTokens: 1_800_000, requests: 3_940, cost: 4.50, avgLatencyMs: 340 },
+      { modelId: 'model-gpt4o-mini', modelName: 'GPT-4o-mini', provider: 'Azure OpenAI', tokensIn: 520_000, tokensOut: 260_000, totalTokens: 780_000, requests: 1_700, cost: 1.56, avgLatencyMs: 190 },
+      { modelId: 'model-llama31', modelName: 'Llama 3.1 70B', provider: 'AWS Bedrock', tokensIn: 350_000, tokensOut: 170_000, totalTokens: 520_000, requests: 1_160, cost: 1.44, avgLatencyMs: 260 },
+    ],
+    timeSeries24h: [
+      { timestamp: '2026-03-03T00:00:00Z', tokensIn: 65_000, tokensOut: 32_000, requests: 142, cost: 0.24 },
+      { timestamp: '2026-03-03T01:00:00Z', tokensIn: 70_000, tokensOut: 35_000, requests: 153, cost: 0.26 },
+      { timestamp: '2026-03-03T02:00:00Z', tokensIn: 75_000, tokensOut: 37_000, requests: 164, cost: 0.28 },
+      { timestamp: '2026-03-03T03:00:00Z', tokensIn: 80_000, tokensOut: 40_000, requests: 175, cost: 0.30 },
+      { timestamp: '2026-03-03T04:00:00Z', tokensIn: 78_000, tokensOut: 39_000, requests: 170, cost: 0.29 },
+      { timestamp: '2026-03-03T05:00:00Z', tokensIn: 72_000, tokensOut: 36_000, requests: 157, cost: 0.27 },
+      { timestamp: '2026-03-03T06:00:00Z', tokensIn: 55_000, tokensOut: 27_000, requests: 120, cost: 0.20 },
+      { timestamp: '2026-03-03T07:00:00Z', tokensIn: 48_000, tokensOut: 24_000, requests: 105, cost: 0.18 },
+      { timestamp: '2026-03-03T08:00:00Z', tokensIn: 85_000, tokensOut: 42_000, requests: 186, cost: 0.31 },
+      { timestamp: '2026-03-03T09:00:00Z', tokensIn: 120_000, tokensOut: 60_000, requests: 262, cost: 0.44 },
+      { timestamp: '2026-03-03T10:00:00Z', tokensIn: 135_000, tokensOut: 67_000, requests: 295, cost: 0.50 },
+      { timestamp: '2026-03-03T11:00:00Z', tokensIn: 140_000, tokensOut: 70_000, requests: 306, cost: 0.52 },
+      { timestamp: '2026-03-03T12:00:00Z', tokensIn: 110_000, tokensOut: 55_000, requests: 240, cost: 0.41 },
+      { timestamp: '2026-03-03T13:00:00Z', tokensIn: 130_000, tokensOut: 65_000, requests: 284, cost: 0.48 },
+      { timestamp: '2026-03-03T14:00:00Z', tokensIn: 145_000, tokensOut: 72_000, requests: 317, cost: 0.54 },
+      { timestamp: '2026-03-03T15:00:00Z', tokensIn: 138_000, tokensOut: 69_000, requests: 302, cost: 0.51 },
+      { timestamp: '2026-03-03T16:00:00Z', tokensIn: 115_000, tokensOut: 57_000, requests: 251, cost: 0.43 },
+      { timestamp: '2026-03-03T17:00:00Z', tokensIn: 90_000, tokensOut: 45_000, requests: 197, cost: 0.33 },
+      { timestamp: '2026-03-03T18:00:00Z', tokensIn: 60_000, tokensOut: 30_000, requests: 131, cost: 0.22 },
+      { timestamp: '2026-03-03T19:00:00Z', tokensIn: 50_000, tokensOut: 25_000, requests: 109, cost: 0.19 },
+      { timestamp: '2026-03-03T20:00:00Z', tokensIn: 55_000, tokensOut: 27_000, requests: 120, cost: 0.20 },
+      { timestamp: '2026-03-03T21:00:00Z', tokensIn: 62_000, tokensOut: 31_000, requests: 136, cost: 0.23 },
+      { timestamp: '2026-03-03T22:00:00Z', tokensIn: 68_000, tokensOut: 34_000, requests: 148, cost: 0.25 },
+      { timestamp: '2026-03-03T23:00:00Z', tokensIn: 60_000, tokensOut: 30_000, requests: 131, cost: 0.22 },
+    ],
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Model Routing Configurations
+// ---------------------------------------------------------------------------
+
+export interface ModelDeployment {
+  id: string;
+  region: string;
+  endpoint: string;
+  deploymentType: 'ptu' | 'paygo' | 'standard';
+  ptuCapacity?: number;
+  status: 'healthy' | 'degraded' | 'down';
+  currentRPS: number;
+  maxRPS: number;
+  avgLatencyMs: number;
+  requestsLast1h: number;
+}
+
+export interface RoutingConfig {
+  modelId: string;
+  modelName: string;
+  strategy: 'round-robin' | 'weighted' | 'latency-based' | 'priority';
+  deployments: ModelDeployment[];
+  failoverChain: string[];
+  ptuSpillover: boolean;
+  healthCheckIntervalSec: number;
+  healthCheckThreshold: number;
+}
+
+export interface FailoverEvent {
+  id: string;
+  timestamp: string;
+  modelName: string;
+  fromDeployment: string;
+  toDeployment: string;
+  reason: 'health-check-failure' | 'capacity-exceeded' | 'latency-threshold' | 'manual';
+  recoveryTimeSec: number;
+  status: 'recovered' | 'active' | 'investigating';
+}
+
+export const routingConfigs: RoutingConfig[] = [
+  {
+    modelId: 'model-gpt4o',
+    modelName: 'GPT-4o',
+    strategy: 'priority',
+    deployments: [
+      { id: 'deploy-gpt4o-eastus-ptu', region: 'East US', endpoint: 'https://contoso-aoai-eastus.openai.azure.com/openai/deployments/gpt-4o', deploymentType: 'ptu', ptuCapacity: 300, status: 'healthy', currentRPS: 142, maxRPS: 200, avgLatencyMs: 280, requestsLast1h: 8_520 },
+      { id: 'deploy-gpt4o-westus-paygo', region: 'West US', endpoint: 'https://contoso-aoai-westus.openai.azure.com/openai/deployments/gpt-4o', deploymentType: 'paygo', status: 'healthy', currentRPS: 38, maxRPS: 100, avgLatencyMs: 350, requestsLast1h: 2_280 },
+      { id: 'deploy-gpt4o-sweden-paygo', region: 'Sweden Central', endpoint: 'https://contoso-aoai-sweden.openai.azure.com/openai/deployments/gpt-4o', deploymentType: 'paygo', status: 'healthy', currentRPS: 12, maxRPS: 80, avgLatencyMs: 420, requestsLast1h: 720 },
+    ],
+    failoverChain: ['deploy-gpt4o-eastus-ptu', 'deploy-gpt4o-westus-paygo', 'deploy-gpt4o-sweden-paygo'],
+    ptuSpillover: true,
+    healthCheckIntervalSec: 30,
+    healthCheckThreshold: 3,
+  },
+  {
+    modelId: 'model-claude35',
+    modelName: 'Claude 3.5 Sonnet',
+    strategy: 'latency-based',
+    deployments: [
+      { id: 'deploy-claude35-us', region: 'US (Primary)', endpoint: 'https://api.anthropic.com/v1/messages', deploymentType: 'paygo', status: 'healthy', currentRPS: 52, maxRPS: 120, avgLatencyMs: 390, requestsLast1h: 3_120 },
+      { id: 'deploy-claude35-eu', region: 'EU (Secondary)', endpoint: 'https://api-eu.anthropic.com/v1/messages', deploymentType: 'paygo', status: 'degraded', currentRPS: 18, maxRPS: 80, avgLatencyMs: 620, requestsLast1h: 1_080 },
+    ],
+    failoverChain: ['deploy-claude35-us', 'deploy-claude35-eu'],
+    ptuSpillover: false,
+    healthCheckIntervalSec: 30,
+    healthCheckThreshold: 3,
+  },
+];
+
+export const failoverEvents: FailoverEvent[] = [
+  { id: 'fo-1', timestamp: '2026-03-03T09:12:00Z', modelName: 'GPT-4o', fromDeployment: 'deploy-gpt4o-eastus-ptu', toDeployment: 'deploy-gpt4o-westus-paygo', reason: 'capacity-exceeded', recoveryTimeSec: 0, status: 'recovered' },
+  { id: 'fo-2', timestamp: '2026-03-03T11:45:00Z', modelName: 'Claude 3.5 Sonnet', fromDeployment: 'deploy-claude35-eu', toDeployment: 'deploy-claude35-us', reason: 'latency-threshold', recoveryTimeSec: 0, status: 'active' },
+  { id: 'fo-3', timestamp: '2026-03-03T14:22:00Z', modelName: 'GPT-4o', fromDeployment: 'deploy-gpt4o-eastus-ptu', toDeployment: 'deploy-gpt4o-westus-paygo', reason: 'capacity-exceeded', recoveryTimeSec: 185, status: 'recovered' },
+  { id: 'fo-4', timestamp: '2026-03-02T22:08:00Z', modelName: 'GPT-4o', fromDeployment: 'deploy-gpt4o-sweden-paygo', toDeployment: 'deploy-gpt4o-westus-paygo', reason: 'health-check-failure', recoveryTimeSec: 420, status: 'recovered' },
+  { id: 'fo-5', timestamp: '2026-03-02T16:30:00Z', modelName: 'Claude 3.5 Sonnet', fromDeployment: 'deploy-claude35-us', toDeployment: 'deploy-claude35-eu', reason: 'health-check-failure', recoveryTimeSec: 95, status: 'recovered' },
+  { id: 'fo-6', timestamp: '2026-03-01T08:00:00Z', modelName: 'GPT-4o', fromDeployment: 'deploy-gpt4o-westus-paygo', toDeployment: 'deploy-gpt4o-sweden-paygo', reason: 'manual', recoveryTimeSec: 0, status: 'recovered' },
+];
+
+// ---------------------------------------------------------------------------
+// Enforcement Log
+// ---------------------------------------------------------------------------
+
+export interface EnforcementEvent {
+  id: string;
+  timestamp: string;
+  consumerId: string;
+  consumerName: string;
+  action: 'throttled' | 'blocked' | 'warned' | 'quota-exceeded';
+  reason: string;
+  policyName: string;
+  assetName: string;
+  details: string;
+}
+
+export const enforcementEvents: EnforcementEvent[] = [
+  { id: 'enf-1', timestamp: '2026-03-03T23:42:00Z', consumerId: 'consumer-customer-support', consumerName: 'agent-customer-support', action: 'throttled', reason: 'Token rate limit exceeded (200K TPM)', policyName: 'Token Rate Limit', assetName: 'GPT-4o', details: 'Consumer reached 200,000 tokens/min limit. 14 requests queued for 3.2s before processing resumed.' },
+  { id: 'enf-2', timestamp: '2026-03-03T22:15:00Z', consumerId: 'consumer-alex', consumerName: 'dev-alex@contoso.com', action: 'blocked', reason: 'IP address not in allowlist', policyName: 'IP Allowlist', assetName: 'GPT-4o', details: 'Request from IP 203.0.113.42 blocked. Consumer authenticated but source IP not in corporate allowlist.' },
+  { id: 'enf-3', timestamp: '2026-03-03T21:30:00Z', consumerId: 'consumer-batch-processor', consumerName: 'svc-batch-processor', action: 'quota-exceeded', reason: 'Daily token quota reached (30M tokens)', policyName: 'Token Rate Limit', assetName: 'GPT-4o-mini', details: 'Service principal consumed 30,000,000 tokens today. Remaining requests rejected until quota resets at midnight UTC.' },
+  { id: 'enf-4', timestamp: '2026-03-03T19:55:00Z', consumerId: 'consumer-sales-intel', consumerName: 'agent-sales-intel', action: 'blocked', reason: 'Content safety violation — PII detected in prompt', policyName: 'Content Safety', assetName: 'GPT-4o', details: 'Inbound prompt contained SSN pattern (XXX-XX-XXXX). Request blocked and PII redaction warning returned to caller.' },
+  { id: 'enf-5', timestamp: '2026-03-03T18:20:00Z', consumerId: 'consumer-sarah', consumerName: 'dev-sarah@contoso.com', action: 'warned', reason: 'Approaching daily token quota (80% consumed)', policyName: 'Token Rate Limit', assetName: 'GPT-4o', details: 'Consumer has used 4,000,000 of 5,000,000 daily token allowance. Warning header added to response.' },
+  { id: 'enf-6', timestamp: '2026-03-03T16:10:00Z', consumerId: 'consumer-helpdesk', consumerName: 'app-helpdesk', action: 'blocked', reason: 'Jailbreak attempt detected', policyName: 'Content Safety', assetName: 'Claude 3.5 Sonnet', details: 'Prompt injection pattern detected in user input relayed through helpdesk app. Request blocked by jailbreak classifier (confidence: 0.94).' },
+  { id: 'enf-7', timestamp: '2026-03-03T14:45:00Z', consumerId: 'consumer-devops-assist', consumerName: 'agent-devops-assist', action: 'throttled', reason: 'Request rate limit exceeded (100 RPM)', policyName: 'Agent Throttle', assetName: 'GPT-4o', details: 'Agent exceeded 100 requests/min concurrency limit. 8 requests returned 429 status before backoff.' },
+  { id: 'enf-8', timestamp: '2026-03-03T12:30:00Z', consumerId: 'consumer-hr-onboarding', consumerName: 'agent-hr-onboarding', action: 'warned', reason: 'Groundedness check flagged low-confidence response', policyName: 'Content Safety', assetName: 'GPT-4o-mini', details: 'Model response flagged by groundedness check with confidence score 0.42. Warning metadata attached; response delivered with disclaimer.' },
+  { id: 'enf-9', timestamp: '2026-03-03T10:05:00Z', consumerId: 'consumer-knowledge-index', consumerName: 'app-knowledge-index', action: 'throttled', reason: 'Token rate limit exceeded (50K TPM)', policyName: 'Token Rate Limit', assetName: 'GPT-4o-mini', details: 'Indexing batch exceeded 50,000 tokens/min quota. 22 embedding requests delayed by average 4.8s.' },
+  { id: 'enf-10', timestamp: '2026-03-03T08:50:00Z', consumerId: 'consumer-mike', consumerName: 'dev-mike@contoso.com', action: 'blocked', reason: 'Unauthorized model access', policyName: 'Tool Access Control', assetName: 'Llama 3.1 70B', details: 'Consumer attempted to access Llama 3.1 70B but is not authorized for ai-research/llama models. Access denied.' },
+];

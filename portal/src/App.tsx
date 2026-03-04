@@ -10,6 +10,8 @@ import Logs from './pages/Logs'
 import Playground from './pages/Playground'
 import Catalog from './pages/Catalog'
 import Namespaces from './pages/Namespaces'
+import Analytics from './pages/Analytics'
+import Consumers from './pages/Consumers'
 
 function App() {
   return (
@@ -23,7 +25,9 @@ function App() {
         <Route path="mcp-servers" element={<MCPServers />} />
         <Route path="agents" element={<Agents />} />
         <Route path="namespaces" element={<Namespaces />} />
+        <Route path="consumers" element={<Consumers />} />
         <Route path="policies" element={<Policies />} />
+        <Route path="analytics" element={<Analytics />} />
         <Route path="logs" element={<Logs />} />
       </Route>
     </Routes>

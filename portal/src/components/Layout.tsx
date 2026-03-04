@@ -26,6 +26,10 @@ import {
   Search24Filled,
   Folder24Regular,
   Folder24Filled,
+  DataUsage24Regular,
+  DataUsage24Filled,
+  People24Regular,
+  People24Filled,
 } from '@fluentui/react-icons';
 
 const useStyles = makeStyles({
@@ -191,11 +195,24 @@ const navItems: NavItem[] = [
     section: 'Organization',
   },
   {
+    path: '/consumers',
+    label: 'Consumers',
+    icon: <People24Regular />,
+    activeIcon: <People24Filled />,
+  },
+  {
     path: '/policies',
     label: 'Policies',
     icon: <Shield24Regular />,
     activeIcon: <Shield24Filled />,
     section: 'Governance',
+  },
+  {
+    path: '/analytics',
+    label: 'Analytics',
+    icon: <DataUsage24Regular />,
+    activeIcon: <DataUsage24Filled />,
+    section: 'Observability',
   },
   {
     path: '/logs',
