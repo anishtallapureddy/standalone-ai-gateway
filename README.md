@@ -6,6 +6,33 @@ A multi-tenant platform that enables organizations to securely build, route, gov
 
 > **The control plane for AI workloads** — routing, governance, security, and observability across the full AI application stack.
 
+## Portal
+
+<p align="center">
+  <img src="docs/screenshots/landing.png" alt="Landing Page" width="100%" />
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/dashboard.png" alt="Dashboard" /></td>
+    <td width="50%"><img src="docs/screenshots/playground.png" alt="Playground" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Dashboard</strong> — Gateway health, usage metrics, cost analytics</td>
+    <td align="center"><strong>Playground</strong> — Test AI workloads with execution tracing</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/models.png" alt="Model Catalog" /></td>
+    <td width="50%"><img src="docs/screenshots/governance.png" alt="Governance" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Model Catalog</strong> — Multi-provider AI models</td>
+    <td align="center"><strong>Governance</strong> — Namespaces, access, and policies</td>
+  </tr>
+</table>
+
+---
+
 **Key differentiators:**
 
 - **AI-Native Asset Model** — models, tools, agents, skills, workflows, and connectors are first-class platform objects, not just API proxies
@@ -39,55 +66,64 @@ Unlike LiteLLM and Portkey which focus primarily on model routing and observabil
 
 ```mermaid
 graph TB
-    subgraph Clients
-        DEV[Developers]
-        AGENT[AI Agents]
-        APP[Applications]
+    subgraph Consumers["🔷 Consumers"]
+        direction LR
+        DEV["👤 Developers"]
+        AGENT["🤖 AI Agents"]
+        APP["📱 Applications"]
+        WF["⚡ Workflows"]
     end
 
-    subgraph "Azure AI Gateway"
-        subgraph "Control Plane"
-            CAT[Catalog & Discovery]
-            GOV_DT[Design-Time Governance]
-            AUTH[Auth & Tenancy]
+    subgraph Gateway["🔷 Azure AI Gateway"]
+        direction TB
+
+        subgraph ControlPlane["Control Plane"]
+            direction LR
+            CAT["📦 Asset Catalog<br/><i>Models · Tools · Agents · Skills</i>"]
+            GOV_DT["📋 Governance Engine<br/><i>Namespaces · Policies · Access</i>"]
+            IDM["🔐 Identity & Auth<br/><i>JWT · Entra ID · API Keys</i>"]
         end
 
-        subgraph "Data Plane / Runtime"
-            GW[Gateway Runtime]
-            GOV_RT[Runtime Governance]
-            OBS[Observability]
+        subgraph DataPlane["Data Plane"]
+            direction LR
+            ROUTE["🔀 Intelligent Router<br/><i>Multi-provider · Failover · Cost-aware</i>"]
+            POLICY["🛡️ Policy Engine<br/><i>Rate Limits · Safety · Credentials</i>"]
+            OBS["📊 Observability<br/><i>Traces · Metrics · Cost Attribution</i>"]
         end
     end
 
-    subgraph "AI Ecosystem"
-        AOAI[Azure OpenAI]
-        OAI[OpenAI]
-        ANT[Anthropic]
-        GEM[Google Vertex AI]
-        BED[AWS Bedrock]
-        MCP[MCP Servers]
-        API[REST APIs]
-        A2A[A2A Agents]
+    subgraph Models["🧠 Models"]
+        direction LR
+        AOAI["Azure OpenAI"]
+        OAI["OpenAI"]
+        ANT["Anthropic"]
+        GEM["Google Gemini"]
+        BED["AWS Bedrock"]
     end
 
-    DEV --> CAT
-    DEV --> GW
-    AGENT --> GW
-    APP --> GW
+    subgraph Tools["🔧 Tools"]
+        direction LR
+        API["REST APIs"]
+        MCP["MCP Servers"]
+        SAAS["SaaS Connectors"]
+        DB["Databases"]
+    end
 
-    CAT --> AUTH
-    GOV_DT --> CAT
+    subgraph Agents["🤖 Downstream Agents"]
+        direction LR
+        A2A["A2A Agents"]
+        EXT["External Agents"]
+    end
 
-    GW --> GOV_RT
-    GW --> OBS
-    GW --> AOAI
-    GW --> OAI
-    GW --> ANT
-    GW --> GEM
-    GW --> BED
-    GW --> MCP
-    GW --> API
-    GW --> A2A
+    DEV --> ControlPlane
+    AGENT --> DataPlane
+    APP --> DataPlane
+    WF --> DataPlane
+
+    ControlPlane --> DataPlane
+    ROUTE --> Models
+    ROUTE --> Tools
+    ROUTE --> Agents
 ```
 
 ## First-Class Asset Types
