@@ -265,6 +265,35 @@ const useStyles = makeStyles({
     borderLeft: '3px solid #60cdff',
     fontWeight: 600,
   },
+  navItemNested: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '6px 20px 6px 36px',
+    color: '#aaa',
+    cursor: 'pointer',
+    fontSize: '12px',
+    textDecoration: 'none',
+    transition: 'all 0.15s',
+    borderLeft: '3px solid transparent',
+    '&:hover': {
+      backgroundColor: '#2d2c2b',
+      color: '#ccc',
+    },
+  },
+  navItemNestedActive: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '6px 20px 6px 36px',
+    color: '#60cdff',
+    cursor: 'pointer',
+    fontSize: '12px',
+    textDecoration: 'none',
+    backgroundColor: '#2d2c2b',
+    borderLeft: '3px solid #60cdff',
+    fontWeight: 600,
+  },
   content: {
     flex: 1,
     overflow: 'auto',
@@ -337,6 +366,7 @@ interface NavItem {
   icon: React.ReactElement;
   activeIcon: React.ReactElement;
   section?: string;
+  nested?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -354,7 +384,7 @@ const navItems: NavItem[] = [
   },
   {
     path: '/catalog',
-    label: 'Catalog',
+    label: 'Browse',
     icon: <Search24Regular />,
     activeIcon: <Search24Filled />,
     section: 'AI Assets',
@@ -364,30 +394,35 @@ const navItems: NavItem[] = [
     label: 'Models',
     icon: <BrainCircuit24Regular />,
     activeIcon: <BrainCircuit24Filled />,
+    nested: true,
   },
   {
     path: '/tools',
     label: 'Tools',
     icon: <PlugConnected24Regular />,
     activeIcon: <PlugConnected24Filled />,
+    nested: true,
   },
   {
     path: '/mcp-servers',
     label: 'MCP Servers',
     icon: <Server24Regular />,
     activeIcon: <Server24Filled />,
+    nested: true,
   },
   {
     path: '/agents',
     label: 'Agents',
     icon: <Bot24Regular />,
     activeIcon: <Bot24Filled />,
+    nested: true,
   },
   {
     path: '/skills',
     label: 'Skills / Workflows',
     icon: <Lightbulb24Regular />,
     activeIcon: <Lightbulb24Filled />,
+    nested: true,
   },
   {
     path: '/workloads',
@@ -528,7 +563,11 @@ const Layout: React.FC<LayoutProps> = ({ onSignOut }) => {
                     <div className={styles.navSection}>{item.section}</div>
                   )}
                   <div
-                    className={isActive ? styles.navItemActive : styles.navItem}
+                    className={
+                      item.nested
+                        ? isActive ? styles.navItemNestedActive : styles.navItemNested
+                        : isActive ? styles.navItemActive : styles.navItem
+                    }
                     onClick={() => navigate(item.path)}
                   >
                     {isActive ? item.activeIcon : item.icon}
