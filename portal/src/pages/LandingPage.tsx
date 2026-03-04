@@ -197,7 +197,7 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
           maxWidth: 800,
         }}
       >
-        The Gateway for AI Models, Tools, and&nbsp;Agents
+        The Intelligent Gateway for Enterprise&nbsp;AI
       </h1>
 
       <p
@@ -260,11 +260,8 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
         {/* subtle inner glow */}
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 500, height: 300, background: `radial-gradient(ellipse, ${C.blue}0c 0%, transparent 70%)`, pointerEvents: 'none' }} />
 
-        {/* consumers row */}
+        {/* top row — consumers */}
         <div style={{ position: 'relative', textAlign: 'center', marginBottom: 6 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#666', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '2px', fontFamily: C.font }}>
-            Consumers
-          </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 14 }}>
             {[
               { label: 'Agents', icon: '🤖' },
@@ -274,20 +271,21 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
               <div
                 key={c.label}
                 style={{
-                  padding: '7px 24px',
+                  padding: '8px 26px',
                   fontSize: 13,
                   fontWeight: 600,
-                  color: C.purple,
-                  border: `1px solid ${C.purple}33`,
+                  color: '#e0e0e0',
+                  border: `1px solid rgba(255,255,255,0.12)`,
                   borderRadius: 10,
                   fontFamily: C.font,
-                  background: `linear-gradient(135deg, ${C.purple}0a 0%, ${C.purple}04 100%)`,
+                  background: `linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)`,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                 }}
               >
-                <span style={{ fontSize: 14 }}>{c.icon}</span>
+                <span style={{ fontSize: 15 }}>{c.icon}</span>
                 {c.label}
               </div>
             ))}
@@ -311,14 +309,11 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
             position: 'relative',
           }}
         >
-          <div style={{ fontSize: 11, fontWeight: 600, color: C.blue, textTransform: 'uppercase', letterSpacing: '2px', fontFamily: C.font, marginBottom: 4 }}>
-            ⬡ Control Plane
-          </div>
           <div style={{ fontSize: 22, fontWeight: 800, color: C.white, fontFamily: C.font, letterSpacing: '-0.3px' }}>
             Azure AI Gateway
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 8 }}>
-            {['Route', 'Govern', 'Observe'].map((action) => (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 8 }}>
+            {['Build', 'Route', 'Govern', 'Observe'].map((action) => (
               <span
                 key={action}
                 style={{
