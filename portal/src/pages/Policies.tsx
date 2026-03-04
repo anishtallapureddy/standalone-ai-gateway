@@ -239,7 +239,7 @@ const Policies: React.FC = () => {
         </Card>
         <Card className={styles.statCard}>
           <div className={styles.statValue} style={{ color: '#ef4444' }}>{raiGuardrails.length}</div>
-          <div className={styles.statLabel}>RAI Guardrails</div>
+          <div className={styles.statLabel}>Safety Guardrails</div>
         </Card>
         <Card className={styles.statCard}>
           <div className={styles.statValue} style={{ color: '#f59e0b' }}>{pendingCount}</div>
@@ -261,7 +261,7 @@ const Policies: React.FC = () => {
             Asset Access Rules ({assetAccessRules.length})
           </Tab>
           <Tab value="rai" icon={<HeartPulse24Regular />}>
-            RAI Guardrails ({raiGuardrails.length})
+            Safety Guardrails ({raiGuardrails.length})
           </Tab>
         </TabList>
       </div>
@@ -538,7 +538,7 @@ const Policies: React.FC = () => {
         </div>
       )}
 
-      {/* =================== RAI GUARDRAILS TAB =================== */}
+      {/* =================== SAFETY GUARDRAILS TAB =================== */}
       {tab === 'rai' && (
         <div>
           <div className={styles.toolbar}>
