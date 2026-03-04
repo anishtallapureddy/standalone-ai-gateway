@@ -168,7 +168,7 @@ npm run build
 
 ### Portal (Web UI)
 
-The AI Gateway portal is a React SPA built with Vite and Fluent UI, providing a unified experience similar to `sre.azure.com`.
+The AI Gateway portal is a React SPA built with Vite and Fluent UI, providing a unified experience for managing AI workloads.
 
 ```bash
 cd portal

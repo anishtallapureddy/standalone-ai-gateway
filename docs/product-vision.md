@@ -30,7 +30,7 @@ Rather than exposing legacy capabilities and expecting customers to assemble sol
 
 ### Lightweight architecture
 
-"Lightweight" means easy deployment, minimal configuration, fast onboarding, simple developer experience, and low cost of entry. The gateway should feel as simple as **LiteLLM** for getting started, while delivering **enterprise-grade governance, security, and observability** at scale.
+"Lightweight" means easy deployment, minimal configuration, fast onboarding, simple developer experience, and low cost of entry. The gateway should feel simple to get started with, while delivering **enterprise-grade governance, security, and observability** at scale.
 
 ### AI-native asset model
 
