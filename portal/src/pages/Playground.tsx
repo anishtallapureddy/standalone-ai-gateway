@@ -379,8 +379,6 @@ const useStyles = makeStyles({
     display: 'flex',
     flexDirection: 'column',
     gap: '4px',
-    flex: 1,
-    minHeight: 0,
   },
   emptyState: {
     display: 'flex',
