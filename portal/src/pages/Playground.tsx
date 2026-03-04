@@ -8,8 +8,15 @@ import {
   Option,
   Badge,
   Spinner,
-  Switch,
+  Slider,
+  Input,
   Divider,
+  Dialog,
+  DialogTrigger,
+  DialogSurface,
+  DialogTitle,
+  DialogBody,
+  DialogActions,
 } from '@fluentui/react-components';
 import {
   Send24Regular,
@@ -29,6 +36,10 @@ import {
   ChevronDown20Regular,
   ChevronRight20Regular,
   Clock20Regular,
+  Add20Regular,
+  Dismiss12Regular,
+  Settings20Regular,
+  Gauge24Regular,
 } from '@fluentui/react-icons';
 import { models, agents } from '../data/mockData';
 
@@ -58,6 +69,8 @@ interface RoutingDecision {
   fallback: string;
   fallbackProvider: string;
   reason: string;
+  strategy: string;
+  region: string;
 }
 
 interface ObsMetrics {
@@ -321,23 +334,46 @@ const useStyles = makeStyles({
   },
   toolList: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  toolRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '4px 8px',
-    backgroundColor: '#252525',
-    borderRadius: '6px',
-    fontSize: '12px',
-  },
-  toolName: {
-    display: 'flex',
-    alignItems: 'center',
+    flexWrap: 'wrap',
     gap: '6px',
-    color: '#ccc',
+  },
+  toolChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: '3px 8px 3px 10px',
+    backgroundColor: '#1e3a5f',
+    color: '#7dd3fc',
+    borderRadius: '14px',
+    fontSize: '11px',
+    border: '1px solid #0ea5e9',
+  },
+  toolChipRemove: {
+    background: 'none',
+    border: 'none',
+    color: '#7dd3fc',
+    cursor: 'pointer',
+    padding: '0 2px',
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '12px',
+    ':hover': {
+      color: '#f87171',
+    },
+  },
+  emptyTools: {
+    fontSize: '11px',
+    color: '#555',
+    lineHeight: '1.4',
+    padding: '4px 0',
+  },
+  sliderRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  paramInput: {
+    width: '80px',
   },
   promptArea: {
     display: 'flex',
@@ -415,11 +451,13 @@ const useStyles = makeStyles({
 // ---------------------------------------------------------------------------
 // Mock data for tools in spec
 // ---------------------------------------------------------------------------
-const PLAYGROUND_TOOLS = [
-  { id: 'salesforce', name: 'Salesforce', enabled: true },
-  { id: 'zendesk', name: 'Zendesk', enabled: false },
-  { id: 'servicenow', name: 'ServiceNow', enabled: false },
-  { id: 'sql-db', name: 'SQL Database', enabled: false },
+const AVAILABLE_TOOLS = [
+  { id: 'salesforce', name: 'Salesforce' },
+  { id: 'zendesk', name: 'Zendesk' },
+  { id: 'servicenow', name: 'ServiceNow' },
+  { id: 'stripe', name: 'Stripe' },
+  { id: 'sql-db', name: 'SQL Database' },
+  { id: 'rest-api', name: 'REST API' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -493,6 +531,8 @@ function getRoutingDecision(modelName: string): RoutingDecision {
       fallback: 'Claude 3.5',
       fallbackProvider: 'Anthropic',
       reason: 'Cost-aware routing optimized for latency.',
+      strategy: 'Cost-aware routing',
+      region: 'East US',
     };
   }
   if (modelName.includes('Claude')) {
@@ -502,6 +542,8 @@ function getRoutingDecision(modelName: string): RoutingDecision {
       fallback: 'GPT-4o-mini',
       fallbackProvider: 'OpenAI',
       reason: 'Quality-first routing with cost-effective fallback.',
+      strategy: 'Quality-first routing',
+      region: 'West US 2',
     };
   }
   if (modelName.includes('Gemini')) {
@@ -511,6 +553,8 @@ function getRoutingDecision(modelName: string): RoutingDecision {
       fallback: 'GPT-4o',
       fallbackProvider: 'OpenAI',
       reason: 'Multi-modal routing with high-capacity fallback.',
+      strategy: 'Multi-modal routing',
+      region: 'Central US',
     };
   }
   return {
@@ -519,6 +563,8 @@ function getRoutingDecision(modelName: string): RoutingDecision {
     fallback: 'GPT-4o-mini',
     fallbackProvider: 'OpenAI',
     reason: 'Default routing with cost-optimized fallback.',
+    strategy: 'Default routing',
+    region: 'East US',
   };
 }
 
@@ -548,10 +594,12 @@ const Playground: React.FC = () => {
   // Config
   const [selectedModelId, setSelectedModelId] = useState<string>(activeModels[0]?.id || '');
   const [selectedAgentId, setSelectedAgentId] = useState<string>('');
-  const [enabledTools, setEnabledTools] = useState<Record<string, boolean>>(
-    Object.fromEntries(PLAYGROUND_TOOLS.map((t) => [t.id, t.enabled]))
-  );
+  const [selectedTools, setSelectedTools] = useState<string[]>(['salesforce']);
+  const [temperature, setTemperature] = useState(0.7);
+  const [maxTokens, setMaxTokens] = useState(1024);
   const [prompt, setPrompt] = useState('');
+  const [addToolOpen, setAddToolOpen] = useState(false);
+  const [runCounter, setRunCounter] = useState(1286);
 
   // Execution
   const [isRunning, setIsRunning] = useState(false);
@@ -572,8 +620,14 @@ const Playground: React.FC = () => {
   const selectedModel = models.find((m) => m.id === selectedModelId);
   const selectedAgent = agents.find((a) => a.id === selectedAgentId);
 
-  const toggleTool = (id: string) => {
-    setEnabledTools((prev) => ({ ...prev, [id]: !prev[id] }));
+  const removeTool = (id: string) => {
+    setSelectedTools((prev) => prev.filter((t) => t !== id));
+  };
+
+  const addTool = (id: string) => {
+    if (!selectedTools.includes(id)) {
+      setSelectedTools((prev) => [...prev, id]);
+    }
   };
 
   const toggleSection = (key: string) => {
@@ -585,8 +639,11 @@ const Playground: React.FC = () => {
     timeouts.current = [];
     setSelectedModelId(activeModels[0]?.id || '');
     setSelectedAgentId('');
-    setEnabledTools(Object.fromEntries(PLAYGROUND_TOOLS.map((t) => [t.id, t.enabled])));
+    setSelectedTools(['salesforce']);
+    setTemperature(0.7);
+    setMaxTokens(1024);
     setPrompt('');
+    setAddToolOpen(false);
     setIsRunning(false);
     setRunStatus('idle');
     setRunId('');
@@ -617,7 +674,9 @@ const Playground: React.FC = () => {
     setRunStatus('running');
     setHasRun(true);
 
-    const rid = `run-${Date.now().toString(36).slice(-6)}`;
+    const num = runCounter + 1;
+    setRunCounter(num);
+    const rid = `Run #${num}`;
     setRunId(rid);
     setRunTimestamp(new Date().toLocaleTimeString('en-US', { hour12: false }));
 
@@ -625,7 +684,7 @@ const Playground: React.FC = () => {
     const rd = getRoutingDecision(modelName);
     setRouting(rd);
 
-    const activeToolNames = PLAYGROUND_TOOLS.filter((t) => enabledTools[t.id]).map((t) => t.name);
+    const activeToolNames = selectedTools.map((id) => AVAILABLE_TOOLS.find((t) => t.id === id)?.name).filter(Boolean) as string[];
     const promptKey = findPromptKey(prompt);
     const namespace = selectedAgent ? 'retail-support' : 'default';
 
@@ -666,8 +725,8 @@ const Playground: React.FC = () => {
     }
 
     steps.push(makeStep('🧠', `Model: ${rd.primary}`, 'model', '#6366f1',
-      `Inference request sent to ${rd.primary} (${rd.primaryProvider}). Fallback: ${rd.fallback}.`,
-      JSON.stringify({ model: rd.primary, temperature: 0.7, max_tokens: 4096, messages: [{ role: 'user', content: prompt.slice(0, 80) + '...' }] }, null, 2),
+      `Inference request sent to ${rd.primary} (${rd.primaryProvider}). Region: ${rd.region}. Fallback: ${rd.fallback}.`,
+      JSON.stringify({ model: rd.primary, temperature, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt.slice(0, 80) + '...' }] }, null, 2),
       JSON.stringify({ id: `chatcmpl-${rid}`, model: rd.primary, usage: { prompt_tokens: randBetween(200, 600), completion_tokens: randBetween(400, 1200) } }, null, 2),
       { 'x-model-region': 'eastus', 'x-model-deployment': rd.primary.toLowerCase().replace(/\s/g, '-') },
       ['token-quota', 'content-safety', 'model-routing']
@@ -749,7 +808,7 @@ const Playground: React.FC = () => {
       setIsRunning(false);
     }, totalTime);
     timeouts.current.push(tf);
-  }, [selectedModel, prompt, enabledTools, selectedAgent]);
+  }, [selectedModel, prompt, selectedTools, selectedAgent, temperature, maxTokens, runCounter]);
 
   // ---------------------------------------------------------------------------
   // Render
@@ -774,11 +833,11 @@ const Playground: React.FC = () => {
 
       {/* 3-Column Layout */}
       <div className={styles.columns}>
-        {/* ===== LEFT: Prompt Panel ===== */}
+        {/* ===== LEFT: Request Builder ===== */}
         <div className={styles.leftPanel}>
           <div className={styles.panelLabel}>
-            <Send24Regular style={{ fontSize: '16px', color: '#60cdff' }} />
-            <Text size={300} weight="semibold" style={{ color: '#fff' }}>Prompt</Text>
+            <Settings20Regular style={{ fontSize: '16px', color: '#60cdff' }} />
+            <Text size={300} weight="semibold" style={{ color: '#fff' }}>Request Builder</Text>
           </div>
 
           {/* Model */}
@@ -800,6 +859,34 @@ const Playground: React.FC = () => {
             </Dropdown>
           </div>
 
+          {/* Model Parameters */}
+          <div className={styles.fieldGroup}>
+            <span className={styles.fieldLabel}>Model Parameters</span>
+            <div className={styles.sliderRow}>
+              <Text size={200} style={{ color: '#888', minWidth: '72px' }}>Temperature</Text>
+              <Slider
+                min={0}
+                max={2}
+                step={0.1}
+                value={temperature}
+                onChange={(_, d) => setTemperature(d.value)}
+                style={{ flex: 1 }}
+                size="small"
+              />
+              <Text size={200} style={{ color: '#ccc', minWidth: '24px', textAlign: 'right' }}>{temperature.toFixed(1)}</Text>
+            </div>
+            <div className={styles.sliderRow}>
+              <Text size={200} style={{ color: '#888', minWidth: '72px' }}>Max Tokens</Text>
+              <Input
+                type="number"
+                value={String(maxTokens)}
+                onChange={(_, d) => setMaxTokens(Number(d.value) || 1024)}
+                size="small"
+                className={styles.paramInput}
+              />
+            </div>
+          </div>
+
           {/* Agent */}
           <div className={styles.fieldGroup}>
             <span className={styles.fieldLabel}>Agent</span>
@@ -818,26 +905,68 @@ const Playground: React.FC = () => {
                 <Option key={a.id} value={a.id} text={a.name}>{a.name}</Option>
               ))}
             </Dropdown>
+            <Text size={100} style={{ color: '#555', marginTop: '2px' }}>
+              Agents orchestrate models and tools to complete complex tasks.
+            </Text>
           </div>
 
           {/* Tools */}
           <div className={styles.fieldGroup}>
             <span className={styles.fieldLabel}>Tools</span>
-            <div className={styles.toolList}>
-              {PLAYGROUND_TOOLS.map((t) => (
-                <div key={t.id} className={styles.toolRow}>
-                  <span className={styles.toolName}>
-                    <PlugConnected20Regular style={{ color: '#0ea5e9', fontSize: '14px' }} />
-                    {t.name}
-                  </span>
-                  <Switch
-                    checked={enabledTools[t.id] || false}
-                    onChange={() => toggleTool(t.id)}
-                    style={{ transform: 'scale(0.75)' }}
-                  />
-                </div>
-              ))}
-            </div>
+            {selectedTools.length > 0 ? (
+              <div className={styles.toolList}>
+                {selectedTools.map((id) => {
+                  const t = AVAILABLE_TOOLS.find((x) => x.id === id);
+                  if (!t) return null;
+                  return (
+                    <span key={id} className={styles.toolChip}>
+                      <PlugConnected20Regular style={{ fontSize: '12px' }} />
+                      {t.name}
+                      <button className={styles.toolChipRemove} onClick={() => removeTool(id)}>
+                        <Dismiss12Regular />
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className={styles.emptyTools}>
+                No tools selected. Add tools to allow the agent to interact with external systems.
+              </div>
+            )}
+            <Dialog open={addToolOpen} onOpenChange={(_, d) => setAddToolOpen(d.open)}>
+              <DialogTrigger disableButtonEnhancement>
+                <Button appearance="subtle" size="small" icon={<Add20Regular />} style={{ alignSelf: 'flex-start', marginTop: '4px' }}>
+                  Add Tool
+                </Button>
+              </DialogTrigger>
+              <DialogSurface style={{ backgroundColor: '#1e1e1e', border: '1px solid #333', maxWidth: '340px' }}>
+                <DialogTitle style={{ color: '#fff' }}>Add Tools</DialogTitle>
+                <DialogBody>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                    {AVAILABLE_TOOLS.filter((t) => !selectedTools.includes(t.id)).map((t) => (
+                      <Button
+                        key={t.id}
+                        appearance="subtle"
+                        size="small"
+                        style={{ justifyContent: 'flex-start' }}
+                        onClick={() => { addTool(t.id); }}
+                      >
+                        <PlugConnected20Regular style={{ marginRight: '6px', color: '#0ea5e9' }} /> {t.name}
+                      </Button>
+                    ))}
+                    {AVAILABLE_TOOLS.filter((t) => !selectedTools.includes(t.id)).length === 0 && (
+                      <Text size={200} style={{ color: '#666', padding: '8px 0' }}>All tools are already selected.</Text>
+                    )}
+                  </div>
+                </DialogBody>
+                <DialogActions>
+                  <DialogTrigger disableButtonEnhancement>
+                    <Button appearance="secondary" size="small">Done</Button>
+                  </DialogTrigger>
+                </DialogActions>
+              </DialogSurface>
+            </Dialog>
           </div>
 
           <Divider style={{ margin: '4px 0' }} />
@@ -846,11 +975,11 @@ const Playground: React.FC = () => {
           <div className={styles.promptArea}>
             <span className={styles.fieldLabel}>Prompt</span>
             <Textarea
-              placeholder="Describe what you want to test..."
+              placeholder="Type your prompt here..."
               value={prompt}
               onChange={(_, d) => setPrompt(d.value)}
               resize="vertical"
-              style={{ width: '100%', minHeight: '80px', fontSize: '13px' }}
+              style={{ width: '100%', minHeight: '120px', fontSize: '13px' }}
               size="small"
             />
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -1062,7 +1191,11 @@ const Playground: React.FC = () => {
                   </div>
                   <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
                     <Button appearance="subtle" size="small" icon={<ArrowRepeatAll24Regular />} onClick={runExecution}>
-                      Replay
+                      Replay Request
+                    </Button>
+                    <Button appearance="subtle" size="small" icon={<Copy24Regular />}
+                      onClick={() => navigator.clipboard.writeText(response || '')}>
+                      Copy Response
                     </Button>
                     <Button appearance="subtle" size="small" icon={<Copy24Regular />}
                       onClick={() => navigator.clipboard.writeText(logJson)}>
@@ -1088,12 +1221,12 @@ const Playground: React.FC = () => {
           )}
         </div>
 
-        {/* ===== RIGHT: Routing + Observability + Policies ===== */}
+        {/* ===== RIGHT: Gateway Inspector ===== */}
         <div className={styles.rightPanel}>
-          {/* Routing Decisions */}
+          {/* Routing Decision */}
           <div className={styles.panelLabel}>
             <ArrowRouting24Regular style={{ fontSize: '16px', color: '#f59e0b' }} />
-            <Text size={300} weight="semibold" style={{ color: '#fff' }}>Model Routing Decisions</Text>
+            <Text size={300} weight="semibold" style={{ color: '#fff' }}>Routing Decision</Text>
           </div>
           <div className={styles.card}>
             {routing ? (
@@ -1114,9 +1247,14 @@ const Playground: React.FC = () => {
                   </div>
                 </div>
                 <Divider style={{ margin: '4px 0' }} />
-                <div style={{ padding: '4px 0' }}>
-                  <span className={styles.routingLabel}>Reason</span>
-                  <Text size={200} style={{ color: '#aaa', display: 'block', marginTop: '2px' }}>{routing.reason}</Text>
+                <div className={styles.routingRow}>
+                  <span className={styles.routingLabel}>Routing Strategy</span>
+                  <span className={styles.routingValue}>{routing.strategy}</span>
+                </div>
+                <Divider style={{ margin: '4px 0' }} />
+                <div className={styles.routingRow}>
+                  <span className={styles.routingLabel}>Region</span>
+                  <span className={styles.routingValue}>{routing.region}</span>
                 </div>
               </>
             ) : (
@@ -1124,34 +1262,31 @@ const Playground: React.FC = () => {
             )}
           </div>
 
-          {/* Observability */}
+          {/* Performance */}
           <div className={styles.panelLabel} style={{ marginTop: '4px' }}>
-            <DataUsageRegular style={{ fontSize: '16px', color: '#7c3aed' }} />
-            <Text size={300} weight="semibold" style={{ color: '#fff' }}>Observability</Text>
+            <Gauge24Regular style={{ fontSize: '16px', color: '#7c3aed' }} />
+            <Text size={300} weight="semibold" style={{ color: '#fff' }}>Performance</Text>
           </div>
           <div className={styles.card}>
             {obsMetrics ? (
               <div className={styles.metricGrid}>
                 <div className={styles.metricItem}>
-                  <span className={styles.metricValue} style={{ color: '#10b981' }}>
-                    <Money24Regular style={{ fontSize: '14px', verticalAlign: 'middle', marginRight: '2px' }} />
-                    {obsMetrics.cost}
+                  <span className={styles.metricValue} style={{ color: '#f59e0b' }}>
+                    {obsMetrics.latency}
                   </span>
-                  <div className={styles.metricLabel}>Cost</div>
+                  <div className={styles.metricLabel}>Latency</div>
                 </div>
                 <div className={styles.metricItem}>
                   <span className={styles.metricValue} style={{ color: '#6366f1' }}>
-                    <DataUsageRegular style={{ fontSize: '14px', verticalAlign: 'middle', marginRight: '2px' }} />
                     {obsMetrics.tokens}
                   </span>
                   <div className={styles.metricLabel}>Tokens</div>
                 </div>
                 <div className={styles.metricItem}>
-                  <span className={styles.metricValue} style={{ color: '#f59e0b' }}>
-                    <Timer24Regular style={{ fontSize: '14px', verticalAlign: 'middle', marginRight: '2px' }} />
-                    {obsMetrics.latency}
+                  <span className={styles.metricValue} style={{ color: '#10b981' }}>
+                    {obsMetrics.cost}
                   </span>
-                  <div className={styles.metricLabel}>Latency</div>
+                  <div className={styles.metricLabel}>Cost</div>
                 </div>
               </div>
             ) : (
@@ -1176,18 +1311,13 @@ const Playground: React.FC = () => {
             </div>
             <Divider style={{ margin: '2px 0' }} />
             <div className={styles.policyRow}>
-              <span className={styles.policyLabel}>Token Quota</span>
-              <span className={styles.policyValue}>2M / month</span>
-            </div>
-            <Divider style={{ margin: '2px 0' }} />
-            <div className={styles.policyRow}>
-              <span className={styles.policyLabel}>Auth</span>
-              <Badge appearance="tint" color="success" size="small">JWT Validated</Badge>
-            </div>
-            <Divider style={{ margin: '2px 0' }} />
-            <div className={styles.policyRow}>
               <span className={styles.policyLabel}>Namespace</span>
-              <span className={styles.policyValue}>{selectedAgent ? 'retail-support' : 'default'}</span>
+              <span className={styles.policyValue}>{selectedAgent ? 'Retail Support' : 'Default'}</span>
+            </div>
+            <Divider style={{ margin: '2px 0' }} />
+            <div className={styles.policyRow}>
+              <span className={styles.policyLabel}>Authentication</span>
+              <Badge appearance="tint" color="success" size="small">Managed Identity</Badge>
             </div>
           </div>
         </div>
