@@ -15,16 +15,14 @@ import type { Skill } from '../data/mockData';
 
 // ── colour maps ──────────────────────────────────────────────────────────────
 
-const typeColors: Record<Skill['type'], string> = {
+const typeColors: Record<string, string> = {
   'prompt-chain': '#a78bfa',
-  workflow: '#60a5fa',
   automation: '#34d399',
   analysis: '#fb923c',
 };
 
-const typeLabels: Record<Skill['type'], string> = {
+const typeLabels: Record<string, string> = {
   'prompt-chain': 'Prompt Chain',
-  workflow: 'Workflow',
   automation: 'Automation',
   analysis: 'Analysis',
 };
@@ -270,7 +268,6 @@ const toolMap = new Map(tools.map((t) => [t.id, t.name]));
 const typeFilters: { label: string; value: string }[] = [
   { label: 'All', value: 'all' },
   { label: 'Prompt Chain', value: 'prompt-chain' },
-  { label: 'Workflow', value: 'workflow' },
   { label: 'Automation', value: 'automation' },
   { label: 'Analysis', value: 'analysis' },
 ];
@@ -297,6 +294,7 @@ const Skills: React.FC = () => {
   const filtered = useMemo(
     () =>
       skills.filter((s) => {
+        if (s.type === 'workflow') return false;
         if (
           search &&
           !s.name.toLowerCase().includes(search.toLowerCase()) &&
@@ -330,10 +328,10 @@ const Skills: React.FC = () => {
       <div className={styles.header}>
         <div>
           <Text as="h1" size={700} weight="bold" block>
-            Skills &amp; Workflows
+            Skills
           </Text>
           <Text size={300} style={{ color: '#999' }}>
-            Reusable AI automation patterns combining models, prompts, tools, and logic
+            Reusable AI automation patterns — prompt chains, automations, and analysis templates
           </Text>
         </div>
         <div className={styles.headerRight}>

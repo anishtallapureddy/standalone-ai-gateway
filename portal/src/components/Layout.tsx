@@ -8,13 +8,11 @@ import {
 import {
   BrainCircuit24Regular,
   PlugConnected24Regular,
-  Server24Regular,
   Bot24Regular,
   Shield24Regular,
   Home24Regular,
   BrainCircuit24Filled,
   PlugConnected24Filled,
-  Server24Filled,
   Bot24Filled,
   Shield24Filled,
   Home24Filled,
@@ -41,6 +39,8 @@ import {
   Lightbulb24Filled,
   BoxMultiple24Regular,
   BoxMultiple24Filled,
+  Flow24Regular,
+  Flow24Filled,
 } from '@fluentui/react-icons';
 
 const useStyles = makeStyles({
@@ -404,13 +404,6 @@ const navItems: NavItem[] = [
     nested: true,
   },
   {
-    path: '/mcp-servers',
-    label: 'MCP Servers',
-    icon: <Server24Regular />,
-    activeIcon: <Server24Filled />,
-    nested: true,
-  },
-  {
     path: '/agents',
     label: 'Agents',
     icon: <Bot24Regular />,
@@ -419,9 +412,16 @@ const navItems: NavItem[] = [
   },
   {
     path: '/skills',
-    label: 'Skills / Workflows',
+    label: 'Skills',
     icon: <Lightbulb24Regular />,
     activeIcon: <Lightbulb24Filled />,
+    nested: true,
+  },
+  {
+    path: '/workflows',
+    label: 'Workflows',
+    icon: <Flow24Regular />,
+    activeIcon: <Flow24Filled />,
     nested: true,
   },
   {

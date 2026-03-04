@@ -5,9 +5,9 @@ import LandingPage from './pages/LandingPage'
 import Dashboard from './pages/Dashboard'
 import Models from './pages/Models'
 import Tools from './pages/Tools'
-import MCPServers from './pages/MCPServers'
 import Agents from './pages/Agents'
 import Skills from './pages/Skills'
+import Workflows from './pages/Workflows'
 import Workloads from './pages/Workloads'
 import Policies from './pages/Policies'
 import Logs from './pages/Logs'
@@ -37,9 +37,9 @@ function App() {
         <Route path="catalog" element={<Catalog />} />
         <Route path="models" element={<Models />} />
         <Route path="tools" element={<Tools />} />
-        <Route path="mcp-servers" element={<MCPServers />} />
         <Route path="agents" element={<Agents />} />
         <Route path="skills" element={<Skills />} />
+        <Route path="workflows" element={<Workflows />} />
         <Route path="workloads" element={<Workloads />} />
         <Route path="namespaces" element={<Namespaces />} />
         <Route path="consumers" element={<Consumers />} />
