@@ -817,14 +817,6 @@ const Playground: React.FC = () => {
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <div>
-            <Text size={600} weight="bold" style={{ color: '#fff', display: 'block' }}>
-              Azure AI Gateway Playground
-            </Text>
-            <Text size={200} style={{ color: '#888', display: 'block', marginTop: '2px' }}>
-              Test AI models, tools, and agents through the gateway. Inspect routing, execution traces, and policies applied to each request.
-            </Text>
-          </div>
           <span className={styles.sandboxPill}>SANDBOX</span>
         </div>
         <Button icon={<ArrowReset24Regular />} appearance="subtle" size="small" onClick={reset}>Reset</Button>
