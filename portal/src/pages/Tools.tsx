@@ -313,14 +313,7 @@ const Tools: React.FC = () => {
     <div>
       {/* Header */}
       <div className={styles.header}>
-        <div>
-          <Text as="h1" size={800} weight="semibold" style={{ display: 'block', marginBottom: '4px' }}>
-            Tools
-          </Text>
-          <Text size={300} style={{ color: '#999' }}>
-            APIs, MCP servers, connectors, and triggers available through the gateway
-          </Text>
-        </div>
+        <div />
         <Button appearance="primary" icon={<Add24Regular />}>Register Tool</Button>
       </div>
 
