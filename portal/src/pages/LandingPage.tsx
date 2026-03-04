@@ -306,7 +306,7 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
           }}
         >
           <div style={{ fontSize: 18, fontWeight: 700, color: C.white, fontFamily: C.font }}>
-            AI Gateway
+            Azure AI Gateway
           </div>
           <div style={{ fontSize: 13, color: C.gray, marginTop: 4, fontFamily: C.font }}>
             Route&nbsp; · &nbsp;Govern&nbsp; · &nbsp;Observe
