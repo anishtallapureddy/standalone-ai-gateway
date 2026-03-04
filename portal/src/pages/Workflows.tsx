@@ -6,8 +6,9 @@ import {
   tokens,
   Badge,
   Button,
+  Input,
 } from '@fluentui/react-components';
-import { Add24Regular, Dismiss24Regular } from '@fluentui/react-icons';
+import { Add24Regular, Dismiss24Regular, Search24Regular, ArrowRight16Regular } from '@fluentui/react-icons';
 import { skills, models, tools } from '../data/mockData';
 import type { Skill } from '../data/mockData';
 
@@ -243,10 +244,17 @@ const useStyles = makeStyles({
 const Workflows: React.FC = () => {
   const styles = useStyles();
   const [selected, setSelected] = useState<Skill | null>(null);
+  const [search, setSearch] = useState('');
 
   const totalWorkflows = workflows.length;
   const activeCount = workflows.filter((w) => w.status === 'active').length;
   const totalSteps = workflows.reduce((sum, w) => sum + w.steps.length, 0);
+
+  const filtered = workflows.filter(wf => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return wf.name.toLowerCase().includes(q) || wf.description.toLowerCase().includes(q) || wf.ownerTeam.toLowerCase().includes(q);
+  });
 
   const resolveModels = (ids: string[]) =>
     ids.map((id) => modelMap.get(id) ?? id);
@@ -257,7 +265,18 @@ const Workflows: React.FC = () => {
     <div>
       {/* ── Header ─────────────────────────────────────────────── */}
       <div className={styles.header}>
-        <div />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Input
+            placeholder="Search workflows..."
+            contentBefore={<Search24Regular />}
+            value={search}
+            onChange={(_, data) => setSearch(data.value)}
+            style={{ minWidth: '260px' }}
+          />
+          <Text size={200} style={{ color: '#999' }}>
+            {filtered.length} workflows · {activeCount} active
+          </Text>
+        </div>
         <Button appearance="primary" icon={<Add24Regular />}>
           Create Workflow
         </Button>
@@ -293,7 +312,7 @@ const Workflows: React.FC = () => {
 
       {/* ── Card grid ──────────────────────────────────────────── */}
       <div className={styles.grid}>
-        {workflows.map((wf) => (
+        {filtered.map((wf) => (
           <Card
             key={wf.id}
             className={styles.card}
@@ -369,7 +388,7 @@ const Workflows: React.FC = () => {
 
             <div className={styles.cardFooter}>
               <span>{wf.ownerTeam}</span>
-              <span>{wf.invocationsToday.toLocaleString()} invocations today</span>
+              <span>{wf.invocationsToday.toLocaleString()} invocations</span>
               <Badge
                 appearance="tint"
                 size="small"
@@ -383,6 +402,7 @@ const Workflows: React.FC = () => {
               >
                 {wf.visibility}
               </Badge>
+              <ArrowRight16Regular style={{ color: '#999' }} />
             </div>
           </Card>
         ))}

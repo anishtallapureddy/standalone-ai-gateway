@@ -5,15 +5,10 @@ import {
   makeStyles,
   tokens,
   Badge,
-  Table,
-  TableHeader,
-  TableHeaderCell,
-  TableBody,
-  TableRow,
-  TableCell,
   Button,
   TabList,
   Tab,
+  Input,
 } from '@fluentui/react-components';
 import {
   Add24Regular,
@@ -23,11 +18,12 @@ import {
   Shield24Regular,
   Warning24Regular,
   Checkmark24Regular,
-  ChevronRight24Regular,
   DataUsage24Regular,
   Clock24Regular,
   ArrowRouting24Regular,
   HeartPulse24Regular,
+  Search24Regular,
+  ArrowRight16Regular,
 } from '@fluentui/react-icons';
 import StatusBadge from '../components/StatusBadge';
 import { models, routingConfigs, failoverEvents } from '../data/mockData';
@@ -43,19 +39,37 @@ const useStyles = makeStyles({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: '16px',
+    gap: '12px',
   },
-  card: {
-    padding: '0',
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+    gap: '16px',
   },
-  usageBar: {
-    width: '100px',
-    height: '6px',
-    backgroundColor: tokens.colorNeutralStroke2,
-    borderRadius: '3px',
-    overflow: 'hidden',
-    display: 'inline-block',
-    marginLeft: '8px',
-    verticalAlign: 'middle',
+  modelCard: {
+    padding: '20px',
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+    backgroundColor: tokens.colorNeutralBackground3,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    ':hover': {
+      boxShadow: tokens.shadow4,
+    },
+  },
+  cardHeader: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: '10px',
+  },
+  cardBadges: {
+    display: 'flex',
+    gap: '6px',
+    marginTop: '4px',
+    flexWrap: 'wrap',
+  },
+  usageSection: {
+    marginBottom: '12px',
   },
   usageBarWide: {
     width: '100%',
@@ -69,17 +83,28 @@ const useStyles = makeStyles({
     height: '100%',
     borderRadius: '3px',
   },
-  viewDetails: {
-    cursor: 'pointer',
-    color: tokens.colorBrandForeground1,
-    fontSize: '12px',
-    fontWeight: 600,
-    display: 'inline-flex',
+  capabilities: {
+    display: 'flex',
+    gap: '4px',
+    flexWrap: 'wrap',
+    marginBottom: '12px',
+  },
+  cardFooter: {
+    display: 'flex',
     alignItems: 'center',
-    gap: '2px',
-    ':hover': {
-      textDecorationLine: 'underline',
-    },
+    justifyContent: 'space-between',
+    paddingTop: '12px',
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  footerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  footerStat: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '1px',
   },
 
   /* Detail view */
@@ -700,6 +725,7 @@ const ModelDetail: React.FC<{ model: Model; onBack: () => void }> = ({
 const Models: React.FC = () => {
   const styles = useStyles();
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   const selectedModel = selectedModelId
     ? models.find((m) => m.id === selectedModelId) ?? null
@@ -714,51 +740,45 @@ const Models: React.FC = () => {
     );
   }
 
+  const filtered = models.filter(m => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return m.name.toLowerCase().includes(q) || m.provider.toLowerCase().includes(q) || m.namespace.toLowerCase().includes(q);
+  });
+
   return (
     <div>
       <div className={styles.toolbar}>
-        <Text size={300} style={{ color: '#999' }}>
-          {models.length} models registered across{' '}
-          {new Set(models.map((m) => m.provider)).size} providers
-        </Text>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Input
+            placeholder="Search models..."
+            contentBefore={<Search24Regular />}
+            value={search}
+            onChange={(_, data) => setSearch(data.value)}
+            style={{ minWidth: '260px' }}
+          />
+          <Text size={200} style={{ color: '#999' }}>
+            {filtered.length} models · {new Set(models.map(m => m.provider)).size} providers
+          </Text>
+        </div>
         <Button appearance="primary" icon={<Add24Regular />}>
           Register Model
         </Button>
       </div>
-      <Card className={styles.card}>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHeaderCell>Name</TableHeaderCell>
-              <TableHeaderCell>Provider</TableHeaderCell>
-              <TableHeaderCell>Namespace</TableHeaderCell>
-              <TableHeaderCell>Lifecycle</TableHeaderCell>
-              <TableHeaderCell>Status</TableHeaderCell>
-              <TableHeaderCell>Token Usage (24h)</TableHeaderCell>
-              <TableHeaderCell>Requests</TableHeaderCell>
-              <TableHeaderCell>Failover</TableHeaderCell>
-              <TableHeaderCell>{/* Actions */}</TableHeaderCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {models.map((model) => {
-              const usagePct = Math.min(
-                (model.tokensUsedToday / model.tokenLimit) * 100,
-                100,
-              );
-              const barColor = usageBarColor(usagePct);
-              return (
-                <TableRow key={model.id}>
-                  <TableCell>
-                    <Text weight="semibold">{model.name}</Text>
-                  </TableCell>
-                  <TableCell>
+
+      <div className={styles.grid}>
+        {filtered.map((model) => {
+          const usagePct = Math.min((model.tokensUsedToday / model.tokenLimit) * 100, 100);
+          const barColor = usageBarColor(usagePct);
+
+          return (
+            <Card key={model.id} className={styles.modelCard} onClick={() => setSelectedModelId(model.id)}>
+              <div className={styles.cardHeader}>
+                <div>
+                  <Text weight="semibold" size={400}>{model.name}</Text>
+                  <div className={styles.cardBadges}>
                     <ProviderBadge provider={model.provider} />
-                  </TableCell>
-                  <TableCell>
-                    <Text size={200} style={{ fontFamily: 'monospace' }}>{model.namespace}</Text>
-                  </TableCell>
-                  <TableCell>
+                    <StatusBadge status={model.status} />
                     <Badge
                       appearance="outline"
                       size="small"
@@ -769,60 +789,63 @@ const Models: React.FC = () => {
                     >
                       {model.lifecycle}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={model.status} />
-                  </TableCell>
-                  <TableCell>
-                    <Text size={200}>
-                      {(model.tokensUsedToday / 1000).toFixed(0)}K /{' '}
-                      {(model.tokenLimit / 1000).toFixed(0)}K
-                    </Text>
-                    <div className={styles.usageBar}>
-                      <div
-                        className={styles.usageFill}
-                        style={{
-                          width: `${usagePct}%`,
-                          backgroundColor: barColor,
-                        }}
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Text>{model.requestsToday.toLocaleString()}</Text>
-                  </TableCell>
-                  <TableCell>
-                    {model.failoverTargets.length > 0 ? (
-                      <Badge appearance="tint" color="informative">
-                        {model.failoverTargets.length} target
-                        {model.failoverTargets.length > 1 ? 's' : ''}
-                      </Badge>
-                    ) : (
-                      <Text size={200} style={{ color: '#999' }}>
-                        None
-                      </Text>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={styles.viewDetails}
-                      onClick={() => setSelectedModelId(model.id)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ')
-                          setSelectedModelId(model.id);
-                      }}
+                  </div>
+                </div>
+                {model.failoverTargets.length > 0 && (
+                  <Badge appearance="tint" color="informative" size="small">
+                    {model.failoverTargets.length} failover{model.failoverTargets.length > 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
+
+              {/* Token usage bar */}
+              <div className={styles.usageSection}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text size={200} style={{ color: '#999' }}>Token usage (24h)</Text>
+                  <Text size={200} weight="semibold" style={{ color: barColor }}>
+                    {formatTokens(model.tokensUsedToday)} / {formatTokens(model.tokenLimit)}
+                  </Text>
+                </div>
+                <div className={styles.usageBarWide}>
+                  <div className={styles.usageFill} style={{ width: `${usagePct}%`, backgroundColor: barColor }} />
+                </div>
+              </div>
+
+              {/* Capabilities */}
+              <div className={styles.capabilities}>
+                {model.capabilities.map(c => (
+                  <Badge key={c} appearance="tint" size="small">{c}</Badge>
+                ))}
+              </div>
+
+              {/* Footer */}
+              <div className={styles.cardFooter}>
+                <div className={styles.footerLeft}>
+                  <div className={styles.footerStat}>
+                    <Text size={200} style={{ color: '#999' }}>Requests</Text>
+                    <Text size={200} weight="semibold">{model.requestsToday.toLocaleString()}</Text>
+                  </div>
+                  <div className={styles.footerStat}>
+                    <Text size={200} style={{ color: '#999' }}>Namespace</Text>
+                    <Text size={200} weight="semibold" style={{ fontFamily: 'monospace' }}>{model.namespace}</Text>
+                  </div>
+                  <div className={styles.footerStat}>
+                    <Text size={200} style={{ color: '#999' }}>Visibility</Text>
+                    <Badge
+                      appearance="tint"
+                      size="small"
+                      color={model.visibility === 'organization' ? 'informative' : model.visibility === 'public' ? 'success' : 'warning'}
                     >
-                      View Details <ChevronRight24Regular style={{ fontSize: '14px' }} />
-                    </span>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </Card>
+                      {model.visibility}
+                    </Badge>
+                  </div>
+                </div>
+                <ArrowRight16Regular style={{ color: '#999' }} />
+              </div>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 };

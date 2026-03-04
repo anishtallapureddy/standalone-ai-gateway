@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Text,
@@ -6,8 +6,9 @@ import {
   tokens,
   Badge,
   Button,
+  Input,
 } from '@fluentui/react-components';
-import { Add24Regular, Bot24Regular, BrainCircuitRegular, PlugConnectedRegular } from '@fluentui/react-icons';
+import { Add24Regular, Bot24Regular, BrainCircuitRegular, PlugConnectedRegular, Search24Regular, ArrowRight16Regular } from '@fluentui/react-icons';
 import StatusBadge from '../components/StatusBadge';
 import { agents, models, tools } from '../data/mockData';
 
@@ -17,6 +18,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: '16px',
+    gap: '12px',
   },
   grid: {
     display: 'grid',
@@ -69,20 +71,36 @@ const useStyles = makeStyles({
 
 const Agents: React.FC = () => {
   const styles = useStyles();
+  const [search, setSearch] = useState('');
 
   const getModelName = (id: string): string => models.find(m => m.id === id)?.name || id;
   const getToolName = (id: string): string => tools.find(t => t.id === id)?.name || id;
 
+  const filtered = agents.filter(a => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return a.name.toLowerCase().includes(q) || a.description.toLowerCase().includes(q) || a.namespace.toLowerCase().includes(q);
+  });
+
   return (
     <div>
       <div className={styles.toolbar}>
-        <Text size={300} style={{ color: '#999' }}>
-          {agents.length} agents registered · {agents.filter(a => a.status === 'active').length} active
-        </Text>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Input
+            placeholder="Search agents..."
+            contentBefore={<Search24Regular />}
+            value={search}
+            onChange={(_, data) => setSearch(data.value)}
+            style={{ minWidth: '260px' }}
+          />
+          <Text size={200} style={{ color: '#999' }}>
+            {filtered.length} agents · {agents.filter(a => a.status === 'active').length} active
+          </Text>
+        </div>
         <Button appearance="primary" icon={<Add24Regular />}>Register Agent</Button>
       </div>
       <div className={styles.grid}>
-        {agents.map((agent) => (
+        {filtered.map((agent) => (
           <Card key={agent.id} className={styles.card}>
             <div className={styles.cardHeader}>
               <div className={styles.cardTitle}>
@@ -141,9 +159,20 @@ const Agents: React.FC = () => {
                 <Text weight="semibold">{agent.requestsToday.toLocaleString()}</Text>
               </div>
               <div className={styles.stat}>
-                <Text size={200} style={{ color: '#999' }}>Endpoint</Text>
-                <Text size={200} style={{ fontFamily: 'monospace' }}>{agent.endpoint}</Text>
+                <Text size={200} style={{ color: '#999' }}>Namespace</Text>
+                <Text size={200} weight="semibold" style={{ fontFamily: 'monospace' }}>{agent.namespace}</Text>
               </div>
+              <div className={styles.stat}>
+                <Text size={200} style={{ color: '#999' }}>Visibility</Text>
+                <Badge
+                  appearance="tint"
+                  size="small"
+                  color={agent.visibility === 'organization' ? 'success' : 'informative'}
+                >
+                  {agent.visibility}
+                </Badge>
+              </div>
+              <ArrowRight16Regular style={{ color: '#999', marginLeft: 'auto' }} />
             </div>
           </Card>
         ))}
