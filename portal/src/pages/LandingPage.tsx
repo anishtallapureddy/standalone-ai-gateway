@@ -197,7 +197,7 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
           maxWidth: 800,
         }}
       >
-        The Intelligent Gateway for Enterprise&nbsp;AI
+        The Gateway for AI Models, Tools, and&nbsp;Agents
       </h1>
 
       <p
@@ -210,8 +210,8 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
           fontFamily: C.font,
         }}
       >
-        Route, govern, and observe all your AI models, tools, and agents from a single control
-        plane. Multi-cloud. Multi-tenant. Production-ready.
+        Build, route, govern, and observe AI workloads across models, tools, and agents from a
+        single control plane. Multi-cloud. Multi-tenant. Production-ready.
       </p>
 
       <div style={{ display: 'flex', gap: 16, marginTop: 40 }}>
@@ -256,7 +256,10 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
           position: 'relative',
         }}
       >
-        {/* providers row */}
+        {/* providers row — Models */}
+        <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font }}>
+          Models
+        </div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
           {['Azure OpenAI', 'Anthropic', 'Gemini', 'Bedrock'].map((m) => (
             <span
@@ -273,6 +276,30 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
               }}
             >
               {m}
+            </span>
+          ))}
+        </div>
+
+        {/* Tools row */}
+        <div style={{ fontSize: 11, fontWeight: 600, color: C.gray, marginTop: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: C.font }}>
+          Tools
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+          {['APIs', 'Databases', 'MCP Servers', 'SaaS'].map((t) => (
+            <span
+              key={t}
+              style={{
+                padding: '8px 18px',
+                fontSize: 13,
+                fontWeight: 600,
+                color: C.cyan,
+                border: `1px solid ${C.cyan}44`,
+                borderRadius: 8,
+                fontFamily: C.font,
+                background: `${C.cyan}0a`,
+              }}
+            >
+              {t}
             </span>
           ))}
         </div>
@@ -308,7 +335,10 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
           <div style={{ fontSize: 18, fontWeight: 700, color: C.white, fontFamily: C.font }}>
             Azure AI Gateway
           </div>
-          <div style={{ fontSize: 13, color: C.gray, marginTop: 4, fontFamily: C.font }}>
+          <div style={{ fontSize: 12, color: C.gray, marginTop: 2, fontFamily: C.font, letterSpacing: '0.5px' }}>
+            Control Plane for AI Workloads
+          </div>
+          <div style={{ fontSize: 13, color: C.gray, marginTop: 6, fontFamily: C.font }}>
             Route&nbsp; · &nbsp;Govern&nbsp; · &nbsp;Observe
           </div>
         </div>
@@ -332,7 +362,7 @@ const LandingPage: FC<LandingPageProps> = ({ onLogin, onSignup }) => {
 
         {/* consumers row */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
-          {['Agents', 'Apps', 'Users'].map((c) => (
+          {['Agents', 'Applications', 'Workflows'].map((c) => (
             <span
               key={c}
               style={{
